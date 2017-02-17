@@ -19,6 +19,7 @@ private_subnet_supernet = "10.39.34.0/23"
 instance_type = "t2.micro"
 ami = "ami-dc9339bf"
 
+//Outputs:
 //aws_vpc_id = vpc-71901015
 //bastion_public_ip = 52.221.87.241
 //nat_subnets = subnet-d52554a3,subnet-8890d2ec
