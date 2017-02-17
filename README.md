@@ -7,7 +7,6 @@ AWS Infrastructure Code for IPP Regional Web
 * export AWS_ACCESS_KEY_ID=xxxx
 * export AWS_SECRET_ACCESS_KEY=xx/xx/xx
 * export AWS_DEFAULT_REGION=eu-west-1
-
 * terraform get -var-file="network.tfvars"
 * terraform plan -var-file="network.tfvars"
 * terraform apply -var-file="network.tfvars"
