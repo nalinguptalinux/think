@@ -1,5 +1,20 @@
-# Infr-Code
+# Infra-Code
 AWS Infrastructure Code for IPP Regional Web
+
+##For Setting up VPC using Terraform
+
+* cd terraform-vpc
+* export AWS_ACCESS_KEY_ID=xxxx
+* export AWS_SECRET_ACCESS_KEY=xx/xx/xx
+* export AWS_DEFAULT_REGION=eu-west-1
+
+* terraform get -var-file="network.tfvars"
+* terraform plan -var-file="network.tfvars"
+* terraform apply -var-file="network.tfvars"
+
+####Note: Do not run this against existing aws environments with VPC
+
+## For Cloudformation
 
 ### Dependencies
 - [Ansible](http://docs.ansible.com/ansible/intro_installation.html)
@@ -8,7 +23,7 @@ AWS Infrastructure Code for IPP Regional Web
 ### How to run the deployment task.
 ##### 1. export your AWS keys in env.
 ```sh
-export AWS_REGION="ap-northeast-1 or ap-southeast-1"
+export AWS_REGION="ap-southeast-1 or ap-southeast-1"
 export AWS_ACCESS_KEY_ID=xxxxxxxx
 export AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxx
 ```
