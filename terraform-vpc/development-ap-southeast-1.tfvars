@@ -18,3 +18,12 @@ private_subnet_supernet = "10.39.48.0/22"
 #Bastion Vars
 instance_type = "t2.micro"
 ami = "ami-dc9339bf"
+
+//Outputs:
+//
+//aws_vpc_id = vpc-c9ef63ad
+//bastion_public_ip = 52.221.97.29
+//nat_subnets = subnet-36c6b440,subnet-9d9bd5f9
+//private_subnets = subnet-37c6b441,subnet-939bd5f7
+//public_subnets = subnet-49c6b43f,subnet-9c9bd5f8
+//ssh_from_bastion_sg_id = sg-0834b66f
