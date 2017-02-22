@@ -7,8 +7,8 @@ key_name = "awscloud-squarefoot-staging-singapore"
 vpc_cidr = "10.39.32.0/20"
 dopt = ["AmazonProvidedDNS","10.39.32.2"]
 zones = ["ap-southeast-1a","ap-southeast-1b"]
-nat_subnet_cidr_blocks = ["10.39.40.0/23","10.39.42.0/24"]
-public_subnet_cidr_blocks = ["10.39.36.0/23","10.39.38.0/28"]
+nat_subnet_cidr_blocks = ["10.39.40.0/23","10.39.42.0/23"]
+public_subnet_cidr_blocks = ["10.39.36.0/23","10.39.38.0/23"]
 private_subnet_cidr_blocks = ["10.39.32.0/23","10.39.34.0/23"]
 
 nat_subnet_supernet = "10.39.40.0/22"
