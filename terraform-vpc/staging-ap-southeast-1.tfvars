@@ -20,9 +20,10 @@ instance_type = "t2.micro"
 ami = "ami-dc9339bf"
 
 //Outputs:
-//aws_vpc_id = vpc-71901015
-//bastion_public_ip = 52.221.87.241
-//nat_subnets = subnet-36d2a040,subnet-848ec0e0
-//private_subnets = subnet-60d2a016,subnet-d18ec0b5
-//public_subnets = subnet-61d2a017,subnet-c28fc1a6
-//ssh_from_bastion_sg_id = sg-5f179338
+//
+//aws_vpc_id = vpc-74d35f10
+//bastion_public_ip = 52.74.223.189
+//nat_subnets = subnet-d7ddafa1,subnet-759fd111
+//private_subnets = subnet-d6ddafa0,subnet-779fd113
+//public_subnets = subnet-e9ddaf9f,subnet-769fd112
+//ssh_from_bastion_sg_id = sg-042cae63

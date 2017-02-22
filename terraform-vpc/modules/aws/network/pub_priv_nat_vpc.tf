@@ -251,8 +251,16 @@ resource "aws_network_acl" "nat" {
     to_port = 0
   }
   ingress {
-    protocol = "tcp"
+    protocol = "-1"
     rule_no = 2
+    action = "allow"
+    cidr_block = "${var.private_subnet_supernet}"
+    from_port = 0
+    to_port = 0
+  }
+  ingress {
+    protocol = "tcp"
+    rule_no = 3
     action = "allow"
     cidr_block = "0.0.0.0/0"
     from_port = 1024
@@ -260,7 +268,7 @@ resource "aws_network_acl" "nat" {
   }
   ingress {
     protocol = "udp"
-    rule_no = 3
+    rule_no = 4
     action = "allow"
     cidr_block =  "0.0.0.0/0"
     from_port = 1024
@@ -268,7 +276,7 @@ resource "aws_network_acl" "nat" {
   }
   ingress {
     protocol = "icmp"
-    rule_no = 4
+    rule_no = 5
     action = "allow"
     cidr_block = "0.0.0.0/0"
     from_port = -1
@@ -278,20 +286,29 @@ resource "aws_network_acl" "nat" {
   }
   ingress {
     protocol = "tcp"
-    rule_no = 5
+    rule_no = 6
     action = "allow"
-    cidr_block = "210.74.157.146/32"
+    cidr_block = "202.66.38.130/32"
     from_port = 22
     to_port = 22
   }
   ingress {
-    protocol = "-1"
-    rule_no = 6
+    protocol = "tcp"
+    rule_no = 7
     action = "allow"
-    cidr_block = "${var.private_subnet_supernet}"
-    from_port = 0
-    to_port = 0
+    cidr_block = "121.122.7.17/32"
+    from_port = 22
+    to_port = 22
   }
+  ingress {
+    protocol = "tcp"
+    rule_no = 8
+    action = "allow"
+    cidr_block = "121.122.7.177/32"
+    from_port = 22
+    to_port = 22
+  }
+
   tags {
     Name = "nat_acl_all_subnets"
   }
