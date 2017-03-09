@@ -1,0 +1,9 @@
+[squarefoot]
+dev.squarefoot.ipp.com
+
+[squarefoot:vars]
+endpoint=dev.squarefoot.ipp.com
+ab=b
+as_max=4
+as_min=1
+instance_type=t2.small

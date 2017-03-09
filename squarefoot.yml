@@ -1,0 +1,6 @@
+---
+- hosts: squarefoot
+  connection: local
+  gather_facts: False
+  roles:
+    - squarefoot

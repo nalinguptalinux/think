@@ -1,0 +1,659 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Billing Tag based -->  ELB, Optimized Image ECS-Cluster support scaling
+  , Aleting , Container,Service, Task defination, IAM Permission with  existing Networking
+  Resource
+Parameters:
+  SubnetID:
+    Description: Subnets to launch 2 Public
+    Type: CommaDelimitedList
+    Default: subnet-49c6b43f,subnet-9c9bd5f8
+  BillingTag:
+    Type: String
+    Description: Tag for billing purpose
+    Default: SquareFoot-Dev
+  MinSizeAS:
+    Type: Number
+    Default: '2'
+    Description: Number of Min Size AS instance
+  DesiredCapacity:
+    Type: Number
+    Default: '2'
+    Description: Number of Desired Size AS instance
+  MaxSize:
+    Type: Number
+    Default: '4'
+    Description: Maximum number of instances that can be launched in your ECS cluster.
+  Instancestype:
+    Description: EC2 instance type.
+    Type: String
+    Default: t2.medium
+    AllowedValues:
+    - t2.medium
+    - m3.medium
+    - m3.large
+    - m4.large
+    - m4.2xlarge
+  KeyNamessh:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+Mappings:
+  AWSRegionArch2AMI:
+    ap-southeast-1:
+      HVM64: ami-a88530cb
+    ap-northeast-1:
+      HVM64: ami-c393d6a4
+    ap-southeast-2:
+      HVM64: ami-8af8ffe9
+Resources:
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+  taskdefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+      - Name: ECS-HP-TASK
+        Cpu: '256'
+        Essential: 'true'
+        Memory: '1024'
+        PortMappings:
+        - HostPort: '3000'
+          Protocol: tcp
+          ContainerPort: '3000'
+        Environment:
+        - Name: NODE_ENV
+          Value: staging
+        Image: 331887960933.dkr.ecr.ap-southeast-1.amazonaws.com/hp-sf-dev:prod-latest
+  ECSAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        Ref: SubnetID
+      LaunchConfigurationName:
+        Ref: ContainerInstances
+      AvailabilityZones:
+      - ap-southeast-1a
+      - ap-southeast-1b
+      Cooldown: '40'
+      HealthCheckGracePeriod: '60'
+      HealthCheckType: EC2
+      MetricsCollection:
+      - Granularity: 1Minute
+        Metrics:
+        - GroupMinSize
+        - GroupMaxSize
+        - GroupDesiredCapacity
+        - GroupInServiceInstances
+        - GroupPendingInstances
+        - GroupTotalInstances
+        - GroupTerminatingInstances
+        - GroupStandbyInstances
+      MinSize:
+        Ref: MinSizeAS
+      MaxSize:
+        Ref: MaxSize
+      DesiredCapacity:
+        Ref: DesiredCapacity
+      Tags:
+      - Value:
+          Ref: BillingTag
+        Key: Billing
+        PropagateAtLaunch: true
+      - Value:
+          Ref: AWS::StackName
+        Key: CF-Name
+        PropagateAtLaunch: true
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT4M
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: '1'
+        MaxBatchSize: '1'
+        PauseTime: PT10M
+        WaitOnResourceSignals: 'true'
+  ECSScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      AutoScalingGroupName:
+        Ref: ECSAutoScalingGroup
+      Cooldown: '60'
+      ScalingAdjustment: '1'
+  ECSScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      AutoScalingGroupName:
+        Ref: ECSAutoScalingGroup
+      Cooldown: '60'
+      ScalingAdjustment: "-1"
+  ECSHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Scale-up if CPU > 80% for 10 minutes
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: '300'
+      EvaluationPeriods: '2'
+      Threshold: '80'
+      AlarmActions:
+      - Ref: ECSScaleUpPolicy
+      Dimensions:
+      - Name: AutoScalingGroupName
+        Value:
+          Ref: ECSAutoScalingGroup
+      ComparisonOperator: GreaterThanThreshold
+  ECSLow:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Scale-down if CPU < 40% for 10 minutes
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: '300'
+      EvaluationPeriods: '2'
+      Threshold: '20'
+      AlarmActions:
+      - Ref: ECSScaleDownPolicy
+      Dimensions:
+      - Name: AutoScalingGroupName
+        Value:
+          Ref: ECSAutoScalingGroup
+      ComparisonOperator: LessThanThreshold
+  ContainerInstances:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          commands:
+            01_add_instance_to_cluster:
+              command:
+                Fn::Join:
+                - ''
+                - - "#!/bin/bash\n"
+                  - echo ECS_CLUSTER=
+                  - Ref: ECSCluster
+                  - " >> /etc/ecs/ecs.config"
+          files:
+            "/etc/cfn/cfn-hup.conf":
+              content:
+                Fn::Join:
+                - ''
+                - - "[main]\n"
+                  - stack=
+                  - Ref: AWS::StackId
+                  - "\n"
+                  - region=
+                  - Ref: AWS::Region
+                  - "\n"
+              mode: '000400'
+              owner: root
+              group: root
+            "/etc/ecs/ecs.config":
+              content:
+                Fn::Join:
+                - ''
+                - - ECS_CLUSTER=
+                  - Ref: ECSCluster
+              mode: '000755'
+              owner: root
+              group: root
+            "/etc/cfn/hooks.d/cfn-auto-reloader.conf":
+              content:
+                Fn::Join:
+                - ''
+                - - "[cfn-auto-reloader-hook]\n"
+                  - 'triggers=post.update
+
+'
+                  - 'path=Resources.ContainerInstances.Metadata.AWS::CloudFormation::Init
+
+'
+                  - 'action=/opt/aws/bin/cfn-init -v '
+                  - "         --stack "
+                  - Ref: AWS::StackName
+                  - "         --resource ContainerInstances "
+                  - "         --region "
+                  - Ref: AWS::Region
+                  - "\n"
+                  - 'runas=root
+
+'
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                - "/etc/cfn/cfn-hup.conf"
+                - "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
+    Properties:
+      KeyName:
+        Ref: KeyNamessh
+      ImageId:
+        Fn::FindInMap:
+        - AWSRegionArch2AMI
+        - Ref: AWS::Region
+        - HVM64
+      InstanceType:
+        Ref: Instancestype
+      InstanceMonitoring: true
+      AssociatePublicIpAddress: 'true'
+      IamInstanceProfile:
+        Ref: EC2InstanceProfile
+      SecurityGroups:
+      - Ref: ECSSecurityGroup
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - "#!/bin/bash -ex"
+            - "\n"
+            - yum update -y
+            - "\n"
+            - 'yum install -y sysstat nmap telnet curl wget namp '
+            - "\n"
+            - yum install -y aws-cfn-bootstrap
+            - "\n"
+            - echo ECS_CLUSTER=
+            - Ref: ECSCluster
+            - " >> /etc/ecs/ecs.config"
+            - "\n"
+            - "# Signal success\n"
+            - "/opt/aws/bin/cfn-signal -e $? "
+            - "         --stack "
+            - Ref: AWS::StackName
+            - "         --resource ECSAutoScalingGroup "
+            - "         --region "
+            - Ref: AWS::Region
+            - "\n"
+  EcsHpELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Subnets:
+        Ref: SubnetID
+      Listeners:
+      - LoadBalancerPort: '80'
+        InstancePort: '3000'
+        Protocol: TCP
+      Scheme: internet-facing
+      ConnectionDrainingPolicy:
+        Enabled: true
+        Timeout: 45
+      CrossZone: true
+      Tags:
+      - Value:
+          Ref: BillingTag
+        Key: Billing
+      - Value:
+          Ref: AWS::StackName
+        Key: CF-Name
+      SecurityGroups:
+      - Ref: ILBSecurityGroup
+      HealthCheck:
+        Target: TCP:3000
+        HealthyThreshold: '2'
+        UnhealthyThreshold: '10'
+        Interval: '30'
+        Timeout: '5'
+  Webtaskdefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+      - Name: ECS-Web-TASK
+        Cpu: '512'
+        Essential: 'true'
+        Memory: '512'
+        PortMappings:
+        - HostPort: '80'
+          Protocol: tcp
+          ContainerPort: '80'
+        - HostPort: '443'
+          Protocol: tcp
+          ContainerPort: '443'
+        Command:
+        - Fn::Join:
+          - ''
+          - - http://
+            - Fn::GetAtt:
+              - EcsHpELB
+              - DNSName
+        - Fn::Join:
+          - ''
+          - - http://
+            - Fn::GetAtt:
+              - ECSSrpPdpELB
+              - DNSName
+        Image: 331887960933.dkr.ecr.ap-southeast-1.amazonaws.com/nginx:sf-latest
+  ECSWebELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Subnets:
+        Ref: SubnetID
+      CrossZone: 'true'
+      Listeners:
+      - LoadBalancerPort: '80'
+        InstancePort: '80'
+        Protocol: tcp
+      - LoadBalancerPort: '443'
+        InstancePort: '443'
+        Protocol: tcp
+      HealthCheck:
+        Target: TCP:80
+        HealthyThreshold: '2'
+        UnhealthyThreshold: '10'
+        Interval: '30'
+        Timeout: '5'
+      Scheme: internet-facing
+      ConnectionDrainingPolicy:
+        Enabled: true
+        Timeout: 45
+      Tags:
+      - Value:
+          Ref: BillingTag
+        Key: Billing
+      - Value:
+          Ref: AWS::StackName
+        Key: CF-Name
+      SecurityGroups:
+      - Ref: ILBWebSecurityGroup
+  ILBWebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ILBWebSecurityGroup
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: 443
+        IpProtocol: tcp
+        ToPort: 443
+      - CidrIp: 0.0.0.0/0
+        FromPort: 80
+        IpProtocol: tcp
+        ToPort: 80
+      - CidrIp: 10.39.50.0/23
+        FromPort: 22
+        IpProtocol: tcp
+        ToPort: 22
+      VpcId: vpc-c9ef63ad
+  Webservice:
+    Type: AWS::ECS::Service
+    DependsOn:
+    - ECSAutoScalingGroup
+    Properties:
+      Cluster:
+        Ref: ECSCluster
+      DesiredCount: '2'
+      DeploymentConfiguration:
+        MaximumPercent: '150'
+        MinimumHealthyPercent: '50'
+      LoadBalancers:
+      - ContainerName: ECS-Web-TASK
+        ContainerPort: '80'
+        LoadBalancerName:
+          Ref: ECSWebELB
+      Role:
+        Ref: ECSServiceRole
+      TaskDefinition:
+        Ref: Webtaskdefinition
+  ILBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ilb-securitygroup-stack
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 10.39.48.0/20
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: 3000
+        IpProtocol: tcp
+        ToPort: 3000
+      - CidrIp: 0.0.0.0/0
+        FromPort: 80
+        IpProtocol: tcp
+        ToPort: 80
+      VpcId: vpc-c9ef63ad
+  SRPservice:
+    Type: AWS::ECS::Service
+    DependsOn:
+    - ECSAutoScalingGroup
+    Properties:
+      Cluster:
+        Ref: ECSCluster
+      DesiredCount: '2'
+      DeploymentConfiguration:
+        MaximumPercent: '150'
+        MinimumHealthyPercent: '50'
+      LoadBalancers:
+      - ContainerName: ECS-HP-TASK
+        ContainerPort: '3000'
+        LoadBalancerName:
+          Ref: EcsHpELB
+      Role:
+        Ref: ECSServiceRole
+      TaskDefinition:
+        Ref: taskdefinition
+  ECSServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ecs.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: ecs-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - elasticloadbalancing:Describe*
+            - elasticloadbalancing:DeregisterInstancesFromLoadBalancer
+            - elasticloadbalancing:RegisterInstancesWithLoadBalancer
+            - ec2:Describe*
+            - ecr:Get*
+            - ecr:BatchGetImage
+            - ecr:BatchCheckLayerAvailability
+            - ecr:PutImage
+            - ecr:InitiateLayerUpload
+            - ecr:UploadLayerPart
+            - ecr:CompleteLayerUpload
+            - ecr:ListImages
+            - ecr:Describe*
+            - elasticloadbalancing:DeregisterTargets
+            - elasticloadbalancing:RegisterTargets
+            - ec2:AuthorizeSecurityGroupIngress
+            Resource: "*"
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: ecs-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - ecs:CreateCluster
+            - ecs:DeregisterContainerInstance
+            - ecs:DiscoverPollEndpoint
+            - ecs:Poll
+            - ecs:RegisterContainerInstance
+            - ecs:StartTelemetrySession
+            - ecs:Submit*
+            - ec2:Describe*
+            - ecr:Get*
+            - ecr:BatchGetImage
+            - ecr:BatchCheckLayerAvailability
+            - ecr:PutImage
+            - ecr:InitiateLayerUpload
+            - ecr:UploadLayerPart
+            - ecr:CompleteLayerUpload
+            - ecr:ListImages
+            - ecr:Describe*
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: "*"
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: EC2Role
+  ECSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ECSSecurityGroup.
+      VpcId: vpc-c9ef63ad
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 10.39.50.0/23
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '3000'
+        ToPort: '3000'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '4000'
+        ToPort: '4000'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: icmp
+        FromPort: "-1"
+        ToPort: "-1"
+        CidrIp: 10.39.48.0/20
+  SRPtaskdefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+      - Name: ECS-SRP-TASK
+        Cpu: '256'
+        Essential: 'true'
+        Memory: '1024'
+        PortMappings:
+        - HostPort: '4000'
+          Protocol: tcp
+          ContainerPort: '4000'
+        Environment:
+        - Name: NODE_ENV
+          Value: staging
+        Image: 331887960933.dkr.ecr.ap-southeast-1.amazonaws.com/srp-pdp-sf-dev:sf-latest
+  ECSSrpPdpELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Subnets:
+        Ref: SubnetID
+      Listeners:
+      - LoadBalancerPort: '80'
+        InstancePort: '4000'
+        Protocol: TCP
+      Scheme: internet-facing
+      ConnectionDrainingPolicy:
+        Enabled: true
+        Timeout: 45
+      CrossZone: true
+      Tags:
+      - Value:
+          Ref: BillingTag
+        Key: Billing
+      - Value:
+          Ref: AWS::StackName
+        Key: CF-Name
+      SecurityGroups:
+      - Ref: ILBhpSecurityGroup
+      HealthCheck:
+        Target: TCP:4000
+        HealthyThreshold: '2'
+        UnhealthyThreshold: '10'
+        Interval: '30'
+        Timeout: '5'
+  ILBhpSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ilb-securitygroup-stack
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 10.39.48.0/20
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: 4000
+        IpProtocol: tcp
+        ToPort: 4000
+      - CidrIp: 0.0.0.0/0
+        FromPort: 80
+        IpProtocol: tcp
+        ToPort: 80
+      VpcId: vpc-c9ef63ad
+  Hpservice:
+    Type: AWS::ECS::Service
+    DependsOn:
+    - ECSAutoScalingGroup
+    Properties:
+      Cluster:
+        Ref: ECSCluster
+      DesiredCount: '2'
+      DeploymentConfiguration:
+        MaximumPercent: '150'
+        MinimumHealthyPercent: '50'
+      LoadBalancers:
+      - ContainerName: ECS-SRP-TASK
+        ContainerPort: '4000'
+        LoadBalancerName:
+          Ref: ECSSrpPdpELB
+      Role:
+        Ref: ECSServiceRole
+      TaskDefinition:
+        Ref: SRPtaskdefinition
+Outputs:
+  WebElasticLoadBalancer:
+    Value:
+      Fn::Join:
+      - ''
+      - - http://
+        - Fn::GetAtt:
+          - ECSWebELB
+          - DNSName
+    Description: Web ELB
+  HpElasticLoadBalancer:
+    Value:
+      Fn::Join:
+      - ''
+      - - http://
+        - Fn::GetAtt:
+          - EcsHpELB
+          - DNSName
+    Description: HP ELB
+  SrpPdpElasticLoadBalancer:
+    Value:
+      Fn::Join:
+      - ''
+      - - http://
+        - Fn::GetAtt:
+          - ECSSrpPdpELB
+          - DNSName
+    Description: SRP ELB
+  EcsClusterName:
+    Value:
+      Ref: ECSCluster

@@ -1,0 +1,22 @@
+---
+  - name: setup squarefoot stack
+    cloudformation:
+      stack_name: "squarefoot-{{ab}}-{{build}}"
+      state: present
+      region: "{{aws_region}}"
+      disable_rollback: true
+      template: "cloudformation/aws/squarefoot-stack.yml"
+      stack_policy: "cloudformation/aws/stack-policy.json"
+      template_parameters:
+        SubnetID: "{{private_subnets}}"
+        BillingTag: "{{environment}}"
+        MinSizeAS: "{{min_asg_size}}"
+        DesiredCapacity: "{{desired_asg_capacity}}"
+        MaxSize: "{{max_asg_size}}"
+        Instancestype: "{{ecs_instance_type}}"
+        KeyNamessh: "{{ecs_key_name_ssh}}"
+     tags:
+        project: "{{project}}"
+        application: "{{project}}"
+        lob: regional-web
+        env: "{{environment}}"
