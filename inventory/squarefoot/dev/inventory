@@ -3,7 +3,8 @@ dev.squarefoot.ipp.com
 
 [squarefoot:vars]
 endpoint=dev.squarefoot.ipp.com
-ab=b
+ab=a
 as_max=4
 as_min=1
 instance_type=t2.small
+build=latest

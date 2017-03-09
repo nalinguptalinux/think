@@ -58,6 +58,9 @@ build=build-171
 * add host and customized params in `inventory` file.
 * add common params in `all` file under `group_vars` folder.
 
+## For Windows
+
+*  vagrant up --provider virtualbox
 
 ---
 Spend some time on [ansible playbooks](http://docs.ansible.com/ansible/playbooks.html) and [cloudformation](https://aws.amazon.com/cloudformation/)

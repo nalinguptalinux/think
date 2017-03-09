@@ -1,4 +1,4 @@
-environment: squarefoot-development
+env: squarefoot-development
 private_zone: development.squarefoot-singapore.ipga.local
 aws_region: ap-southeast-1
 key_name: awscloud-squarefoot-development-singapore

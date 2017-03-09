@@ -5,18 +5,18 @@
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
-      template: "cloudformation/aws/squarefoot-stack.yml"
-      stack_policy: "cloudformation/aws/stack-policy.json"
+      template: "cloudformation/squarefoot-stack.yml"
+      stack_policy: "cloudformation/stack-policy.json"
       template_parameters:
-        SubnetID: "{{private_subnets}}"
-        BillingTag: "{{environment}}"
+        SubnetID: "{{public_subnets}}"
+        BillingTag: "{{env}}"
         MinSizeAS: "{{min_asg_size}}"
         DesiredCapacity: "{{desired_asg_capacity}}"
         MaxSize: "{{max_asg_size}}"
         Instancestype: "{{ecs_instance_type}}"
         KeyNamessh: "{{ecs_key_name_ssh}}"
-     tags:
+      tags:
         project: "{{project}}"
         application: "{{project}}"
         lob: regional-web
-        env: "{{environment}}"
+        env: "{{env}}"
