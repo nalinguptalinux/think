@@ -30,4 +30,4 @@ max_asg_size: 4
 ecs_instance_type: t2.medium 
 ecs_key_name_ssh: awscloud-squarefoot-development-singapore
 
-project: square-fun
+project: squarefoot
