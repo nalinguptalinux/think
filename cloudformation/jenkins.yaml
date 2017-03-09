@@ -1,0 +1,182 @@
+Description: >
+    This template installs a Jenkins as CI server, along with Docker Engine
+    and Ansible for Regional Web
+
+Parameters:
+
+    InstanceType:
+        Description: Which instance type should we use to build the ECS cluster?
+        Type: String
+        Default: t2.medium
+
+    VPC:
+        Description: Choose which VPC the Jenkins server should be installed to
+        Type: AWS::EC2::VPC::Id
+        Default: vpc-c9ef63ad
+
+    Subnets:
+        Description: Choose which subnets this Jenkins server should be deployed to
+        Type: CommaDelimitedList
+        Default: subnet-36c6b440, subnet-9d9bd5f9
+
+    KeyName:
+        Description: Name of an existing EC2 keypair to enable SSH access to the instances
+        Type: AWS::EC2::KeyPair::KeyName
+        Default: SquarefootJenkins
+
+    DnsPrefix:
+        Description: Prefix for Jenkins' DNS record (<prefix>.<zone>)
+        Type: String
+        Default: jenkins.dev.sg.squarefoot.ippstatic.com.
+
+    DnsZone:
+        Description: Route53-hosted zone to use for the DNS record (<prefix>.<zone>)
+        Type: String
+        Default: dev.sg.squarefoot.ippstatic.com.
+
+Mappings:
+
+    RegionMap:
+        ap-southeast-1:
+            AMI: ami-dc9339bf
+        ap-northeast-1:
+            AMI: ami-56d4ad31
+        ap-southeast-2:
+            AMI: ami-1c47407f
+
+Resources:
+
+    JenkinsServer:
+        Type: AWS::EC2::Instance
+        Properties:
+            ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+            KeyName: !Ref KeyName
+            InstanceType: !Ref InstanceType
+            SecurityGroups:
+                - !Ref JenkinsSecurityGroup
+            IamInstanceProfile: !Ref JenkinsInstanceProfile
+            Tags:
+                - Key: Name
+                  Value: 'Jenkins Server'
+            UserData:
+                "Fn::Base64": !Sub |
+                    #!/bin/bash
+                    yum install -y aws-cfn-bootstrap
+                    /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource JenkinsServer
+                    # Install Jenkins
+                    sudo wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins.io/redhat-stable/jenkins.repo
+                    sudo rpm --import http://pkg.jenkins.io/redhat-stable/jenkins.io.key
+                    yum install -y jenkins
+                    sudo /etc/init.d/jenkins start
+                    sudo chkconfig jenkins on
+
+        Metadata:
+            AWS::CloudFormation::Init:
+                custom:
+                  packages:
+                    yum:
+                      git: []
+                      docker: []
+                  commands:
+                    '01_add_to_docker_group':
+                      command: 'sudo usermod -a -G docker jenkins'
+                  services:
+                    sysvinit:
+                      docker:
+                        enabled: true
+                        ensureRunning: true
+                        packages:
+                          yum:
+                          - docker
+
+    JenkinsSecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: Enable SSH and HTTP access
+            VpcId: !Ref VPC
+            SecurityGroupIngress:
+                - IpProtocol: tcp
+                  FromPort: 22
+                  ToPort: 22
+                  CidrIp: 0.0.0.0/0
+                - IpProtocol: tcp
+                  FromPort: 8080
+                  ToPort: 8080
+                  CidrIp: 0.0.0.0/0
+
+    LoadBalancerSecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: Jenkins LB
+            VpcId: !Ref VPC
+            SecurityGroupIngress:
+                - IpProtocol: tcp
+                  FromPort: 80
+                  ToPort: 80
+                  CidrIp: 0.0.0.0/0
+
+    JenkinsLoadBalancer:
+        Type: AWS::ElasticLoadBalancing::LoadBalancer
+        Properties:
+            SecurityGroups:
+                - Ref: LoadBalancerSecurityGroup
+            Subnets:
+                Ref: Subnets
+            Scheme: internet-facing
+            Listeners:
+                - LoadBalancerPort: 80
+                  InstancePort: 8080
+                  Protocol: HTTP
+            HealthCheck:
+              Target: TCP:8080
+              HealthyThreshold: 3
+              UnhealthyThreshold: 5
+              Interval: 30
+              Timeout: 5
+
+    JenkinsRole:
+        Type: AWS::IAM::Role
+        Properties:
+          AssumeRolePolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                - 'ec2.amazonaws.com'
+              Action:
+               - 'sts:AssumeRole'
+          Path: '/'
+          Policies:
+              - PolicyName: sts
+                PolicyDocument:
+                  Version: '2012-10-17'
+                  Statement:
+                    - Effect: Allow
+                      Action:
+                      - 'sts:AssumeRole'
+                      Resource:
+                      - '*'
+
+    JenkinsInstanceProfile:
+        Type: AWS::IAM::InstanceProfile
+        Properties:
+            Path: '/'
+            Roles:
+            - !Ref JenkinsRole
+
+    JenkinsDnsRecord:
+        Type: AWS::Route53::RecordSet
+        Properties:
+            HostedZoneName: !Join [ ",", [ !Ref DnsZone ]]
+            Name: !Join [ ",", [ !Ref DnsPrefix, !Ref DnsZone ]]
+            Type: CNAME
+            TTL: 900
+            ResourceRecords:
+                - !GetAtt JenkinsLoadBalancer.DNSName
+
+Outputs:
+
+    DnsAddress:
+        Description: Jenkins URL
+        Value: !Join [ ",", [ !Ref JenkinsDnsRecord ]]
