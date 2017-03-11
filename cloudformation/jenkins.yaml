@@ -1,42 +1,93 @@
-Description: >
-    This template installs a Jenkins as CI server, along with Docker Engine
-    and Ansible for Regional Web
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: 'This template will install Jenkins server on EC2 Instance with
+              Docker Engine'
 
 Parameters:
 
-    InstanceType:
-        Description: Which instance type should we use to build the ECS cluster?
-        Type: String
-        Default: t2.medium
+  VPC:
+    Description: Choose which VPC the Jenkins server should be installed to
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-c9ef63ad
 
-    VPC:
-        Description: Choose which VPC the Jenkins server should be installed to
-        Type: AWS::EC2::VPC::Id
-        Default: vpc-c9ef63ad
+  SubnetId:
+    Description: Choose which subnets this Jenkins server should be deployed to
+    Type: String
+    Default: subnet-49c6b43f
 
-    Subnets:
-        Description: Choose which subnets this Jenkins server should be deployed to
-        Type: CommaDelimitedList
-        Default: subnet-36c6b440, subnet-9d9bd5f9
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+    Default: jenkins-squarefoot-dev
 
-    KeyName:
-        Description: Name of an existing EC2 keypair to enable SSH access to the instances
-        Type: AWS::EC2::KeyPair::KeyName
-        Default: SquarefootJenkins
+  InstanceType:
+    Description: WebServer EC2 instance type
+    Type: String
+    Default: t2.medium
+    AllowedValues:
+    - t1.micro
+    - t2.micro
+    - t2.small
+    - t2.medium
+    - m1.small
+    - m1.medium
+    - m1.large
+    - m1.xlarge
+    - m2.xlarge
+    - m2.2xlarge
+    - m2.4xlarge
+    - m3.medium
+    - m3.large
+    - m3.xlarge
+    - m3.2xlarge
+    - c1.medium
+    - c1.xlarge
+    - c3.large
+    - c3.xlarge
+    - c3.2xlarge
+    - c3.4xlarge
+    - c3.8xlarge
+    - c4.large
+    - c4.xlarge
+    - c4.2xlarge
+    - c4.4xlarge
+    - c4.8xlarge
+    - g2.2xlarge
+    - r3.large
+    - r3.xlarge
+    - r3.2xlarge
+    - r3.4xlarge
+    - r3.8xlarge
+    - i2.xlarge
+    - i2.2xlarge
+    - i2.4xlarge
+    - i2.8xlarge
+    - d2.xlarge
+    - d2.2xlarge
+    - d2.4xlarge
+    - d2.8xlarge
+    - hi1.4xlarge
+    - hs1.8xlarge
+    - cr1.8xlarge
+    - cc2.8xlarge
+    - cg1.4xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
 
-    DnsPrefix:
-        Description: Prefix for Jenkins' DNS record (<prefix>.<zone>)
-        Type: String
-        Default: jenkins
+  # DnsZoneName:
+  #   Description: Route53-hosted zone to use for the DNS record (<prefix>.<zone>)
+  #   Type: String
+  #   Default: dev.sg.squarefoot.ippstatic.com.
+  #
+  # DnsPrefix:
+  #   Description: Prefix for Jenkins' DNS record (<prefix>.<zone>)
+  #   Type: String
+  #   Default: jenkins.dev.sg.squarefoot.ippstatic.com.
 
-    DnsZone:
-        Description: Route53-hosted zone to use for the DNS record (<prefix>.<zone>)
-        Type: String
-        Default: dev.sg.squarefoot.ippstatic.com
 
 Mappings:
 
-    RegionMap:
+  RegionMap:
         ap-southeast-1:
             AMI: ami-dc9339bf
         ap-northeast-1:
@@ -46,107 +97,108 @@ Mappings:
 
 Resources:
 
-    JenkinsServer:
-        Type: AWS::EC2::Instance
-        Properties:
-            ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
-            KeyName: !Ref KeyName
-            InstanceType: !Ref InstanceType
-            SecurityGroups:
-                - !Ref JenkinsSecurityGroup
-            IamInstanceProfile: !Ref JenkinsInstanceProfile
-            Tags:
-                - Key: Name
-                  Value: 'Jenkins Server'
-            UserData:
-                "Fn::Base64": !Sub |
-                    #!/bin/bash
-                    yum install -y aws-cfn-bootstrap
-                    /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource JenkinsServer
-                    # Install Jenkins
-                    sudo wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins.io/redhat-stable/jenkins.repo
-                    sudo rpm --import http://pkg.jenkins.io/redhat-stable/jenkins.io.key
-                    yum install -y jenkins
-                    sudo /etc/init.d/jenkins start
-                    sudo chkconfig jenkins on
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref 'InstanceType'
+      SubnetId: !Ref 'SubnetId'
+      SecurityGroupIds:
+      - !Ref 'InstanceSecurityGroup'
+      KeyName: !Ref 'KeyName'
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+      UserData:
+        "Fn::Base64": !Sub |
+          #!/bin/bash
+          yum install -y aws-cfn-bootstrap
+          /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource EC2Instance
+          /opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource EC2Instance
+          # Install Jenkins
+          wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins.io/redhat-stable/jenkins.repo
+          rpm --import http://pkg.jenkins.io/redhat-stable/jenkins.io.key
+          yum install -y jenkins
+          /etc/init.d/jenkins start
+          chkconfig jenkins on
+          # Install Docker
+          yum install -y docker
+          /etc/init.d/docker start
+          usermod -a -G docker jenkins
 
-        Metadata:
-            AWS::CloudFormation::Init:
-                custom:
-                  packages:
-                    yum:
-                      git: []
-                      docker: []
-                  commands:
-                    '01_add_to_docker_group':
-                      command: 'sudo usermod -a -G docker jenkins'
-                  services:
-                    sysvinit:
-                      docker:
-                        enabled: true
-                        ensureRunning: true
-                        packages:
-                          yum:
-                          - docker
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH and HTTP
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '8080'
+        ToPort: '8080'
+        CidrIp: 0.0.0.0/0
 
-    JenkinsSecurityGroup:
-        Type: AWS::EC2::SecurityGroup
-        Properties:
-            GroupDescription: Enable SSH and HTTP access
-            VpcId: !Ref VPC
-            SecurityGroupIngress:
-                - IpProtocol: tcp
-                  FromPort: 22
-                  ToPort: 22
-                  CidrIp: 0.0.0.0/0
-                - IpProtocol: tcp
-                  FromPort: 8080
-                  ToPort: 8080
-                  CidrIp: 0.0.0.0/0
+  ElasticLoadBalancer:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Subnets:
+      - subnet-36c6b440
+      - subnet-9d9bd5f9
+      Scheme: internet-facing
+      CrossZone: true
+      SecurityGroups:
+      - !Ref InstanceSecurityGroup
+      Listeners:
+      - LoadBalancerPort: '80'
+        InstancePort: '8080'
+        Protocol: HTTP
+      Instances:
+      - !Ref 'EC2Instance'
 
-    JenkinsRole:
-        Type: AWS::IAM::Role
-        Properties:
-          AssumeRolePolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-            - Effect: Allow
-              Principal:
-                Service:
-                - 'ec2.amazonaws.com'
-              Action:
-               - 'sts:AssumeRole'
-          Path: '/'
-          Policies:
-              - PolicyName: sts
-                PolicyDocument:
-                  Version: '2012-10-17'
-                  Statement:
-                    - Effect: Allow
-                      Action:
-                      - 'sts:AssumeRole'
-                      Resource:
-                      - '*'
+  DNSRecords:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneName: dev.sg.squarefoot.ippstatic.com.
+      Comment: Domain records for my test server.
+      RecordSets:
+      - Name: jenkins.dev.sg.squarefoot.ippstatic.com.
+        Type: A
+        TTL: '300'
+        ResourceRecords:
+        - !GetAtt [EC2Instance, PublicIp]
 
-    JenkinsInstanceProfile:
-        Type: AWS::IAM::InstanceProfile
-        Properties:
-            Path: '/'
-            Roles:
-            - !Ref JenkinsRole
-
-    JenkinsDnsRecord:
-        Type: AWS::Route53::RecordSet
-        Properties:
-            HostedZoneName: !Join [ '', [ !Ref 'DnsZone', .]]
-            Name: !Join [ '', [ !Ref 'DnsPrefix', ., !Ref 'DnsZone', .]]
-            Type: CNAME
-            TTL: 900
-            ResourceRecords:
-                - !GetAtt JenkinsServer.PublicIp
+  # EBSVolume:
+  #   Type: AWS::EC2::Volume
+  #   Properties:
+  #     Size: '25'
+  #     Encrypted: 'true'
+  #     AvailabilityZone: ap-southeast-1a
+  #     Tags:
+  #     - Key: Jenkins
+  #       Value: Volume
+  #   DeletionPolicy: Snapshot
+  #
+  # JenkinsEBSVolumeMount:
+  #   Type: AWS::EC2::VolumeAttachment
+  #   Properties:
+  #     InstanceId: !Ref 'EC2Instance'
+  #     VolumeId: !Ref 'EBSVolume'
+  #     Device: /dev/xvda
 
 Outputs:
 
-    DnsAddress:
-        Description: Jenkins URL
-        Value: !Join [ ",", [ !Ref JenkinsDnsRecord ]]
+  InstanceId:
+    Description: InstanceId of the newly created EC2 instance
+    Value: !Ref 'EC2Instance'
+
+  AZ:
+    Description: Availability Zone of the newly created EC2 instance
+    Value: !GetAtt [EC2Instance, AvailabilityZone]
+
+  PublicDNS:
+    Description: Public DNSName of the newly created EC2 instance
+    Value: !GetAtt [EC2Instance, PublicDnsName]
+
+  PublicIP:
+    Description: Public IP address of the newly created EC2 instance
+    Value: !GetAtt [EC2Instance, PublicIp]
