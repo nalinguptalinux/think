@@ -257,6 +257,12 @@ Resources:
             - 'yum install -y sysstat nmap telnet curl wget namp '
             - "\n"
             - yum install -y aws-cfn-bootstrap
+            - #working sumologic configuration
+            - #easy_install awscli
+            - #aws s3 cp s3://dev-sg-sfhk-infra-resources/sumologic/SumoCollector_linux_amd64_19_182-17.sh /tmp/SumoCollector_linux_amd64_19_182-17.sh --region ap-northeast-1
+            - #chmod 755 /tmp/SumoCollector_linux_amd64_19_182-17.sh
+            - #/tmp/SumoCollector_linux_amd64_19_182-17.sh  -q -VskipRegistration=true -Vephemeral=true -Vsources=/opt/ipp/sumologic/sources.json -Vsumo.accessid=su37UzMYy9KsP0 -Vsumo.accesskey=aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf
+            - #rm -f /tmp/SumoCollector_linux_amd64_19_182-17.sh
             - "\n"
             - echo ECS_CLUSTER=
             - Ref: ECSCluster
