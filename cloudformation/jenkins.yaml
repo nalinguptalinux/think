@@ -1,5 +1,5 @@
-Description: 'This template will install Jenkins server on EC2 Instance with
-              Docker Engine and Ansible
+Description: >
+  This template will install Jenkins server on EC2 Instance with Docker Engine and Ansible.
 
 Parameters:
 
