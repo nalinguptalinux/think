@@ -93,6 +93,9 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: !Ref 'InstanceType'
+      Tags:
+        Key: String
+        Value: Jenkins
       SubnetId: !Ref 'SubnetId'
       SecurityGroupIds:
       - !Ref 'InstanceSecurityGroup'

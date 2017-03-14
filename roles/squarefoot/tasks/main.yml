@@ -15,6 +15,10 @@
         MaxSize: "{{max_asg_size}}"
         Instancestype: "{{ecs_instance_type}}"
         KeyNamessh: "{{ecs_key_name_ssh}}"
+        ResourceBucketName: "{{resource_bucket_name}}"
+        SumoLogicInstallerFileName: "{{sumo_logic_installer_file_name}}"
+        SumoLogicAccessId: "{{sumo_logic_access_id}}"
+        SumoLogicAccessKey: "{{sumo_logic_access_key}}"
       tags:
         project: "{{project}}"
         application: "{{project}}"
