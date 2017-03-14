@@ -23,7 +23,6 @@ Parameters:
     Type: String
     Default: t2.medium
     AllowedValues:
-    - t2.nano
     - t1.micro
     - t2.micro
     - t2.small
