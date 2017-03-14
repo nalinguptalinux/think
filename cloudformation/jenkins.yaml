@@ -94,7 +94,7 @@ Resources:
     Properties:
       InstanceType: !Ref 'InstanceType'
       Tags:
-        Key: String
+      - Key: String
         Value: Jenkins
       SubnetId: !Ref 'SubnetId'
       SecurityGroupIds:
@@ -102,7 +102,7 @@ Resources:
       KeyName: !Ref 'KeyName'
       ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
       Tags:
-        Key: Name
+      - Key: Name
         Value: jenkins-server
       BlockDeviceMappings:
         -
@@ -131,30 +131,6 @@ Resources:
           pip install ansible
           # Install git
           yum install -y git
-          # Install nginx & stop it for configuration
-          yum install nginx
-          cp /tmp/nginx.conf /etc/nginx/nginx.conf
-          service nginx start
-          chkconfig nginx on
-
-
-    Metadata:
-        AWS::CloudFormation::Init:
-            config:
-              files:
-                "/tmp/nginx.conf":
-                  mode: 000755
-                  owner: root
-                  group: root
-                  content: !Sub |
-                    server {
-                      listen       80;
-                      server_name  _;
-
-                      location / {
-                              proxy_pass http://127.0.0.1:8080;
-                      }
-                    }
 
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -165,12 +141,17 @@ Resources:
       - IpProtocol: tcp
         FromPort: '22'
         ToPort: '22'
+        CidrIp: 0.0.0.0/0
       - IpProtocol: tcp
         FromPort: '8080'
         ToPort: '8080'
         CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 0.0.0.0/0
       Tags:
-        Key: Name
+      - Key: Name
         Value: jenkins-server-security-group
 
   DNSRecords:
