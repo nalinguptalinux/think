@@ -1,7 +1,5 @@
-AWSTemplateFormatVersion: '2010-09-09'
-
 Description: 'This template will install Jenkins server on EC2 Instance with
-              Docker Engine'
+              Docker Engine and Ansible
 
 Parameters:
 
@@ -76,7 +74,7 @@ Parameters:
     Type: String
 
   DnsPrefix:
-    Description: Prefix for Jenkins' DNS record (<prefix>.<zone>)
+    Description: Prefix for Jenkins' DNS record (<prefix>.<zone>}
     Type: String
 
 Mappings:
@@ -100,6 +98,9 @@ Resources:
       - !Ref 'InstanceSecurityGroup'
       KeyName: !Ref 'KeyName'
       ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+      Tags:
+        Key: Name
+        Value: jenkins-server
       BlockDeviceMappings:
         -
           DeviceName: /dev/xvda
@@ -108,7 +109,7 @@ Resources:
             VolumeType: gp2
       UserData:
         "Fn::Base64": !Sub |
-          #!/bin/bash
+          #!/bin/bash -ex
           yum install -y aws-cfn-bootstrap
           /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource EC2Instance
           /opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource EC2Instance
@@ -122,6 +123,35 @@ Resources:
           yum install -y docker
           /etc/init.d/docker start
           usermod -a -G docker jenkins
+          chkconfig docker on
+          # Install ansible
+          pip install ansible
+          # Install git
+          yum install -y git
+          # Install nginx & stop it for configuration
+          yum install nginx
+          cp /tmp/nginx.conf /etc/nginx/nginx.conf
+          service nginx start
+          chkconfig nginx on
+
+
+    Metadata:
+        AWS::CloudFormation::Init:
+            config:
+              files:
+                "/tmp/nginx.conf":
+                  mode: 000755
+                  owner: root
+                  group: root
+                  content: !Sub |
+                    server {
+                      listen       80;
+                      server_name  _;
+
+                      location / {
+                              proxy_pass http://127.0.0.1:8080;
+                      }
+                    }
 
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -132,28 +162,13 @@ Resources:
       - IpProtocol: tcp
         FromPort: '22'
         ToPort: '22'
-        CidrIp: 0.0.0.0/0
       - IpProtocol: tcp
         FromPort: '8080'
         ToPort: '8080'
         CidrIp: 0.0.0.0/0
-
-  ElasticLoadBalancer:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
-    Properties:
-      Subnets:
-      - subnet-36c6b440
-      - subnet-9d9bd5f9
-      Scheme: internet-facing
-      CrossZone: true
-      SecurityGroups:
-      - !Ref InstanceSecurityGroup
-      Listeners:
-      - LoadBalancerPort: '80'
-        InstancePort: '8080'
-        Protocol: HTTP
-      Instances:
-      - !Ref 'EC2Instance'
+      Tags:
+        Key: Name
+        Value: jenkins-server-security-group
 
   DNSRecords:
     Type: AWS::Route53::RecordSetGroup
