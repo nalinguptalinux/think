@@ -91,6 +91,83 @@ Resources:
 
   EC2Instance:
     Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          InstallAndRun:
+          - Install
+          - Configure
+
+        Install:
+          packages:
+            yum:
+              docker: []
+              git: []
+              nginx: []
+            pip:
+              ansible: []
+          files:
+            '/etc/nginx/nginx.conf':
+              content: !Sub |
+                    user nginx;
+                    worker_processes auto;
+                    error_log /var/log/nginx/error.log;
+                    pid /var/run/nginx.pid;
+
+                    include /usr/share/nginx/modules/*.conf;
+
+                    events {
+                        worker_connections 1024;
+                    }
+
+                    http {
+                        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for"';
+
+                        access_log  /var/log/nginx/access.log  main;
+
+                        sendfile            on;
+                        tcp_nopush          on;
+                        tcp_nodelay         on;
+                        keepalive_timeout   65;
+                        types_hash_max_size 2048;
+
+                        include             /etc/nginx/mime.types;
+                        default_type        application/octet-stream;
+
+                        include /etc/nginx/conf.d/*.conf;
+
+                        index   index.html index.htm;
+
+                        server {
+                          listen       80;
+                          server_name  _;
+
+                          location / {
+                                proxy_pass http://127.0.0.1:8080;
+                          }
+                        }
+                      }
+              mode: '000755'
+              owner: root
+              group: root
+          services:
+            sysvinit:
+              docker:
+                enabled: true
+                ensureRunning: true
+              nginx:
+                enabled: true
+                ensureRunning: true
+                files:
+                - /etc/nginx/nginx.conf
+
+        Configure:
+          commands:
+            01_add_jenkins_user_to_docker_group:
+              command: 'usermod -a -G docker jenkins'
+
     Properties:
       InstanceType: !Ref 'InstanceType'
       Tags:
@@ -112,25 +189,18 @@ Resources:
             VolumeType: gp2
       UserData:
         "Fn::Base64": !Sub |
-          #!/bin/bash -ex
-          yum install -y aws-cfn-bootstrap
-          /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource EC2Instance
-          /opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource EC2Instance
+          #!/bin/bash
+          yum -y update
           # Install Jenkins
           wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins.io/redhat-stable/jenkins.repo
           rpm --import http://pkg.jenkins.io/redhat-stable/jenkins.io.key
           yum install -y jenkins
           /etc/init.d/jenkins start
           chkconfig jenkins on
-          # Install Docker
-          yum install -y docker
-          /etc/init.d/docker start
-          usermod -a -G docker jenkins
-          chkconfig docker on
-          # Install ansible
-          pip install ansible
-          # Install git
-          yum install -y git
+          # Install cloud init
+          yum install -y aws-cfn-bootstrap
+          /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --configsets InstallAndRun --resource EC2Instance
+          /opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource EC2Instance
 
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
