@@ -1,29 +1,36 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Billing Tag based -->  ELB, Optimized Image ECS-Cluster support scaling
-  , Aleting , Container,Service, Task defination, IAM Permission with  existing Networking
-  Resource
+
+Description: >
+    This template will install the development stack
+
 Parameters:
+
   SubnetID:
     Description: Subnets to launch 2 Public
     Type: CommaDelimitedList
     Default: subnet-49c6b43f,subnet-9c9bd5f8
+
   BillingTag:
     Type: String
     Description: Tag for billing purpose
     Default: SquareFoot-Dev
+
   MinSizeAS:
     Type: Number
     Default: '2'
     Description: Number of Min Size AS instance
+
   DesiredCapacity:
     Type: Number
     Default: '2'
     Description: Number of Desired Size AS instance
+
   MaxSize:
     Type: Number
     Default: '4'
     Description: Maximum number of instances that can be launched in your ECS cluster.
+
   Instancestype:
     Description: EC2 instance type.
     Type: String
@@ -35,24 +42,31 @@ Parameters:
     - m3.large
     - m4.large
     - m4.2xlarge
+
   KeyNamessh:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
     Type: AWS::EC2::KeyPair::KeyName
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
+
   ResourceBucketName:
     Description: Name of the S3 bucket to retrieve the downloaded scripts or installation files
     Type: String
+
   SumoLogicInstallerFileName:
     Description: The installation file for Sumo Logic Collector
     Type: String
     Default: SumoCollector_linux_amd64_19_182-17.sh
+
   SumoLogicAccessId:
     Description: Sumo Logic access id
     Type: String
+
   SumoLogicAccessKey:
     Description: Sumo Logic access key
     Type: String
+
 Mappings:
+
   AWSRegionArch2AMI:
     ap-southeast-1:
       HVM64: ami-a88530cb
@@ -60,9 +74,12 @@ Mappings:
       HVM64: ami-c393d6a4
     ap-southeast-2:
       HVM64: ami-8af8ffe9
+
 Resources:
+
   ECSCluster:
     Type: AWS::ECS::Cluster
+
   taskdefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -79,6 +96,7 @@ Resources:
         - Name: NODE_ENV
           Value: staging
         Image: 331887960933.dkr.ecr.ap-southeast-1.amazonaws.com/hp:latest
+
   ECSAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
@@ -127,6 +145,7 @@ Resources:
         MaxBatchSize: '1'
         PauseTime: PT10M
         WaitOnResourceSignals: 'true'
+
   ECSScaleUpPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
@@ -135,6 +154,7 @@ Resources:
         Ref: ECSAutoScalingGroup
       Cooldown: '60'
       ScalingAdjustment: '1'
+
   ECSScaleDownPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
@@ -143,6 +163,7 @@ Resources:
         Ref: ECSAutoScalingGroup
       Cooldown: '60'
       ScalingAdjustment: "-1"
+
   ECSHigh:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -160,6 +181,7 @@ Resources:
         Value:
           Ref: ECSAutoScalingGroup
       ComparisonOperator: GreaterThanThreshold
+
   ECSLow:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -177,6 +199,7 @@ Resources:
         Value:
           Ref: ECSAutoScalingGroup
       ComparisonOperator: LessThanThreshold
+
   ContainerInstances:
     Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:
@@ -199,10 +222,8 @@ Resources:
                 - - "[main]\n"
                   - stack=
                   - Ref: AWS::StackId
-                  - "\n"
                   - region=
                   - Ref: AWS::Region
-                  - "\n"
               mode: '000400'
               owner: root
               group: root
@@ -220,22 +241,15 @@ Resources:
                 Fn::Join:
                 - ''
                 - - "[cfn-auto-reloader-hook]\n"
-                  - 'triggers=post.update
-
-'
-                  - 'path=Resources.ContainerInstances.Metadata.AWS::CloudFormation::Init
-
-'
+                  - 'triggers=post.update'
+                  - 'path=Resources.ContainerInstances.Metadata.AWS::CloudFormation::Init'
                   - 'action=/opt/aws/bin/cfn-init -v '
                   - "         --stack "
                   - Ref: AWS::StackName
                   - "         --resource ContainerInstances "
                   - "         --region "
                   - Ref: AWS::Region
-                  - "\n"
-                  - 'runas=root
-
-'
+                  - 'runas=root'
           services:
             sysvinit:
               cfn-hup:
@@ -305,6 +319,7 @@ Resources:
         UnhealthyThreshold: '10'
         Interval: '30'
         Timeout: '5'
+
   Webtaskdefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -334,6 +349,7 @@ Resources:
               - ECSSrpPdpELB
               - DNSName
         Image: 331887960933.dkr.ecr.ap-southeast-1.amazonaws.com/nginx:latest
+
   ECSWebELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
@@ -366,6 +382,7 @@ Resources:
         Key: CF-Name
       SecurityGroups:
       - Ref: ILBWebSecurityGroup
+
   ILBWebSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -384,6 +401,7 @@ Resources:
         IpProtocol: tcp
         ToPort: 22
       VpcId: vpc-c9ef63ad
+
   Webservice:
     Type: AWS::ECS::Service
     DependsOn:
@@ -404,6 +422,7 @@ Resources:
         Ref: ECSServiceRole
       TaskDefinition:
         Ref: Webtaskdefinition
+
   ILBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -421,6 +440,7 @@ Resources:
         IpProtocol: tcp
         ToPort: 80
       VpcId: vpc-c9ef63ad
+
   SRPservice:
     Type: AWS::ECS::Service
     DependsOn:
@@ -441,6 +461,7 @@ Resources:
         Ref: ECSServiceRole
       TaskDefinition:
         Ref: taskdefinition
+
   ECSServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -476,6 +497,7 @@ Resources:
             - elasticloadbalancing:RegisterTargets
             - ec2:AuthorizeSecurityGroupIngress
             Resource: "*"
+
   EC2Role:
     Type: AWS::IAM::Role
     Properties:
@@ -514,12 +536,14 @@ Resources:
             - logs:CreateLogStream
             - logs:PutLogEvents
             Resource: "*"
+
   EC2InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: "/"
       Roles:
       - Ref: EC2Role
+
   ECSSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -550,6 +574,7 @@ Resources:
         FromPort: "-1"
         ToPort: "-1"
         CidrIp: 10.39.48.0/20
+
   SRPtaskdefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -566,6 +591,7 @@ Resources:
         - Name: NODE_ENV
           Value: staging
         Image: 331887960933.dkr.ecr.ap-southeast-1.amazonaws.com/srp-pdp:latest
+
   ECSSrpPdpELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
@@ -595,6 +621,7 @@ Resources:
         UnhealthyThreshold: '10'
         Interval: '30'
         Timeout: '5'
+
   ILBhpSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -612,6 +639,7 @@ Resources:
         IpProtocol: tcp
         ToPort: 80
       VpcId: vpc-c9ef63ad
+
   Hpservice:
     Type: AWS::ECS::Service
     DependsOn:
@@ -632,34 +660,33 @@ Resources:
         Ref: ECSServiceRole
       TaskDefinition:
         Ref: SRPtaskdefinition
+
 Outputs:
+
   WebElasticLoadBalancer:
     Value:
       Fn::Join:
-      - ''
-      - - http://
-        - Fn::GetAtt:
-          - ECSWebELB
-          - DNSName
+        - ''
+        - - 'http://'
+          - !GetAtt ECSWebELB.DNSName
     Description: Web ELB
+
   HpElasticLoadBalancer:
     Value:
       Fn::Join:
-      - ''
-      - - http://
-        - Fn::GetAtt:
-          - EcsHpELB
-          - DNSName
+        - ''
+        - - http://
+          - !GetAtt EcsHpELB.DNSName
     Description: HP ELB
+
   SrpPdpElasticLoadBalancer:
     Value:
       Fn::Join:
-      - ''
-      - - http://
-        - Fn::GetAtt:
-          - ECSSrpPdpELB
-          - DNSName
+        - ''
+        - - http://
+          - !GetAtt ECSSrpPdpELB.DNSName
     Description: SRP ELB
+
   EcsClusterName:
     Value:
       Ref: ECSCluster
