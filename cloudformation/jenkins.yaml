@@ -104,8 +104,6 @@ Resources:
               docker: []
               git: []
               nginx: []
-            pip:
-              ansible: []
           files:
             '/etc/nginx/nginx.conf':
               content: !Sub |
@@ -197,6 +195,8 @@ Resources:
           yum install -y jenkins
           /etc/init.d/jenkins start
           chkconfig jenkins on
+          # Install Ansible
+          pip install ansible
           # Install cloud init
           yum install -y aws-cfn-bootstrap
           /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --configsets InstallAndRun --resource EC2Instance
