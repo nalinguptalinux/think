@@ -1,3 +1,4 @@
+project: squarefoot
 env: squarefoot-development
 private_zone: development.squarefoot-singapore.ipga.local
 aws_region: ap-southeast-1
@@ -19,15 +20,6 @@ nat_subnet_supernet: 10.39.56.0/22
 public_subnet_supernet: 10.39.52.0/22
 private_subnet_supernet: 10.39.48.0/22
 
-instance_type: t2.micro
 ami: ami-dc9339bf
 bastion_public_ip:  52.221.97.29
 ssh_from_bastion_sg_id:  sg-0834b66f
-
-min_asg_size: 2 
-desired_asg_capacity: 2
-max_asg_size: 4
-ecs_instance_type: t2.medium 
-ecs_key_name_ssh: awscloud-squarefoot-development-singapore
-
-project: squarefoot

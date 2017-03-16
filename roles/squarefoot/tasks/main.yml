@@ -9,18 +9,18 @@
       stack_policy: "cloudformation/stack-policy.json"
       template_parameters:
         SubnetID: "{{public_subnets}}"
-        BillingTag: "{{env}}"
+        BillingTag: "{{project}}"
         MinSizeAS: "{{min_asg_size}}"
         DesiredCapacity: "{{desired_asg_capacity}}"
         MaxSize: "{{max_asg_size}}"
         Instancestype: "{{ecs_instance_type}}"
-        KeyNamessh: "{{ecs_key_name_ssh}}"
+        KeyNamessh: "{{key_name}}"
         ResourceBucketName: "{{resource_bucket_name}}"
         SumoLogicInstallerFileName: "{{sumo_logic_installer_file_name}}"
         SumoLogicAccessId: "{{sumo_logic_access_id}}"
         SumoLogicAccessKey: "{{sumo_logic_access_key}}"
       tags:
         project: "{{project}}"
-        application: "{{project}}"
+        application: "{{application}}"
         lob: regional-web
         env: "{{env}}"
