@@ -7,7 +7,7 @@ Description: >
 Parameters:
 
   SubnetID:
-    Description: Subnets to launch 2 Public
+    Description: Public subnets
     Type: CommaDelimitedList
     Default: subnet-49c6b43f,subnet-9c9bd5f8
 
@@ -34,7 +34,6 @@ Parameters:
   Instancestype:
     Description: EC2 instance type.
     Type: String
-    Default: t2.nano
     AllowedValues:
     - t2.nano
     - t2.medium
@@ -80,7 +79,7 @@ Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
 
-  taskdefinition:
+  HPtaskdefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
       ContainerDefinitions:
@@ -320,7 +319,7 @@ Resources:
         Interval: '30'
         Timeout: '5'
 
-  Webtaskdefinition:
+  WebTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
       ContainerDefinitions:
@@ -421,7 +420,7 @@ Resources:
       Role:
         Ref: ECSServiceRole
       TaskDefinition:
-        Ref: Webtaskdefinition
+        Ref: WebTaskDefinition
 
   ILBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -441,7 +440,7 @@ Resources:
         ToPort: 80
       VpcId: vpc-c9ef63ad
 
-  SRPservice:
+  HPService:
     Type: AWS::ECS::Service
     DependsOn:
     - ECSAutoScalingGroup
@@ -460,7 +459,7 @@ Resources:
       Role:
         Ref: ECSServiceRole
       TaskDefinition:
-        Ref: taskdefinition
+        Ref: HPtaskdefinition
 
   ECSServiceRole:
     Type: AWS::IAM::Role
@@ -575,7 +574,7 @@ Resources:
         ToPort: "-1"
         CidrIp: 10.39.48.0/20
 
-  SRPtaskdefinition:
+  SRPTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
       ContainerDefinitions:
@@ -640,7 +639,7 @@ Resources:
         ToPort: 80
       VpcId: vpc-c9ef63ad
 
-  Hpservice:
+  SRPService:
     Type: AWS::ECS::Service
     DependsOn:
     - ECSAutoScalingGroup
@@ -659,7 +658,7 @@ Resources:
       Role:
         Ref: ECSServiceRole
       TaskDefinition:
-        Ref: SRPtaskdefinition
+        Ref: SRPTaskDefinition
 
 Outputs:
 
