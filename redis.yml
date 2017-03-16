@@ -1,6 +1,6 @@
 ---
-- hosts: squarefoot
+- hosts: redis
   connection: local
   gather_facts: False
   roles:
-    - squarefoot
+    - redis

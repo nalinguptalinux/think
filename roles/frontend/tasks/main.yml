@@ -1,11 +1,11 @@
 ---
-  - name: setup squarefoot stack
+  - name: setup squarefoot frontend stack
     cloudformation:
-      stack_name: "squarefoot-{{ab}}-{{build}}"
+      stack_name: "frontend-{{ab}}-{{build}}"
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
-      template: "cloudformation/squarefoot-stack.yml"
+      template: "cloudformation/frontend-stack.yml"
       stack_policy: "cloudformation/stack-policy.json"
       template_parameters:
         SubnetID: "{{public_subnets}}"
@@ -22,5 +22,5 @@
       tags:
         project: "{{project}}"
         application: "{{application}}"
-        lob: regional-web
+        lob: "regional-web"
         env: "{{env}}"
