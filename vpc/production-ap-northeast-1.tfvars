@@ -2,7 +2,7 @@
 common_name = "squarefoot-production"
 domain = "production.squarefoot-singapore.ipga.local"
 region = "ap-southeast-1"
-key_name = "awscloud-squarefoot-production-singapore"
+key_name = "awscloud-squarefoot-production-tokyo"
 
 vpc_cidr = "10.39.16.0/20"
 dopt = ["AmazonProvidedDNS","10.39.16.2"]
@@ -17,5 +17,5 @@ private_subnet_supernet = "10.39.16.0/22"
 
 #Bastion Vars
 instance_type = "t2.micro"
-ami = "ami-xxxx"
+ami = "ami-56d4ad31"
 
