@@ -134,9 +134,9 @@ Resources:
     Properties:
       EvaluationPeriods: '2'
       Statistic: Maximum
-      Threshold: '1'
+      Threshold: '2'
       AlarmDescription: !Join [': ', [Redis ElastiCache DB Cluster Node Count is Less
-            than 1]]
+            than 2]]
       Period: '60'
       AlarmActions:
       - !Ref 'PagerDutyArn'
