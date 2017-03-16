@@ -1,0 +1,10 @@
+[redis]
+elasticache.staging.squarefoot-singapore.ipga.local
+
+[redis:vars]
+application=redis
+cluster_node_type=cache.m3.medium
+cluster_node_count=2
+redis_port=6379
+ab=a
+backup_duration=5

@@ -1,6 +1,6 @@
 project: squarefoot
 env: squarefoot-staging
-private_zone: staging.squarefoot-singapore.ipga.local
+private_zone: staging.squarefoot-singapore.ipga.local.
 aws_region: ap-southeast-1
 key_name: awscloud-squarefoot-staging-singapore
 aws_vpc_id:  vpc-74d35f10
@@ -23,3 +23,5 @@ private_subnet_supernet: 10.39.32.0/22
 ami: ami-dc9339bf
 bastion_public_ip:  52.74.223.189
 ssh_from_bastion_sg_id:  sg-042cae63
+
+pager_duty_arn: arn:aws:sns:ap-southeast-1:866270780045:Low-Priority-Squarefoot-Staging-PagerDuty

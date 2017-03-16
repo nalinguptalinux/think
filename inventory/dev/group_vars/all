@@ -1,6 +1,6 @@
 project: squarefoot
 env: squarefoot-development
-private_zone: development.squarefoot-singapore.ipga.local
+private_zone: development.squarefoot-singapore.ipga.local.
 aws_region: ap-southeast-1
 key_name: awscloud-squarefoot-development-singapore
 aws_vpc_id:  vpc-c9ef63ad
@@ -23,3 +23,8 @@ private_subnet_supernet: 10.39.48.0/22
 ami: ami-dc9339bf
 bastion_public_ip:  52.221.97.29
 ssh_from_bastion_sg_id:  sg-0834b66f
+
+resource_bucket_name: dev-sg-sfhk-infra-resources
+sumo_logic_installer_file_name: SumoCollector_linux_amd64_19_182-17.sh
+sumo_logic_access_id: su37UzMYy9KsP0
+sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf

@@ -1,0 +1,177 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS Elasticache for Squarefoot
+Parameters:
+  ClusterNodeType:
+    Description: The compute and memory capacity of the nodes in the Redis Cluster
+    Type: String
+    Default: cache.m1.small
+    AllowedValues:
+    - cache.m1.small
+    - cache.m1.large
+    - cache.m1.xlarge
+    - cache.m2.xlarge
+    - cache.m2.2xlarge
+    - cache.m2.4xlarge
+    - cache.c1.xlarge
+    - cache.t2.micro
+    - cache.t2.small
+    - cache.t2.medium
+    - cache.m3.medium
+    - cache.m3.large
+    - cache.m3.xlarge
+    - cache.m3.2xlarge
+    - cache.r3.large
+    - cache.r3.xlarge
+    - cache.r3.2xlarge
+    - cache.r3.4xlarge
+    - cache.r3.8xlarge
+    ConstraintDescription: must select a valid Cache Node type.
+  RedisPort:
+    Description: Redis TCP port to listen on
+    Type: Number
+    Default: '6379'
+    MinValue: '1024'
+    MaxValue: '65535'
+    ConstraintDescription: Must be a valud TCP port >1024
+  VpcID:
+    Description: VPC ID for Redis
+    Type: String
+  PrivateSubnets:
+    Description: Private Subnet for Redis
+    Type: CommaDelimitedList
+  HostedZoneName:
+    Description: Hosted Zone for Redis
+    Type: String
+  MasterRecordName:
+    Description: Master Domain name for Redis
+    Type: String
+  SlaveRecordName:
+    Description: Slave Domain name for Redis
+    Type: String
+  AB:
+    Description: Stack A/B to deploy
+    Type: String
+  AvailabilityZones:
+    Description: Availability Zones for Redis
+    Type: CommaDelimitedList
+  ClusterNodeCount:
+    Description: Number of Redis cluster Nodes
+    Type: Number
+  VpcNet:
+    Description: To allow all traffic within vpc
+    Type: String
+  PagerDutyArn:
+    Description: ARN of pagerduty in SNS
+    Type: String
+  BackupDuration:
+    Description: Number of backups to take
+    Type: Number
+  BillingTag:
+    Description: Billing tag for LOB
+    Type: String
+Conditions:
+  RegionCondition: !Not [!Equals [!Ref 'AWS::Region', cn-north-1]]
+Resources:
+  RedisClusterReplicationGroup:
+    Type: AWS::ElastiCache::ReplicationGroup
+    Properties:
+      AutomaticFailoverEnabled: true
+      CacheNodeType: !Ref 'ClusterNodeType'
+      CacheSubnetGroupName: !Ref 'RedisClusterSubnetGroup'
+      Engine: redis
+      NumCacheClusters: !Ref 'ClusterNodeCount'
+      Port: !Ref 'RedisPort'
+      PreferredCacheClusterAZs: !Ref 'AvailabilityZones'
+      ReplicationGroupDescription: Avartar Jobs DB Replication Group
+      SecurityGroupIds:
+      - !Ref 'RedisClusterSecurityGroup'
+      SnapshotRetentionLimit: !Ref 'BackupDuration'
+      Tags:
+      - Value:
+          Ref: BillingTag
+        Key: Billing
+      - Value:
+          Ref: AWS::StackName
+        Key: CF-Name
+  RedisClusterSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: Private Subnet ID's
+      SubnetIds: !Ref 'PrivateSubnets'
+  RedisClusterSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to client host
+      VpcId: !Ref 'VpcID'
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: !Ref 'VpcNet'
+      - IpProtocol: tcp
+        FromPort: '6379'
+        ToPort: '6379'
+        CidrIp: !Ref 'VpcNet'
+      Tags:
+      - Value:
+          Ref: BillingTag
+        Key: Billing
+      - Value:
+          Ref: AWS::StackName
+        Key: CF-Name
+  RedisClusterMasterRecordSet:
+    Type: AWS::Route53::RecordSet
+    Condition: RegionCondition
+    Properties:
+      HostedZoneName: !Ref 'HostedZoneName'
+      Name: !Join ['', [!Ref 'MasterRecordName', '-', !Ref 'AB', ., !Ref 'HostedZoneName']]
+      Type: CNAME
+      TTL: 60
+      ResourceRecords:
+      - !GetAtt [RedisClusterReplicationGroup, PrimaryEndPoint.Address]
+  ClusterNodeCountAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      EvaluationPeriods: '1'
+      Statistic: Maximum
+      Threshold: '2'
+      AlarmDescription: !Join [': ', [Redis ElastiCache DB Cluster Node Count is Less
+            than 2]]
+      Period: '60'
+      AlarmActions:
+      - !Ref 'PagerDutyArn'
+      InsufficientDataActions:
+      - !Ref 'PagerDutyArn'
+      OKActions:
+      - !Ref 'PagerDutyArn'
+      Namespace: AWS/ElastiCache
+      ComparisonOperator: LessThanThreshold
+      MetricName: CurrItems
+  ClusterCPUUsageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      EvaluationPeriods: '2'
+      Statistic: Average
+      Threshold: '80'
+      AlarmDescription: CPU utilization of Redis Cluster is over 80%.
+      Period: '60'
+      AlarmActions:
+      - !Ref 'PagerDutyArn'
+      InsufficientDataActions:
+      - !Ref 'PagerDutyArn'
+      OKActions:
+      - !Ref 'PagerDutyArn'
+      Namespace: AWS/ElastiCache
+      ComparisonOperator: GreaterThanThreshold
+      MetricName: CPUUtilization
+Outputs:
+  MasterDNSName:
+    Description: DNS name of the  Redis instance
+    Condition: RegionCondition
+    Value: !Join [., [!Ref 'MasterRecordName', '-', !Ref 'AB', ., !Ref 'HostedZoneName']]
+  RedisClusterPrimaryEndpoint:
+    Description: Endpoint of the Redis Cluster
+    Value: !GetAtt [RedisClusterReplicationGroup, PrimaryEndPoint.Address]
+  RedisClusterSecondaryEndpoint:
+    Description: Endpoint of the Redis Cluster
+    Value: !GetAtt [RedisClusterReplicationGroup, ReadEndPoint.Addresses]

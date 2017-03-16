@@ -1,0 +1,29 @@
+---
+  - name: setup redis stack
+    cloudformation:
+      stack_name: "squarefoot-redis-{{ab}}"
+      state: present
+      region: "{{aws_region}}"
+      disable_rollback: true
+      template: "cloudformation/redis.yml"
+      stack_policy: "cloudformation/stack-policy.json"
+      template_parameters:
+        ClusterNodeType: "{{cluster_node_type}}"
+        RedisPort: "{{redis_port}}"
+        VpcID: "{{aws_vpc_id}}"
+        PrivateSubnets: "{{private_subnets}}"
+        HostedZoneName: "{{private_zone}}"
+        MasterRecordName: "redis-master"
+        SlaveRecordName: "redis-slave"
+        AB: "{{ab}}"
+        AvailabilityZones: "{{zones}}"
+        ClusterNodeCount: "{{cluster_node_count}}"
+        VpcNet: "{{vpc_cidr}}"
+        PagerDutyArn: "{{pager_duty_arn}}"
+        BackupDuration: "{{backup_duration}}"
+        BillingTag: "{{project}}"
+      tags:
+        project: "{{project}}"
+        application: "{{application}}"
+        lob: "regional-web"
+        env: "{{env}}"
