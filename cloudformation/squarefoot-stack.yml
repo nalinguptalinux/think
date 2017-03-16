@@ -297,16 +297,16 @@ Resources:
       UserData:
         "Fn::Base64": !Sub |
           #!/bin/bash -ex
-          yum update -y
-          yum install -y sysstat nmap telnet curl wget
-          yum install -y aws-cfn-bootstrap
+          /usr/bin/yum update -y
+          /usr/bin/yum install -y sysstat nmap telnet curl wget
+          /usr/bin/yum install -y aws-cfn-bootstrap
           # Install Sumo Logic Collector on EC2 Host
-          easy_install awscli
-          aws s3 cp s3://${ResourceBucketName}/sumologic/${SumoLogicInstallerFileName} /tmp/${SumoLogicInstallerFileName} --region ${AWS::Region}
+          /usr/bin/easy_install awscli
+          /usr/local/bin/aws s3 cp s3://${ResourceBucketName}/sumologic/${SumoLogicInstallerFileName} /tmp/${SumoLogicInstallerFileName} --region ${AWS::Region}
           chmod +x /tmp/${SumoLogicInstallerFileName}
           /tmp/${SumoLogicInstallerFileName}  -q -VskipRegistration=true -Vephemeral=true -Vsources=/opt/ipp/sumologic/sources.json -Vsumo.accessid=${SumoLogicAccessId} -Vsumo.accesskey=${SumoLogicAccessKey}
-          rm -f /tmp/${SumoLogicInstallerFileName}
-          echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
+          /bin/rm -f /tmp/${SumoLogicInstallerFileName}
+          /bin/echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
           # Signal success
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
 
