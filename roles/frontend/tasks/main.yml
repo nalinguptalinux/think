@@ -5,7 +5,7 @@
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
-      template: "cloudformation/frontend-stack.yml"
+      template: "cloudformation/frontend.yml"
       stack_policy: "cloudformation/stack-policy.json"
       template_parameters:
         SubnetID: "{{public_subnets}}"
