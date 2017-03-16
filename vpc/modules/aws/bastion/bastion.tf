@@ -55,49 +55,49 @@ data "template_file" "user_data" {
 //  policy = "${data.aws_iam_policy_document.s3-read.json}"
 //}
 
-resource "aws_iam_role" "s3-read" {
-  name = "s3-read"
-  assume_role_policy = <<EOF
-{
-   "Version":"2012-10-17",
-   "Statement":[
-      {
-         "Action":"sts:AssumeRole",
-         "Principal":{
-            "Service":"ec2.amazonaws.com"
-         },
-         "Effect":"Allow",
-         "Sid":""
-      }
-   ]
-}
-EOF
-}
+//resource "aws_iam_role" "s3-read" {
+//  name = "s3-read"
+//  assume_role_policy = <<EOF
+//{
+//   "Version":"2012-10-17",
+//   "Statement":[
+//      {
+//         "Action":"sts:AssumeRole",
+//         "Principal":{
+//            "Service":"ec2.amazonaws.com"
+//         },
+//         "Effect":"Allow",
+//         "Sid":""
+//      }
+//   ]
+//}
+//EOF
+//}
+//
+//resource "aws_iam_role_policy" "s3-read" {
+//  name = "s3-read"
+//  role = "${aws_iam_role.s3-read.id}"
+//  policy = <<EOF
+//{
+//   "Version":"2012-10-17",
+//   "Statement":[
+//      {
+//         "Effect":"Allow",
+//         "Action":[
+//            "s3:Get*",
+//            "s3:List*"
+//         ],
+//         "Resource":"*"
+//      }
+//   ]
+//}
+//EOF
+//}
 
-resource "aws_iam_role_policy" "s3-read" {
-  name = "s3-read"
-  role = "${aws_iam_role.s3-read.id}"
-  policy = <<EOF
-{
-   "Version":"2012-10-17",
-   "Statement":[
-      {
-         "Effect":"Allow",
-         "Action":[
-            "s3:Get*",
-            "s3:List*"
-         ],
-         "Resource":"*"
-      }
-   ]
-}
-EOF
-}
-
-resource "aws_iam_instance_profile" "s3-read" {
-  name = "s3-read"
-  roles = ["${aws_iam_role.s3-read.name}"]
-}
+//resource "aws_iam_instance_profile" "s3-read" {
+//  name = "s3-read"
+//  roles = ["${aws_iam_role.s3-read.name}"]
+//}
 
 resource "aws_instance" "bastion" {
   ami = "${var.ami}"
@@ -107,7 +107,7 @@ resource "aws_instance" "bastion" {
   }
   subnet_id = "${element(split(",", var.nat_subnets), 0)}"
   user_data = "${data.template_file.user_data.rendered}"
-  iam_instance_profile = "${aws_iam_instance_profile.s3-read.id}"
+  iam_instance_profile = "s3-read"
   associate_public_ip_address = true
   vpc_security_group_ids = ["${aws_security_group.bastion_ssh_sg.id}"]
   key_name = "${var.key_name}"
