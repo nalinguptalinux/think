@@ -132,7 +132,7 @@ Resources:
   ClusterNodeCountAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      EvaluationPeriods: '2'
+      EvaluationPeriods: '1'
       Statistic: Maximum
       Threshold: '2'
       AlarmDescription: !Join [': ', [Redis ElastiCache DB Cluster Node Count is Less
