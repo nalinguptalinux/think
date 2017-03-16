@@ -1,7 +1,7 @@
 #Network Vars
 common_name = "squarefoot-production"
 domain = "production.squarefoot-singapore.ipga.local"
-region = "ap-southeast-1"
+region = "ap-northeast-1"
 key_name = "awscloud-squarefoot-production-tokyo"
 
 vpc_cidr = "10.39.16.0/20"
