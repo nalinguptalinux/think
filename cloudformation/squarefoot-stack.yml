@@ -249,6 +249,27 @@ Resources:
                   - "         --region "
                   - Ref: AWS::Region
                   - 'runas=root'
+            "/opt/ipp/sumologic/sources.json":
+              content:
+                "Fn::Base64": !Sub |
+                  {
+                      "api.version": "v1",
+                      "sources": [
+                          {
+                              "sourceType": "LocalFile",
+                              "name": "docker-host-local",
+                              "pathExpression": "/var/lib/docker/containers/*/*.log",
+                              "category": "docker/local/json",
+                              "hostName": "dockerHost",
+                              "useAutolineMatching": false,
+                              "multilineProcessingEnabled": false,
+                              "timeZone": "UTC",
+                              "automaticDateParsing": true,
+                              "forceTimeZone": false,
+                              "defaultDateFormat": "MMM dd HH:mm:ss"
+                          }
+                      ]
+                  }
           services:
             sysvinit:
               cfn-hup:
@@ -534,6 +555,11 @@ Resources:
             - ecr:Describe*
             - logs:CreateLogStream
             - logs:PutLogEvents
+            Resource: "*"
+          - Effect: Allow
+            Action:
+            - s3:Get*
+            - s3:List*
             Resource: "*"
 
   EC2InstanceProfile:
