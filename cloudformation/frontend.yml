@@ -314,6 +314,12 @@ Resources:
           # Signal success
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
 
+          # Install NewRelic agent on EC2 Host
+          rpm -Uvh ${NewRelicRPM}
+          yum -y install newrelic-sysmond
+          nrsysmond-config --set license_key=${NewRelicLicenseKey}
+          /etc/init.d/newrelic-sysmond start
+
   EcsHpELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
