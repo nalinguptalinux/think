@@ -1,0 +1,32 @@
+---
+  - name: setup solr stack
+    cloudformation:
+      stack_name: "solr-{{ab}}-{{pkg}}"
+      state: present
+      region: "{{aws_region}}"
+      disable_rollback: true
+      template: cloudformation/aws/solr-stack.json
+      stack_policy: cloudformation/aws/stack-policy.json
+      template_parameters:
+        AMI: "{{ami}}"
+        HostedZoneName: "{{private_host_zone}}"
+        InstanceType: "{{instance_type}}"
+        KeyName: "{{keyname}}"
+        VpcID: "{{vpc}}"
+        Pkg: "{{pkg}}"
+        RecordName: solr
+        AppPort: '8983'
+        AB: "{{ab}}"
+        AvailabilityZones: "{{solr_az}}"
+        PrivateSubnets: "{{solr_subnet}}"
+        ASGMaxSize: "{{as_max}}"
+        ASGMinSize: "{{as_min}}"
+        S3Repository: "{{s3_dist_bucket}}"
+        S3Region: "{{s3_dist_region}}"
+        JVMHeapSize: "{{jvm_heap_size}}"
+        VpcNet: "{{vpc_net}}"
+      tags:
+        project: "{{project}}"
+        application: solr
+        lob: MyFun
+        env: "{{env}}"
