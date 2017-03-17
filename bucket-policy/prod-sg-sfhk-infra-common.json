@@ -1,0 +1,36 @@
+{
+  "Version": "2008-10-17",
+  "Id": "Policy1418627212969",
+  "Statement": [
+    {
+      "Sid": "sfhk-infra-common-read",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": [
+          "arn:aws:iam::331887960933:root",
+          "arn:aws:iam::866270780045:root",
+          "arn:aws:iam::678965432744:root"
+        ]
+      },
+      "Action": [
+        "s3:Get*",
+        "s3:List*"
+      ],
+      "Resource": [
+        "arn:aws:s3:::prod-sg-sfhk-infra-common",
+        "arn:aws:s3:::prod-sg-sfhk-infra-common/*"
+      ]
+    },
+    {
+      "Sid": "upload-rpm-from-ci",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::331887960933:root"
+      },
+      "Action": "s3:PutObject",
+      "Resource": [
+        "arn:aws:s3:::prod-sg-sfhk-infra-common/*"
+      ]
+    }
+  ]
+}
