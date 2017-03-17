@@ -10,4 +10,3 @@ build=latest
 min_asg_size=2
 max_asg_size=4
 desired_asg_capacity=2
-new_relic_rpm=https://s3-ap-southeast-1.amazonaws.com/dev-sg-sfhk-infra-resources/newrelic/newrelic-repo-5-3.noarch.rpm

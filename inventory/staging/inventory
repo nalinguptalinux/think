@@ -8,4 +8,3 @@ cluster_node_count=2
 redis_port=6379
 ab=a
 backup_duration=5
-new_relic_rpm=https://s3-ap-southeast-1.amazonaws.com/dev-sg-sfhk-infra-resources/newrelic/newrelic-repo-5-3.noarch.rpm
