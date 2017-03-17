@@ -304,6 +304,7 @@ Resources:
           /usr/bin/yum update -y
           /usr/bin/yum install -y sysstat nmap telnet curl wget
           /usr/bin/yum install -y aws-cfn-bootstrap
+
           # Install Sumo Logic Collector on EC2 Host
           /usr/bin/easy_install awscli
           /usr/local/bin/aws s3 cp s3://${ResourceBucketName}/sumologic/${SumoLogicInstallerFileName} /tmp/${SumoLogicInstallerFileName} --region ${AWS::Region}
@@ -312,13 +313,13 @@ Resources:
           /bin/rm -f /tmp/${SumoLogicInstallerFileName}
           /bin/echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
 
-          ######    Install NewRelic agent on EC2 Host     ######
+          ######-----Install NewRelic agent on EC2 Host-----######
           rpm -Uvh ${NewRelicRPM}
           yum -y install newrelic-sysmond
           nrsysmond-config --set license_key=${NewRelicLicenseKey}
           /etc/init.d/newrelic-sysmond start
           chkconfig newrelic-sysmond on
-          ######                                           ######
+          ######--------------------------------------------######
 
           # Signal success
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
