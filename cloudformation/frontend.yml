@@ -314,8 +314,7 @@ Resources:
           /bin/echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
 
           ######-----Install NewRelic agent on EC2 Host-----######
-          rpm -Uvh ${NewRelicRPM}
-          yum -y install newrelic-sysmond
+          rpm -Uvhi ${NewRelicRPM}
           nrsysmond-config --set license_key=${NewRelicLicenseKey}
           /etc/init.d/newrelic-sysmond start
           chkconfig newrelic-sysmond on
