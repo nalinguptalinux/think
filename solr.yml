@@ -1,0 +1,8 @@
+---
+- include: config-svc.yml
+
+- hosts: solr
+  connection: local
+  gather_facts: False
+  roles:
+    - solr

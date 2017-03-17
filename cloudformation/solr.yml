@@ -1,0 +1,265 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: solr Stack
+Parameters:
+  Pkg:
+    Description: Name of the solr package to be installed
+    Type: String
+  S3Repository:
+    Description: Name of the S3 bucket containing all rpm packages
+    Type: String
+  SplunkIndex:
+    Description: Splunk index for solr log
+    Type: String
+    Default: china-site
+  S3Region:
+    Description: Name of the S3Region containing all rpm packages
+    Type: String
+  AppPort:
+    Description: Application Http port to listen on
+    Type: String
+    Default: '8983'
+  AvailabilityZones:
+    Description: The availability zones in the VPC
+    Type: CommaDelimitedList
+  PrivateSubnets:
+    Description: The private subnets in the VPC
+    Type: CommaDelimitedList
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access
+    Type: String
+  AB:
+    Description: 'Define which environment for the Splunk logs sourcetype: a / b'
+    Type: String
+    AllowedValues:
+    - a
+    - b
+  HostedZoneName:
+    Description: The Route53 Zone in which to create records
+    Type: String
+  RecordName:
+    Description: The name of the DNS record to create.
+    Type: String
+  AMI:
+    Description: The AMI id of the Platform image.
+    Type: String
+    MinLength: '12'
+    MaxLength: '12'
+    AllowedPattern: ami-[a-f0-9]{8}
+  InstanceType:
+    Description: The Instance type which used to build stack.
+    Type: String
+  VpcID:
+    Description: The private Subnet ID in VPC that has connection to Equinix.
+    Type: String
+    AllowedPattern: vpc-[a-f0-9]{8}
+  ASGMaxSize:
+    Description: AutoScaling max size
+    Type: Number
+  ASGMinSize:
+    Description: AutoScaling min size
+    Type: Number
+  JVMHeapSize:
+    Description: JVMHeapSize size
+    Type: String
+  VpcNet:
+    Description: AutoScaling min size
+    Type: String
+Conditions:
+  RegionCondition: !Not [!Equals [!Ref 'AWS::Region', cn-north-1]]
+Resources:
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal: !If [RegionCondition, {Service: [ec2.amazonaws.com]}, {Service: [
+                ec2.amazonaws.com.cn]}]
+          Action:
+          - sts:AssumeRole
+      Policies:
+      - PolicyName: permit-s3-and-cfn
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: cloudformation:DescribeStackResource
+            Resource: '*'
+          - Effect: Allow
+            Action: s3:GetObject
+            Resource: !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'S3Repository',
+                  /*]], !Join ['', ['arn:aws-cn:s3:::', !Ref 'S3Repository', /*]]]
+          - Effect: Allow
+            Action: s3:ListBucket
+            Resource: !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'S3Repository']],
+              !Join ['', ['arn:aws-cn:s3:::', !Ref 'S3Repository']]]
+  Profile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+      - !Ref 'Role'
+  SolrSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing solr client connection
+      SecurityGroupIngress:
+        CidrIp: !Ref 'VpcNet'
+        IpProtocol: tcp
+        FromPort: '8983'
+        ToPort: '8983'
+      VpcId: !Ref 'VpcID'
+  SolrSSHSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing incoming on ssh port
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: '-1'
+        FromPort: '0'
+        ToPort: '0'
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+      VpcId: !Ref 'VpcID'
+  SolrELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Subnets: !Ref 'PrivateSubnets'
+      Scheme: internal
+      CrossZone: true
+      SecurityGroups:
+      - !Ref 'SolrSecurityGroup'
+      Listeners:
+      - InstancePort: '8983'
+        LoadBalancerPort: !Ref 'AppPort'
+        Protocol: HTTP
+  SolrASLaunchConf:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          files:
+            /etc/cfn/cfn-hup.conf:
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+                interval=1
+              mode: '000400'
+              owner: root
+              group: root
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.SolrASLaunchConf.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init -s ${AWS::StackName}  -r SolrASLaunchConf  --role ${Role} --region #{AWS::Region} runas=root
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                - /etc/cfn/cfn-hup.conf
+                - /etc/cfn/hooks.conf
+    Properties:
+      InstanceType: !Ref 'InstanceType'
+      ImageId: !Ref 'AMI'
+      SecurityGroups:
+      - !Ref 'SolrSecurityGroup'
+      - !Ref 'SolrSSHSecurityGroup'
+      KeyName: !Ref 'KeyName'
+      IamInstanceProfile: !Ref 'Profile'
+      BlockDeviceMappings:
+      - DeviceName: /dev/xvda
+        Ebs:
+          VolumeSize: '120'
+          VolumeType: gp2
+          DeleteOnTermination: 'true'
+      UserData:
+        "Fn::Base64": !Sub |
+          #!/bin/bash -ex
+          exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+          resize2fs /dev/sda1
+          function error_exit
+          {
+            /opt/aws/bin/cfn-signal -e 1 -r $1 ${WaitHandle}
+            exit 1
+          }
+          function await_network {
+            while [ $(curl --connect-timeout 2 169.254.169.254 >/dev/null 2>&1; echo $?) -ne 0 ]; do
+              echo Waiting for networking and/or DNS
+              sleep 10
+            done
+          }
+          function configure_hosts {
+            recordName=${RecordName}.${AB}
+            instance_ip=$(curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
+            domain=$(awk '/^search/ { print $2 }' /etc/resolv.conf)
+            ipend=`echo $instance_ip | sed 's/\./\-/g'`
+            echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
+            hostname $recordName-$ipend
+          }
+          await_network
+          configure_hosts
+
+          /opt/aws/bin/cfn-init -s ${AWS::StackName} -r SolrASLaunchConf  --region ${AWS::Region} || error_exit 'Failed to run cfn-init'
+          aws s3 cp s3://${S3Repository}/rpm/centos6/noarch/packages/solr-6.0.0.${Pkg}-1.noarch.rpm /tmp/ --region ${S3Region} || error_exit 'faild to download solr rpm package'
+          yum install -y /tmp/solr-6.0.0.${Pkg}-1.noarch.rpm || error_exit 'failed to install solr rpm package'
+          echo 'SOLR_JAVA_MEM="-Xms${JVMHeapSize} -Xmx${JVMHeapSize}"' >> /etc/default/solr.in.sh
+          service solr start || error_exit 'failed to start solr application'
+          # Start up the cfn-hup daemon to listen for changes
+          /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
+          /opt/aws/bin/cfn-signal -e 0 -r "SolrInstance instance Stack Complete."  ${WaitHandle}
+  SolrPlacementGroup:
+    Type: AWS::EC2::PlacementGroup
+    Properties:
+      Strategy: cluster
+  SolrASGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones: !Ref 'AvailabilityZones'
+      VPCZoneIdentifier: !Ref 'PrivateSubnets'
+      LaunchConfigurationName: !Ref 'SolrASLaunchConf'
+      MinSize: !Ref 'ASGMinSize'
+      MaxSize: !Ref 'ASGMaxSize'
+      LoadBalancerNames:
+      - !Ref 'SolrELB'
+      PlacementGroup: !Ref 'SolrPlacementGroup'
+      Tags:
+      - Key: CloudFormationStack
+        Value: !Ref 'AWS::StackName'
+        PropagateAtLaunch: true
+      - Key: Name
+        Value: !Join [., [!Ref 'RecordName', !Ref 'Pkg', !Ref 'AB', !Ref 'HostedZoneName']]
+        PropagateAtLaunch: true
+      - Key: Pkg
+        Value: !Ref 'Pkg'
+        PropagateAtLaunch: true
+  SolrRecordSet:
+    Type: AWS::Route53::RecordSet
+    Condition: RegionCondition
+    Properties:
+      HostedZoneName: !Ref 'HostedZoneName'
+      Name: !Join [., [!Ref 'RecordName', !Ref 'Pkg', !Ref 'AB', !Ref 'HostedZoneName']]
+      Type: CNAME
+      TTL: 60
+      ResourceRecords:
+      - !GetAtt [SolrELB, DNSName]
+  WaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  WaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn: SolrASGroup
+    Properties:
+      Handle: !Ref 'WaitHandle'
+      Timeout: '1000'
+Outputs:
+  ELBEndpoint:
+    Description: Solr elb dns name.
+    Value: !GetAtt [SolrELB, DNSName]
+  ServiceEndpoint:
+    Description: Solr endpoint.
+    Value: !Join [., [!Ref 'RecordName', !Ref 'AB', !Ref 'HostedZoneName']]

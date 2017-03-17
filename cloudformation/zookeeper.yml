@@ -1,0 +1,594 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: zookeepers Stack
+Parameters:
+  Pkg:
+    Description: Name of the MyFun zookeeper package to be installed
+    Type: String
+  S3Repository:
+    Description: Name of the s3 bucket url containing packages package to be installed
+    Type: String
+  S3Region:
+    Description: Name of the s3 region containing packages package to be installed
+    Type: String
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access
+    Type: String
+  PrivateSubnet1:
+    Description: Zone A private subnet in the VPC
+    Type: String
+    MinLength: '15'
+    MaxLength: '15'
+    AllowedPattern: subnet-[a-f0-9]{8}
+    ConstraintDescription: Must represent a subnet
+  PrivateSubnet2:
+    Description: Zone B private subnet in the VPC
+    Type: String
+    MinLength: '15'
+    MaxLength: '15'
+    AllowedPattern: subnet-[a-f0-9]{8}
+    ConstraintDescription: Must represent a subnet
+  PrivateSubnet3:
+    Description: Zone C private subnet in the VPC
+    Type: String
+    MinLength: '15'
+    MaxLength: '15'
+    AllowedPattern: subnet-[a-f0-9]{8}
+    ConstraintDescription: Must represent a subnet
+  AMI:
+    Description: The AMI id of the Platform image.
+    Type: String
+    MinLength: '12'
+    MaxLength: '12'
+    AllowedPattern: ami-[a-f0-9]{8}
+  InstanceType:
+    Description: The Instance type which used to build stack.
+    Type: String
+  VpcId:
+    Description: The private Subnet ID in VPC that has connection to Tokyo.
+    Type: String
+    AllowedPattern: vpc-[a-f0-9]{8}
+  HostedZoneName:
+    Description: The Route53 Zone in which to create records
+    Type: String
+  Zk01RecordName:
+    Description: The name of the DNS record to create for zk1.
+    Type: String
+  Zk02RecordName:
+    Description: The name of the DNS record to create for zk2.
+    Type: String
+  Zk03RecordName:
+    Description: The name of the DNS record to create for zk3.
+    Type: String
+  Zk01AZ:
+    Description: The name of the DNS record to create for zk1.
+    Type: String
+  Zk02AZ:
+    Description: The name of the DNS record to create for zk2.
+    Type: String
+  Zk03AZ:
+    Description: The name of the DNS record to create for zk3.
+    Type: String
+Conditions:
+  RegionCondition: !Not [!Equals [!Ref 'AWS::Region', cn-north-1]]
+Resources:
+  ReplicasetCfnRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal: !If [RegionCondition, {Service: [ec2.amazonaws.com]}, {Service: [
+                ec2.amazonaws.com.cn]}]
+          Action:
+          - sts:AssumeRole
+      Policies:
+      - PolicyName: permit-s3-and-cfn
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: cloudformation:DescribeStackResource
+            Resource: '*'
+          - Effect: Allow
+            Action: s3:GetObject
+            Resource: !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'S3Repository',
+                  /*]], !Join ['', ['arn:aws-cn:s3:::', !Ref 'S3Repository', /*]]]
+          - Effect: Allow
+            Action: s3:ListBucket
+            Resource: !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'S3Repository']],
+              !Join ['', ['arn:aws-cn:s3:::', !Ref 'S3Repository']]]
+          - Sid: Stmt1382509605015
+            Effect: Allow
+            Action: cloudwatch:PutMetricData
+            Resource: '*'
+  ReplicasetCfnProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+      - !Ref 'ReplicasetCfnRole'
+  ZookeeperSSHSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing incoming on ssh port
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: '-1'
+        FromPort: '0'
+        ToPort: '0'
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+      VpcId: !Ref 'VpcId'
+  ZookeeperClientConnectionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing zookeeper client connection
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '2181'
+        ToPort: '2181'
+      VpcId: !Ref 'VpcId'
+  ZookeeperJMXConnectionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing zookeeper jmx connection
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '9009'
+        ToPort: '9009'
+      VpcId: !Ref 'VpcId'
+  ZookeeperClusterConnectionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing zookeeper cluster outgoing port
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '2888'
+        ToPort: '2888'
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '3888'
+        ToPort: '3888'
+      VpcId: !Ref 'VpcId'
+  Zk01:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          default:
+          - setup
+          - updateConf
+        setup:
+          files:
+            /etc/cfn/cfn-hup.conf:
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+                interval=1
+              mode: '000400'
+              owner: root
+              group: root
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.Zk01.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init -s ${AWS::StackName}  -r Zk01 --region ${AWS::Region}
+                runas=root
+        updateConf:
+          files:
+            /opt/rea/apps/zookeeper/data/myid:
+              content: '0'
+            /etc/zookeeper/zoo.cfg:
+              content: !Sub |
+                tickTime=2000
+                initLimit=10
+                syncLimit=5
+                dataDir=/opt/rea/apps/zookeeper/data
+                clientPort=2181
+                server.0=${Zk01RecordName}.${HostedZoneName}:2888:3888
+                server.0=${Zk02RecordName}.${HostedZoneName}:2888:3888
+                server.0=${Zk03RecordName}.${HostedZoneName}:2888:3888
+        services:
+          sysvinit:
+            cfn-hup:
+              enabled: 'true'
+              ensureRunning: 'true'
+              files:
+              - /etc/cfn/cfn-hup.conf
+              - /etc/cfn/hooks.conf
+            zookeeper:
+              enabled: 'true'
+              ensureRunning: 'true'
+              files:
+              - /etc/zookeeper/zoo.cfg
+    Properties:
+      IamInstanceProfile: !Ref 'ReplicasetCfnProfile'
+      SubnetId: !Ref 'PrivateSubnet1'
+      InstanceType: !Ref 'InstanceType'
+      ImageId: !Ref 'AMI'
+      SecurityGroupIds:
+      - !Ref 'ZookeeperSSHSecurityGroup'
+      - !Ref 'ZookeeperClientConnectionSecurityGroup'
+      - !Ref 'ZookeeperClusterConnectionSecurityGroup'
+      - !Ref 'ZookeeperJMXConnectionSecurityGroup'
+      KeyName: !Ref 'KeyName'
+      BlockDeviceMappings:
+      - DeviceName: /dev/xvda
+        Ebs:
+          VolumeSize: '40'
+          VolumeType: gp2
+          DeleteOnTermination: 'true'
+      UserData:
+       "Fn::Base64": !Sub |
+          #!/bin/bash -ex
+          exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+          function error_exit
+          {
+            /opt/aws/bin/cfn-signal -e 1 -r $1 ${WaitHandle}
+            exit 1
+          }
+          function await_network {
+            while [ $(curl --connect-timeout 2 169.254.169.251 >/dev/null 2>&1; echo $?) -ne 0 ]; do
+              echo Waiting for networking and/or DNS
+              sleep 10
+            done
+          }
+          ## Setup the hosts file and hostname.
+          function configure_hosts {
+              instance_ip=$(curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
+              short_hostname=${Zk01RecordName}
+              domain=$(awk '/^search/ { print $2 }' /etc/resolv.conf)
+              long_hostname=$short_hostname.$domain
+              sed -i "s/$/\n$instance_ip $short_hostname $long_hostname/g" /etc/hosts
+              hostname $long_hostname
+              sed -i "s/^HOSTNAME=.*/HOSTNAME=$hostname/g" /etc/sysconfig/network
+          }
+          await_network
+          configure_hosts
+
+          /opt/aws/bin/cfn-init -s ${AWS::StackName} -r Zk01  --region ${AWS::Region} --role ${ReplicasetCfnRole} || error_exit 'Failed to run cfn-init'
+          aws s3 cp s3://${S3Repository}/common/${Pkg} /tmp/ --region ${S3Region} || error_exit 'failed to download zookeeper rpm package'
+          yum install -y /tmp/${Pkg} || error_exit 'failed to install zookeeper rpm package'
+          service zookeeper start
+
+          # Start up the cfn-hup daemon to listen for changes
+          /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
+          /opt/aws/bin/cfn-signal -e 0 -r "Zookeepers instance Stack Complete."  ${WaitHandle}
+      Tags:
+      - Key: Name
+        Value: !Join [., [!Ref 'Zk01RecordName', !Ref 'HostedZoneName']]
+      - Key: CloudFormationStack
+        Value: !Ref 'AWS::StackName'
+      - Key: Pkg
+        Value: !Ref 'Pkg'
+  ZK01RepositoryDataVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size: '100'
+      AvailabilityZone: !Ref 'Zk01AZ'
+      Tags:
+      - Key: Name
+        Value: !Join [/, [Zookeeper, !Ref 'Zk01RecordName']]
+  ZK01MountPoint:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      InstanceId: !Ref 'Zk01'
+      VolumeId: !Ref 'ZK01RepositoryDataVolume'
+      Device: /dev/xvdl
+  ZK01InstanceDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: RegionCondition
+    Properties:
+      HostedZoneName: !Join ['', [!Ref 'HostedZoneName']]
+      Comment: DNS name for zookeeper instance.
+      Name: !Join ['', [!Ref 'Zk01RecordName', ., !Ref 'HostedZoneName']]
+      Type: A
+      TTL: '60'
+      ResourceRecords:
+      - !GetAtt [Zk01, PrivateIp]
+  Zk01WaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  Zk01WaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn: Zk01
+    Properties:
+      Handle: !Ref 'Zk01WaitHandle'
+      Timeout: '1000'
+  Zk02:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          default:
+          - setup
+          - updateConf
+        setup:
+          files:
+            /etc/cfn/cfn-hup.conf:
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+                interval=1
+              mode: '000400'
+              owner: root
+              group: root
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.Zk02.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init -s ${AWS::StackName}  -r Zk02 --region ${AWS::Region}
+                runas=root
+        updateConf:
+          files:
+            /opt/rea/apps/zookeeper/data/myid:
+              content: '1'
+            /etc/zookeeper/zoo.cfg:
+              content: !Sub |
+                tickTime=2000
+                initLimit=10
+                syncLimit=5
+                dataDir=/opt/rea/apps/zookeeper/data
+                clientPort=2181
+                server.0=${Zk01RecordName}.${HostedZoneName}:2888:3888
+                server.0=${Zk02RecordName}.${HostedZoneName}:2888:3888
+                server.0=${Zk03RecordName}.${HostedZoneName}:2888:3888
+        services:
+          sysvinit:
+            cfn-hup:
+              enabled: 'true'
+              ensureRunning: 'true'
+              files:
+              - /etc/cfn/cfn-hup.conf
+              - /etc/cfn/hooks.conf
+            zookeeper:
+              enabled: 'true'
+              ensureRunning: 'true'
+              files:
+              - /etc/zookeeper/zoo.cfg
+    Properties:
+      IamInstanceProfile: !Ref 'ReplicasetCfnProfile'
+      SubnetId: !Ref 'PrivateSubnet2'
+      InstanceType: !Ref 'InstanceType'
+      ImageId: !Ref 'AMI'
+      SecurityGroupIds:
+      - !Ref 'ZookeeperSSHSecurityGroup'
+      - !Ref 'ZookeeperClientConnectionSecurityGroup'
+      - !Ref 'ZookeeperClusterConnectionSecurityGroup'
+      - !Ref 'ZookeeperJMXConnectionSecurityGroup'
+      KeyName: !Ref 'KeyName'
+      BlockDeviceMappings:
+      - DeviceName: /dev/xvda
+        Ebs:
+          VolumeSize: '40'
+          VolumeType: gp2
+          DeleteOnTermination: 'true'
+      UserData:
+       "Fn::Base64": !Sub |
+          #!/bin/bash -ex
+          exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+          function error_exit
+          {
+            /opt/aws/bin/cfn-signal -e 1 -r $1 ${WaitHandle}
+            exit 1
+          }
+          function await_network {
+            while [ $(curl --connect-timeout 2 169.254.169.251 >/dev/null 2>&1; echo $?) -ne 0 ]; do
+              echo Waiting for networking and/or DNS
+              sleep 10
+            done
+          }
+          ## Setup the hosts file and hostname.
+          function configure_hosts {
+              instance_ip=$(curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
+              short_hostname=${Zk02RecordName}
+              domain=$(awk '/^search/ { print $2 }' /etc/resolv.conf)
+              long_hostname=$short_hostname.$domain
+              sed -i "s/$/\n$instance_ip $short_hostname $long_hostname/g" /etc/hosts
+              hostname $long_hostname
+              sed -i "s/^HOSTNAME=.*/HOSTNAME=$hostname/g" /etc/sysconfig/network
+          }
+          await_network
+          configure_hosts
+
+          /opt/aws/bin/cfn-init -s ${AWS::StackName} -r Zk02  --region ${AWS::Region} --role ${ReplicasetCfnRole} || error_exit 'Failed to run cfn-init'
+          aws s3 cp s3://${S3Repository}/common/${Pkg} /tmp/ --region ${S3Region} || error_exit 'failed to download zookeeper rpm package'
+          yum install -y /tmp/${Pkg} || error_exit 'failed to install zookeeper rpm package'
+          service zookeeper start
+
+          # Start up the cfn-hup daemon to listen for changes
+          /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
+          /opt/aws/bin/cfn-signal -e 0 -r "Zookeepers instance Stack Complete."  ${WaitHandle}
+      Tags:
+      - Key: Name
+        Value: !Join [., [!Ref 'Zk02RecordName', !Ref 'HostedZoneName']]
+      - Key: CloudFormationStack
+        Value: !Ref 'AWS::StackName'
+      - Key: Pkg
+        Value: !Ref 'Pkg'
+  ZK02RepositoryDataVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size: '100'
+      AvailabilityZone: !Ref 'Zk02AZ'
+      Tags:
+      - Key: Name
+        Value: !Join [/, [Zookeeper, !Ref 'Zk02RecordName']]
+  ZK02MountPoint:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      InstanceId: !Ref 'Zk02'
+      VolumeId: !Ref 'ZK02RepositoryDataVolume'
+      Device: /dev/xvdl
+  ZK02InstanceDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: RegionCondition
+    Properties:
+      HostedZoneName: !Join ['', [!Ref 'HostedZoneName']]
+      Comment: DNS name for zookeeper instance.
+      Name: !Join ['', [!Ref 'Zk02RecordName', ., !Ref 'HostedZoneName']]
+      Type: A
+      TTL: '60'
+      ResourceRecords:
+      - !GetAtt [Zk02, PrivateIp]
+  Zk02WaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  Zk02WaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn: Zk02
+    Properties:
+      Handle: !Ref 'Zk02WaitHandle'
+      Timeout: '1000'
+  Zk03:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          default:
+          - setup
+          - updateConf
+        setup:
+          files:
+            /etc/cfn/cfn-hup.conf:
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+                interval=1
+              mode: '000400'
+              owner: root
+              group: root
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.Zk03.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init -s ${AWS::StackName}  -r Zk03 --region ${AWS::Region}
+                runas=root
+        updateConf:
+          files:
+            /opt/rea/apps/zookeeper/data/myid:
+              content: '2'
+            /etc/zookeeper/zoo.cfg:
+              content: !Sub |
+                tickTime=2000
+                initLimit=10
+                syncLimit=5
+                dataDir=/opt/rea/apps/zookeeper/data
+                clientPort=2181
+                server.0=${Zk01RecordName}.${HostedZoneName}:2888:3888
+                server.0=${Zk02RecordName}.${HostedZoneName}:2888:3888
+                server.0=${Zk03RecordName}.${HostedZoneName}:2888:3888
+        services:
+          sysvinit:
+            cfn-hup:
+              enabled: 'true'
+              ensureRunning: 'true'
+              files:
+              - /etc/cfn/cfn-hup.conf
+              - /etc/cfn/hooks.conf
+            zookeeper:
+              enabled: 'true'
+              ensureRunning: 'true'
+              files:
+              - /etc/zookeeper/zoo.cfg    Properties:
+      IamInstanceProfile: !Ref 'ReplicasetCfnProfile'
+      SubnetId: !Ref 'PrivateSubnet3'
+      InstanceType: !Ref 'InstanceType'
+      ImageId: !Ref 'AMI'
+      SecurityGroupIds:
+      - !Ref 'ZookeeperSSHSecurityGroup'
+      - !Ref 'ZookeeperClientConnectionSecurityGroup'
+      - !Ref 'ZookeeperClusterConnectionSecurityGroup'
+      - !Ref 'ZookeeperJMXConnectionSecurityGroup'
+      KeyName: !Ref 'KeyName'
+      BlockDeviceMappings:
+      - DeviceName: /dev/xvda
+        Ebs:
+          VolumeSize: '40'
+          VolumeType: gp2
+          DeleteOnTermination: 'true'
+      UserData:
+       "Fn::Base64": !Sub |
+          #!/bin/bash -ex
+          exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+          function error_exit
+          {
+            /opt/aws/bin/cfn-signal -e 1 -r $1 ${WaitHandle}
+            exit 1
+          }
+          function await_network {
+            while [ $(curl --connect-timeout 2 169.254.169.251 >/dev/null 2>&1; echo $?) -ne 0 ]; do
+              echo Waiting for networking and/or DNS
+              sleep 10
+            done
+          }
+          ## Setup the hosts file and hostname.
+          function configure_hosts {
+              instance_ip=$(curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
+              short_hostname=${Zk03RecordName}
+              domain=$(awk '/^search/ { print $2 }' /etc/resolv.conf)
+              long_hostname=$short_hostname.$domain
+              sed -i "s/$/\n$instance_ip $short_hostname $long_hostname/g" /etc/hosts
+              hostname $long_hostname
+              sed -i "s/^HOSTNAME=.*/HOSTNAME=$hostname/g" /etc/sysconfig/network
+          }
+          await_network
+          configure_hosts
+
+          /opt/aws/bin/cfn-init -s ${AWS::StackName} -r Zk03  --region ${AWS::Region} --role ${ReplicasetCfnRole} || error_exit 'Failed to run cfn-init'
+          aws s3 cp s3://${S3Repository}/common/${Pkg} /tmp/ --region ${S3Region} || error_exit 'failed to download zookeeper rpm package'
+          yum install -y /tmp/${Pkg} || error_exit 'failed to install zookeeper rpm package'
+          service zookeeper start
+
+          # Start up the cfn-hup daemon to listen for changes
+          /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
+          /opt/aws/bin/cfn-signal -e 0 -r "Zookeepers instance Stack Complete."  ${WaitHandle}
+      Tags:
+      - Key: CloudFormationStack
+        Value: !Ref 'AWS::StackName'
+      - Key: Name
+        Value: !Join [., [!Ref 'Zk03RecordName', !Ref 'HostedZoneName']]
+      - Key: Pkg
+        Value: !Ref 'Pkg'
+  ZK03RepositoryDataVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size: '100'
+      AvailabilityZone: !Ref 'Zk03AZ'
+      Tags:
+      - Key: Name
+        Value: !Join [/, [Zookeeper, !Ref 'Zk03RecordName']]
+  ZK03MountPoint:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      InstanceId: !Ref 'Zk03'
+      VolumeId: !Ref 'ZK03RepositoryDataVolume'
+      Device: /dev/xvdl
+  ZK03InstanceDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: RegionCondition
+    Properties:
+      HostedZoneName: !Join ['', [!Ref 'HostedZoneName']]
+      Comment: DNS name for zookeeper instance.
+      Name: !Join ['', [!Ref 'Zk03RecordName', ., !Ref 'HostedZoneName']]
+      Type: A
+      TTL: '60'
+      ResourceRecords:
+      - !GetAtt [Zk03, PrivateIp]
+  Zk03WaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  Zk03WaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn: Zk03
+    Properties:
+      Handle: !Ref 'Zk03WaitHandle'
+      Timeout: '1000'
