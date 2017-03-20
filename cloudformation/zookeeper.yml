@@ -269,7 +269,7 @@ Resources:
     Properties:
       HostedZoneName: !Join ['', [!Ref 'HostedZoneName']]
       Comment: DNS name for zookeeper instance.
-      Name: !Join ['', [!Ref 'Zk01RecordName', ., !Ref 'HostedZoneName']]
+      Name: !Join ['', [!Ref 'Zk01RecordName', ., !Ref 'HostedZoneName'], '.']
       Type: A
       TTL: '60'
       ResourceRecords:
@@ -397,7 +397,7 @@ Resources:
     Properties:
       HostedZoneName: !Join ['', [!Ref 'HostedZoneName']]
       Comment: DNS name for zookeeper instance.
-      Name: !Join ['', [!Ref 'Zk02RecordName', ., !Ref 'HostedZoneName']]
+      Name: !Join ['', [!Ref 'Zk02RecordName', ., !Ref 'HostedZoneName'], '.']
       Type: A
       TTL: '60'
       ResourceRecords:
@@ -524,7 +524,7 @@ Resources:
     Properties:
       HostedZoneName: !Join ['', [!Ref 'HostedZoneName']]
       Comment: DNS name for zookeeper instance.
-      Name: !Join ['', [!Ref 'Zk03RecordName', ., !Ref 'HostedZoneName']]
+      Name: !Join ['', [!Ref 'Zk03RecordName', ., !Ref 'HostedZoneName'], '.']
       Type: A
       TTL: '60'
       ResourceRecords:
