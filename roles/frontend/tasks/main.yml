@@ -21,6 +21,7 @@
         SumoLogicAccessKey: "{{sumo_logic_access_key}}"
         NewRelicRPM: "{{new_relic_rpm}}"
         NewRelicLicenseKey: "{{new_relic_license_key}}"
+        RecordName: "frontend-{{ab}}-{{build}}"
 
       tags:
         project: "{{project}}"
