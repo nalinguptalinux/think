@@ -36,10 +36,16 @@ Parameters:
     Type: Number
     Default: '4'
     Description: Maximum number of instances that can be launched in your ECS cluster.
+  NewRelicLicenseKey:
+    Description: New Relic License Key
+    Type: String
   NewRelicRPM:
     Description: New Relic RPM
     Type: String
     Default: https://s3-ap-southeast-1.amazonaws.com/dev-sg-sfhk-infra-resources/newrelic/newrelic-repo-5-3.noarch.rpm
+  RecordName:
+    Description: The name of the DNS record to create.
+    Type: String
   ResourceBucketName:
     Description: Name of the S3 bucket to retrieve the downloaded scripts or installation files
     Type: String
@@ -299,7 +305,7 @@ Resources:
           /usr/bin/yum install -y sysstat nmap telnet curl wget
           /usr/bin/yum install -y aws-cfn-bootstrap
 
-          # Install Sumo Logic Collector on EC2 Host
+          #####------------Install Sumo Logic Collector on EC2 Host------------######
           /usr/bin/easy_install awscli
           /usr/local/bin/aws s3 cp s3://${ResourceBucketName}/sumologic/${SumoLogicInstallerFileName} /tmp/${SumoLogicInstallerFileName} --region ${AWS::Region}
           chmod +x /tmp/${SumoLogicInstallerFileName}
@@ -309,22 +315,20 @@ Resources:
 
           ######-----------------Configure Hostname on EC2 Host-----------------######
           function configure_hosts {
-            recordName=${RecordName}.${AB}
+            recordName=${RecordName}
             instance_ip=$(curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
             domain=$(awk '/^search/ { print $2 }' /etc/resolv.conf)
             ipend=`echo $instance_ip | sed 's/\./\-/g'`
             echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
             hostname $recordName-$ipend
           }
-          ######----------------------------------------------------------------######
-          ######-----Install NewRelic agent on EC2 Host-----######
+          ######--------------Install NewRelic agent on EC2 Host----------------######
           rpm -Uvhi ${NewRelicRPM}
           nrsysmond-config --set license_key=${NewRelicLicenseKey}
           /etc/init.d/newrelic-sysmond start
           chkconfig newrelic-sysmond on
-          ######--------------------------------------------######
 
-          # Signal success
+          ######--------------------------Signal success------------------------######
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
 
   EcsHpELB:
