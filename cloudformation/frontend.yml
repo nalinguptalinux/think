@@ -218,7 +218,11 @@ Resources:
     Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:
       AWS::CloudFormation::Init:
-        config:
+        configSets:
+          InstallAndRun:
+          - Configure
+
+        Configure:
           commands:
             01_add_instance_to_cluster:
               command:
@@ -264,26 +268,26 @@ Resources:
                   - "         --region "
                   - Ref: AWS::Region
                   - 'runas=root'
-            "/tmp/sources.json":
+            "/opt/ipp/sumologic/sources.json":
               content:
                 "Fn::Base64": !Sub |
                   {
-                      "api.version": "v1",
-                      "sources": [
-                          {
-                              "sourceType": "LocalFile",
-                              "name": "docker-host-local",
-                              "pathExpression": "/var/lib/docker/containers/*/*.log",
-                              "category": "docker/local/json",
-                              "hostName": "dockerHost",
-                              "useAutolineMatching": false,
-                              "multilineProcessingEnabled": false,
-                              "timeZone": "UTC",
-                              "automaticDateParsing": true,
-                              "forceTimeZone": false,
-                              "defaultDateFormat": "MMM dd HH:mm:ss"
-                          }
-                      ]
+                    "api.version": "v1",
+                    "sources": [
+                      {
+                        "sourceType": "LocalFile",
+                        "name": "docker-host-local",
+                        "pathExpression": "/var/lib/docker/containers/*/*.log",
+                        "category": "docker/local/json",
+                        "hostName": "dockerHost",
+                        "useAutolineMatching": false,
+                        "multilineProcessingEnabled": false,
+                        "timeZone": "UTC",
+                        "automaticDateParsing": true,
+                        "forceTimeZone": false,
+                        "defaultDateFormat": "MMM dd HH:mm:ss"
+                      }
+                    ]
                   }
           services:
             sysvinit:
@@ -317,8 +321,9 @@ Resources:
           /usr/bin/yum install -y sysstat nmap telnet curl wget
           /usr/bin/yum install -y aws-cfn-bootstrap
           /usr/bin/easy_install awscli
+          ######-----------------------------Bootstrap--------------------------######
+          /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --configsets InstallAndRun --resource ContainerInstances
           ######------------Install Sumo Logic Collector on EC2 Host------------######
-          /bin/mv /tmp/sources.json /opt/ipp/sumologic/sources.json
           /usr/local/bin/aws s3 cp s3://${ResourceBucketName}/sumologic/${SumoLogicInstallerFileName} /tmp/${SumoLogicInstallerFileName} --region ${AWS::Region}
           /bin/chmod +x /tmp/${SumoLogicInstallerFileName}
           /tmp/${SumoLogicInstallerFileName}  -q -VskipRegistration=true -Vephemeral=true -Vsources=/opt/ipp/sumologic/sources.json -Vsumo.accessid=${SumoLogicAccessId} -Vsumo.accesskey=${SumoLogicAccessKey}
@@ -334,7 +339,7 @@ Resources:
           }
           ######--------------Install NewRelic agent on EC2 Host----------------######
           /usr/local/bin/aws s3 cp s3://${ResourceBucketName}/newrelic/${NewRelicRPM} /tmp/${NewRelicRPM} --region ${AWS::Region}
-          rpm -Uvhi /tmp/${NewRelicRPM}
+          /bin/rpm -Uvhi /tmp/${NewRelicRPM}
           /usr/sbin/nrsysmond-config --set license_key=${NewRelicLicenseKey}
           /etc/init.d/newrelic-sysmond start
           /sbin/chkconfig newrelic-sysmond on
