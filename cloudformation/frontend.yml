@@ -313,6 +313,16 @@ Resources:
           /bin/rm -f /tmp/${SumoLogicInstallerFileName}
           /bin/echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
 
+          ######-----------------Configure Hostname on EC2 Host-----------------######
+          function configure_hosts {
+            recordName=${RecordName}.${AB}
+            instance_ip=$(curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
+            domain=$(awk '/^search/ { print $2 }' /etc/resolv.conf)
+            ipend=`echo $instance_ip | sed 's/\./\-/g'`
+            echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
+            hostname $recordName-$ipend
+          }
+          ######----------------------------------------------------------------######
           ######-----Install NewRelic agent on EC2 Host-----######
           rpm -Uvhi ${NewRelicRPM}
           nrsysmond-config --set license_key=${NewRelicLicenseKey}
