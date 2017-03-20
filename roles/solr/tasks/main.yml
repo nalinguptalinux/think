@@ -1,7 +1,7 @@
 ---
   - name: setup solr stack
     cloudformation:
-      stack_name: "solr-{{ab}}-{{pkg}}"
+      stack_name: "solr-{{ab}}"
       state: present
       region: "{{aws_region}}"
       disable_rollback: true

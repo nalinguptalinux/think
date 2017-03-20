@@ -26,16 +26,15 @@ solr_az=
 zookeeper.staging.squarefoot-singapore.ipga.local
 
 [zookeeper:vars]
+ab=b
 pkg=zookeeper-3.4.6.1-1.noarch.rpm
 instance_type=t2.micro
 zk1name=zk1
 zk2name=zk2
 zk3name=zk3
-s3repository=
-s3region=
-private_subnet_1=
-private_subnet_2=
-private_subnet_3=
-zk01az=
-zk02az=
-zk03az=
+private_subnet_1=subnet-d6ddafa0
+private_subnet_2=subnet-d6ddafa0
+private_subnet_3=subnet-d6ddafa0
+zk01az=ap-southeast-1a
+zk02az=ap-southeast-1a
+zk03az=ap-southeast-1a
