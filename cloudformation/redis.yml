@@ -123,8 +123,8 @@ Resources:
     Type: AWS::Route53::RecordSet
     Condition: RegionCondition
     Properties:
-      HostedZoneName: !Join ['', [!Ref 'HostedZoneName']]
-      Name: !Join ['', [!Ref 'MasterRecordName', '-', !Ref 'AB', ., !Ref 'HostedZoneName'], '.']
+      HostedZoneName: !Join ['', [!Ref 'HostedZoneName', '.']]
+      Name: !Join ['', [!Ref 'MasterRecordName', '-', !Ref 'AB', ., !Ref 'HostedZoneName', '.']]
       Type: CNAME
       TTL: 60
       ResourceRecords:
