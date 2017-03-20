@@ -26,7 +26,7 @@ solr_az=
 zookeeper.staging.squarefoot-singapore.ipga.local
 
 [zookeeper:vars]
-ab=a
+ab=b
 pkg=zookeeper-3.4.6.1-1.noarch.rpm
 instance_type=t2.micro
 zk1name=zk1
