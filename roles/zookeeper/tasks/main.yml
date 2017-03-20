@@ -1,18 +1,18 @@
 ---
   - name: setup zookeeper stack
     cloudformation:
-      stack_name: "zookeeper"
+      stack_name: "zookeeper-{{ab}}"
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
-      template: cloudformation/zookeeper-stack.yml
+      template: cloudformation/zookeeper.yml
       stack_policy: cloudformation/stack-policy.json
       template_parameters:
         AMI: "{{ami}}"
-        HostedZoneName: "{{private_host_zone}}"
+        HostedZoneName: "{{private_zone}}"
         InstanceType: "{{instance_type}}"
-        KeyName: "{{keyname}}"
-        VpcId: "{{vpc}}"
+        KeyName: "{{key_name}}"
+        VpcId: "{{aws_vpc_id}}"
         Pkg: "{{pkg}}"
         PrivateSubnet1: "{{private_subnet_1}}"
         PrivateSubnet2: "{{private_subnet_2}}"
@@ -23,10 +23,10 @@
         Zk01RecordName: "{{zk1name}}"
         Zk02RecordName: "{{zk2name}}"
         Zk03RecordName: "{{zk3name}}"
-        S3Repository: "{{s3repository}}"
-        S3Region: "{{s3region}}"
+        S3Repository: "{{s3_common_repository}}"
+        S3Region: "{{s3_region}}"
       tags:
         project: "{{project}}"
-        application: zookeeper
-        lob: MyFun
+        application: "zookeeper"
+        lob: "regional-web"
         env: "{{env}}"
