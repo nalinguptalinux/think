@@ -10,10 +10,12 @@ Parameters:
     Type: String
     Description: Tag for billing purpose
     Default: SquareFoot-Dev
+
   DesiredCapacity:
     Type: Number
     Default: '2'
     Description: Number of Desired Size AS instance
+
   Instancestype:
     Description: EC2 instance type.
     Type: String
@@ -24,36 +26,51 @@ Parameters:
     - m3.large
     - m4.large
     - m4.2xlarge
+
   KeyNamessh:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
     Type: AWS::EC2::KeyPair::KeyName
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
+
   MinSizeAS:
     Type: Number
     Default: '2'
     Description: Number of Min Size AS instance
+
   MaxSize:
     Type: Number
     Default: '4'
     Description: Maximum number of instances that can be launched in your ECS cluster.
+
+  NewRelicLicenseKey:
+    Description: New Relic License Key
+    Type: String
+
   NewRelicRPM:
     Description: New Relic RPM
     Type: String
-    Default: https://s3-ap-southeast-1.amazonaws.com/dev-sg-sfhk-infra-resources/newrelic/newrelic-repo-5-3.noarch.rpm
+
+  RecordName:
+    Description: The name of the DNS record to create.
+    Type: String
+
   ResourceBucketName:
     Description: Name of the S3 bucket to retrieve the downloaded scripts or installation files
     Type: String
+
   SubnetID:
     Description: Public subnets
     Type: CommaDelimitedList
     Default: subnet-49c6b43f,subnet-9c9bd5f8
+
   SumoLogicInstallerFileName:
     Description: The installation file for Sumo Logic Collector
     Type: String
-    Default: SumoCollector_linux_amd64_19_182-17.sh
+
   SumoLogicAccessId:
     Description: Sumo Logic access id
     Type: String
+
   SumoLogicAccessKey:
     Description: Sumo Logic access key
     Type: String
@@ -252,26 +269,25 @@ Resources:
                   - Ref: AWS::Region
                   - 'runas=root'
             "/opt/ipp/sumologic/sources.json":
-              content:
-                "Fn::Base64": !Sub |
-                  {
-                    "api.version": "v1",
-                    "sources": [
-                      {
-                        "sourceType": "LocalFile",
-                        "name": "docker-host-local",
-                        "pathExpression": "/var/lib/docker/containers/*/*.log",
-                        "category": "docker/local/json",
-                        "hostName": "dockerHost",
-                        "useAutolineMatching": false,
-                        "multilineProcessingEnabled": false,
-                        "timeZone": "UTC",
-                        "automaticDateParsing": true,
-                        "forceTimeZone": false,
-                        "defaultDateFormat": "MMM dd HH:mm:ss"
-                      }
-                    ]
-                  }
+              content: !Sub |
+                {
+                  "api.version": "v1",
+                  "sources": [
+                    {
+                      "sourceType": "LocalFile",
+                      "name": "docker-host-local",
+                      "pathExpression": "/var/lib/docker/containers/*/*.log",
+                      "category": "docker/local/json",
+                      "hostName": "dockerHost",
+                      "useAutolineMatching": false,
+                      "multilineProcessingEnabled": false,
+                      "timeZone": "UTC",
+                      "automaticDateParsing": true,
+                      "forceTimeZone": false,
+                      "defaultDateFormat": "MMM dd HH:mm:ss"
+                    }
+                  ]
+                }
           services:
             sysvinit:
               cfn-hup:
