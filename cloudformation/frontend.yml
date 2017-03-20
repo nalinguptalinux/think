@@ -315,15 +315,12 @@ Resources:
           /usr/bin/yum update -y
           /usr/bin/yum install -y sysstat nmap telnet curl wget
           /usr/bin/yum install -y aws-cfn-bootstrap
-
           #####------------Install Sumo Logic Collector on EC2 Host------------######
           /usr/bin/easy_install awscli
           /usr/local/bin/aws s3 cp s3://${ResourceBucketName}/sumologic/${SumoLogicInstallerFileName} /tmp/${SumoLogicInstallerFileName} --region ${AWS::Region}
           chmod +x /tmp/${SumoLogicInstallerFileName}
           /tmp/${SumoLogicInstallerFileName}  -q -VskipRegistration=true -Vephemeral=true -Vsources=/opt/ipp/sumologic/sources.json -Vsumo.accessid=${SumoLogicAccessId} -Vsumo.accesskey=${SumoLogicAccessKey}
           /bin/rm -f /tmp/${SumoLogicInstallerFileName}
-          /bin/echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
-
           ######-----------------Configure Hostname on EC2 Host-----------------######
           function configure_hosts {
             recordName=${RecordName}
@@ -338,7 +335,8 @@ Resources:
           nrsysmond-config --set license_key=${NewRelicLicenseKey}
           /etc/init.d/newrelic-sysmond start
           chkconfig newrelic-sysmond on
-
+          ######---------------------Final config steps-------------------------######
+          /bin/echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
           ######--------------------------Signal success------------------------######
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
 
