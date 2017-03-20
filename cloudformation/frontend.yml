@@ -318,7 +318,7 @@ Resources:
           #####------------Install Sumo Logic Collector on EC2 Host------------######
           /usr/bin/easy_install awscli
           /usr/local/bin/aws s3 cp s3://${ResourceBucketName}/sumologic/${SumoLogicInstallerFileName} /tmp/${SumoLogicInstallerFileName} --region ${AWS::Region}
-          chmod +x /tmp/${SumoLogicInstallerFileName}
+          /bin/chmod +x /tmp/${SumoLogicInstallerFileName}
           /tmp/${SumoLogicInstallerFileName}  -q -VskipRegistration=true -Vephemeral=true -Vsources=/opt/ipp/sumologic/sources.json -Vsumo.accessid=${SumoLogicAccessId} -Vsumo.accesskey=${SumoLogicAccessKey}
           /bin/rm -f /tmp/${SumoLogicInstallerFileName}
           ######-----------------Configure Hostname on EC2 Host-----------------######
@@ -327,15 +327,17 @@ Resources:
             instance_ip=$(curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
             domain=$(awk '/^search/ { print $2 }' /etc/resolv.conf)
             ipend=`echo $instance_ip | sed 's/\./\-/g'`
-            echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
-            hostname $recordName-$ipend
+            /bin/echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
+            /bin/hostname $recordName-$ipend
           }
           ######--------------Install NewRelic agent on EC2 Host----------------######
-          rpm -Uvhi ${NewRelicRPM}
-          nrsysmond-config --set license_key=${NewRelicLicenseKey}
+          /usr/local/bin/aws s3 cp s3://${ResourceBucketName}/newrelic/${NewRelicRPM} /tmp/${NewRelicRPM} --region ${AWS::Region}
+          rpm -Uvhi /tmp/${NewRelicRPM}
+          /usr/sbin/nrsysmond-config --set license_key=${NewRelicLicenseKey}
           /etc/init.d/newrelic-sysmond start
-          chkconfig newrelic-sysmond on
+          /sbin/chkconfig newrelic-sysmond on
           ######---------------------Final config steps-------------------------######
+          configure_hosts
           /bin/echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
           ######--------------------------Signal success------------------------######
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
