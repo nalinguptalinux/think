@@ -1,0 +1,10 @@
+---
+
+-  template: src=platform-hvm.json.j2 dest=/tmp/platform-hvm-{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}.json
+   register: script_path
+
+-  name: baking ami
+   command: packer build {{script_path['dest']}}
+
+-  name: cleanup
+   command: rm -rf {{script_path['dest']}}

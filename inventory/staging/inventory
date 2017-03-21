@@ -38,3 +38,18 @@ private_subnet_3=subnet-d6ddafa0
 zk01az=ap-southeast-1a
 zk02az=ap-southeast-1a
 zk03az=ap-southeast-1a
+
+[ami]
+localhost
+
+[ami:vars]
+region=ap-southeast-1
+source_ami=
+instance_type=m3.medium
+ssh_username=ec2-user
+keypair_name=
+vpc_id=
+subnet_id=
+provisioners_file=provisioners/ami/ami.sh
+instance_profile=packer-builder
+timestamp={{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}

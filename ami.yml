@@ -1,0 +1,7 @@
+---
+- hosts: localhost
+  connection: local
+  user: ec2-user
+  gather_facts: False
+  roles:
+    - ami
