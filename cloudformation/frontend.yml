@@ -358,7 +358,7 @@ Resources:
       - LoadBalancerPort: '80'
         InstancePort: '3000'
         Protocol: TCP
-      Scheme: internet-facing
+      Scheme: internal
       ConnectionDrainingPolicy:
         Enabled: true
         Timeout: 45
@@ -665,7 +665,7 @@ Resources:
       - LoadBalancerPort: '80'
         InstancePort: '4000'
         Protocol: TCP
-      Scheme: internet-facing
+      Scheme: internal
       ConnectionDrainingPolicy:
         Enabled: true
         Timeout: 45
