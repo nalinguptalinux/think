@@ -224,7 +224,7 @@ Resources:
     Type: AWS::Route53::RecordSetGroup
     Properties:
       HostedZoneName: !Ref 'DnsZoneName'
-      Comment: Domain records for my test server.
+      Comment: Domain records for Squarefoot Jenkins Server.
       RecordSets:
       - Name: !Ref 'DnsPrefix'
         Type: A
