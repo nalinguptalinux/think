@@ -37,7 +37,13 @@ aws s3 cp s3://${ResourceBucket}/ruby/${Ruby} /tmp/${Ruby} --region ${Region}
 tar zxvf /tmp/${Ruby} -C /tmp/ && cd /tmp/ruby* && sudo ./configure && sudo make && sudo make install
 install_from_s3 ${ResourceBucket} 'ruby' ${RubyGems} ${Region} && gem install bundler io-console --no-ri --no-rdoc
 
-#Install Chrony
+#Setup NTP for time correction
+sudo service ntpd start
+sudo chkconfig ntpd on
+sudo chkconfig --list ntpd
+ntpstat
+
+#For gem ffi just in case
 sudo ln -s /usr/lib64/libffi.so.6.0.1 /usr/lib64/libffi.so.5
 
 #Cleanup and Exit
