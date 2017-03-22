@@ -1,0 +1,36 @@
+{
+  "builders": [{
+    "type": "amazon-ebs",
+    "region": "{{aws_region}}",
+    "source_ami": "{{ami}}",
+    "instance_type": "{{instance_type}}",
+    "ssh_username": "{{ssh_username}}",
+    "ami_name": "platform-hvm-{{timestamp}}",
+    "ssh_keypair_name":"{{key_name}}",
+    "ssh_private_key_file": "{{private_key_file}}",
+    "associate_public_ip_address": true,
+    "vpc_id": "{{aws_vpc_id}}",
+    "subnet_id": "{{nat_subnet_id}}",
+    "iam_instance_profile": "{{instance_profile}}",
+    "ssh_timeout": "5m"
+  }],
+  "provisioners": [
+      {
+        "type": "shell",
+        "script": "{{provisioners_file}}",
+        "environment_vars": [
+          "ResourceBucket={{resource_bucket_name}}",
+          "Region={{aws_region}}",
+          "JavaOpenJDKHeadless={{java_headless_rpm}}",
+          "JavaOpenJDK={{java_rpm}}",
+          "NewRelicRPM={{new_relic_rpm}}",
+          "NewRelicLicenseKey={{new_relic_license_key}}",
+          "SumoLogicInstaller={{sumo_logic_installer}}",
+          "SumoLogicAccessId={{sumo_logic_access_id}}",
+          "SumoLogicAccessKey={{sumo_logic_access_key}}",
+          "Ruby={{ruby_package}}",
+          "RubyGems={{rubygems_rpm}}"
+        ]
+        }
+  ]
+}

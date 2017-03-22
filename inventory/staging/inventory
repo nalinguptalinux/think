@@ -43,13 +43,13 @@ zk03az=ap-southeast-1a
 localhost
 
 [ami:vars]
-region=ap-southeast-1
-source_ami=
 instance_type=m3.medium
 ssh_username=ec2-user
-keypair_name=
-vpc_id=
-subnet_id=
+nat_subnet_id=subnet-d7ddafa1
 provisioners_file=provisioners/ami/ami.sh
-instance_profile=packer-builder
+instance_profile=s3-read
 timestamp={{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}
+java_headless_rpm=java-1.8.0-openjdk-headless-1.8.0.65-0.b17.el6_7.x86_64.rpm
+java_rpm=java-1.8.0-openjdk-1.8.0.65-0.b17.el6_7.x86_64.rpm
+ruby_package=ruby-2.1.5.tar.gz
+rubygems_rpm=rubygem-bundle-1.2.1-3.x86_64.rpm

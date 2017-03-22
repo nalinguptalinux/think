@@ -23,9 +23,11 @@ private_subnet_supernet: 10.39.32.0/22
 ami: ami-dc9339bf
 bastion_public_ip:  52.74.223.189
 ssh_from_bastion_sg_id:  sg-042cae63
-
-s3_common_repository: prod-sg-sfhk-infra-common
-s3_region: ap-southeast-1
 pager_duty_arn: arn:aws:sns:ap-southeast-1:866270780045:Low-Priority-Squarefoot-Staging-PagerDuty
-new_relic_rpm: https://s3-ap-southeast-1.amazonaws.com/dev-sg-sfhk-infra-resources/newrelic/newrelic-repo-5-3.noarch.rpm
+
+resource_bucket_name: prod-sg-sfhk-infra-common
+sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
+sumo_logic_access_id: su37UzMYy9KsP0
+sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf
+new_relic_rpm: newrelic-sysmond-2.3.0.132-1.x86_64.rpm
 new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df

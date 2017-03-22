@@ -19,7 +19,7 @@
         RecordName: "frontend-{{ab}}-{{build}}"
         ResourceBucketName: "{{resource_bucket_name}}"
         SubnetID: "{{public_subnets}}"
-        SumoLogicInstallerFileName: "{{sumo_logic_installer_file_name}}"
+        SumoLogicInstallerFileName: "{{sumo_logic_installer}}"
         SumoLogicAccessId: "{{sumo_logic_access_id}}"
         SumoLogicAccessKey: "{{sumo_logic_access_key}}"
 

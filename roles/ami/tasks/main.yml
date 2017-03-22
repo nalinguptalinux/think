@@ -1,6 +1,6 @@
 ---
 
--  template: src=platform-hvm.json.j2 dest=/tmp/platform-hvm-{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}.json
+-  template: src=ami.json.j2 dest=/tmp/ami-{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}.json
    register: script_path
 
 -  name: baking ami
