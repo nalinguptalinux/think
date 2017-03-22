@@ -285,6 +285,7 @@ Resources:
 
   Zk02:
     Type: AWS::EC2::Instance
+    DependsOn: !Ref 'Zk01'
     Metadata:
       AWS::CloudFormation::Init:
         configSets:
@@ -412,6 +413,7 @@ Resources:
 
   Zk03:
     Type: AWS::EC2::Instance
+    DependsOn: !Ref 'Zk02'
     Metadata:
       AWS::CloudFormation::Init:
         configSets:
