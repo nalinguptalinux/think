@@ -407,7 +407,7 @@ Resources:
             - Fn::GetAtt:
               - ECSSrpPdpELB
               - DNSName
-        Image: 331887960933.dkr.ecr.ap-southeast-1.amazonaws.com/nginx:sf-latest
+        Image: 331887960933.dkr.ecr.ap-southeast-1.amazonaws.com/nginx:latest
 
   ECSWebELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
