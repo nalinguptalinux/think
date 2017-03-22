@@ -1,23 +1,17 @@
 # Infra-Code
 AWS Infrastructure Code for IPP Regional Web
 
-##For Setting up VPC using Terraform
-
-* cd terraform-vpc
-* export AWS_ACCESS_KEY_ID=xxxx
-* export AWS_SECRET_ACCESS_KEY=xx/xx/xx
-* export AWS_DEFAULT_REGION=eu-west-1
-* terraform get -var-file="network.tfvars"
-* terraform plan -var-file="network.tfvars"
-* terraform apply -var-file="network.tfvars"
-
-####Note: Do not run this against existing aws environments with VPC
-
 ## For Cloudformation
 
 ### Dependencies
 - [Ansible](http://docs.ansible.com/ansible/intro_installation.html)
 - [AWS CLI](https://aws.amazon.com/cli/)
+
+### How to create AMI's
+
+```sh
+ansible-playbook ami.yml -i inventory/staging/ -e "private_key_file=/home/hash/aws/awscloud-squarefoot-staging-singapore.pem"
+```
 
 ### How to run the deployment task.
 ##### 1. export your AWS keys in env.
@@ -62,6 +56,18 @@ build=build-171
 
 *  vagrant up --provider virtualbox
 
+
+##For Setting up VPC using Terraform
+
+* cd terraform-vpc
+* export AWS_ACCESS_KEY_ID=xxxx
+* export AWS_SECRET_ACCESS_KEY=xx/xx/xx
+* export AWS_DEFAULT_REGION=eu-west-1
+* terraform get -var-file="network.tfvars"
+* terraform plan -var-file="network.tfvars"
+* terraform apply -var-file="network.tfvars"
+
+####Note: Do not run this against existing aws environments with VPC
 ---
 Spend some time on [ansible playbooks](http://docs.ansible.com/ansible/playbooks.html) and [cloudformation](https://aws.amazon.com/cloudformation/)
 

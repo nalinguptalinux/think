@@ -23,8 +23,7 @@
         Zk01RecordName: "{{zk1name}}"
         Zk02RecordName: "{{zk2name}}"
         Zk03RecordName: "{{zk3name}}"
-        S3Repository: "{{s3_common_repository}}"
-        S3Region: "{{s3_region}}"
+        S3Repository: "{{resource_bucket_name}}"
       tags:
         project: "{{project}}"
         application: "zookeeper"

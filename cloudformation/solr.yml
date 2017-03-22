@@ -4,15 +4,8 @@ Parameters:
   Pkg:
     Description: Name of the solr package to be installed
     Type: String
-  S3Repository:
+  ResourceBucketName:
     Description: Name of the S3 bucket containing all rpm packages
-    Type: String
-  SplunkIndex:
-    Description: Splunk index for solr log
-    Type: String
-    Default: china-site
-  S3Region:
-    Description: Name of the S3Region containing all rpm packages
     Type: String
   AppPort:
     Description: Application Http port to listen on
@@ -28,7 +21,7 @@ Parameters:
     Description: Name of an existing EC2 KeyPair to enable SSH access
     Type: String
   AB:
-    Description: 'Define which environment for the Splunk logs sourcetype: a / b'
+    Description: The name of the stack to deploy
     Type: String
     AllowedValues:
     - a
@@ -64,6 +57,13 @@ Parameters:
   VpcNet:
     Description: AutoScaling min size
     Type: String
+  NewRelicLicenseKey:
+    Description: New Relic License Key
+    Type: String
+  NewRelicRPM:
+    Description: New Relic RPM
+    Type: String
+
 Conditions:
   RegionCondition: !Not [!Equals [!Ref 'AWS::Region', cn-north-1]]
 Resources:
@@ -87,12 +87,12 @@ Resources:
             Resource: '*'
           - Effect: Allow
             Action: s3:GetObject
-            Resource: !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'S3Repository',
-                  /*]], !Join ['', ['arn:aws-cn:s3:::', !Ref 'S3Repository', /*]]]
+            Resource: !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'ResourceBucketName',
+                  /*]], !Join ['', ['arn:aws-cn:s3:::', !Ref 'ResourceBucketName', /*]]]
           - Effect: Allow
             Action: s3:ListBucket
-            Resource: !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'S3Repository']],
-              !Join ['', ['arn:aws-cn:s3:::', !Ref 'S3Repository']]]
+            Resource: !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'ResourceBucketName']],
+              !Join ['', ['arn:aws-cn:s3:::', !Ref 'ResourceBucketName']]]
   Profile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -147,9 +147,6 @@ Resources:
                 stack=${AWS::StackId}
                 region=${AWS::Region}
                 interval=1
-              mode: '000400'
-              owner: root
-              group: root
             /etc/cfn/hooks.d/cfn-auto-reloader.conf:
               content: !Sub |
                 [cfn-auto-reloader-hook]
@@ -206,13 +203,17 @@ Resources:
           configure_hosts
 
           /opt/aws/bin/cfn-init -s ${AWS::StackName} -r SolrASLaunchConf  --region ${AWS::Region} || error_exit 'Failed to run cfn-init'
-          aws s3 cp s3://${S3Repository}/rpm/centos6/noarch/packages/solr-6.0.0.${Pkg}-1.noarch.rpm /tmp/ --region ${S3Region} || error_exit 'faild to download solr rpm package'
-          yum install -y /tmp/solr-6.0.0.${Pkg}-1.noarch.rpm || error_exit 'failed to install solr rpm package'
+          aws s3 cp s3://${ResourceBucketName}/solr/${Pkg} /tmp/ --region ${AWS::Region} || error_exit 'failed to download solr rpm package'
+          yum install -y /tmp/${Pkg} || error_exit 'failed to install solr rpm package'
           echo 'SOLR_JAVA_MEM="-Xms${JVMHeapSize} -Xmx${JVMHeapSize}"' >> /etc/default/solr.in.sh
+          sed -i 's/NEWRELIC_KEY=/NEWRELIC_KEY=${NewRelicLicenseKey}/g' /etc/rea/credentials/solr-cloud.sh
+          sed -i 's/SOLR_ZK_HOSTS=/NEWRELIC_KEY=${ZkHosts}/g' /etc/rea/credentials/solr-cloud.sh
+          /etc/init.d/newrelic-sysmond start
+
           service solr start || error_exit 'failed to start solr application'
           # Start up the cfn-hup daemon to listen for changes
           /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
-          /opt/aws/bin/cfn-signal -e 0 -r "SolrInstance instance Stack Complete."  ${WaitHandle}
+          /opt/aws/bin/cfn-signal -e 0 -r "SolrInstance instance Stack Complete."  '${WaitHandle}'
   SolrPlacementGroup:
     Type: AWS::EC2::PlacementGroup
     Properties:
