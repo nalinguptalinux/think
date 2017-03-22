@@ -26,8 +26,8 @@ sudo /sbin/chkconfig newrelic-sysmond on
 #Sumologic Setup
 aws s3 cp s3://${ResourceBucket}/sumologic/${SumoLogicInstaller} /tmp/${SumoLogicInstaller} --region ${Region}
 sudo chmod +x /tmp/${SumoLogicInstaller}
-sudo mkdir -p /opt/sumologic/
-sudo echo '{"api.version": "v1","sources": []}' > /opt/sumologic/sources.json
+mkdir -p /opt/sumologic/
+echo '{"api.version": "v1","sources": []}' > /opt/sumologic/sources.json
 sudo /tmp/${SumoLogicInstaller}  -q -VskipRegistration=true -Vephemeral=true -Vsources=/opt/sumologic/sources.json -Vsumo.accessid=${SumoLogicAccessId} -Vsumo.accesskey=${SumoLogicAccessKey}
 
 
