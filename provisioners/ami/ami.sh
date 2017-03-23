@@ -2,7 +2,8 @@
 env
 
 # install dependencies
-sudo yum -y install gcc ruby-devel rubygems20 aws-cli libxslt-devel libyaml-devel libxml2-devel gdbm-devel libffi-devel zlib-devel openssl-devel readline-devel curl-devel pcre-devel git memcached-devel valgrind-devel ImageMagick-devel ImageMagick
+sudo yum -y install gcc ruby-devel logrotate rubygems20 aws-cli libxslt-devel libyaml-devel libxml2-devel gdbm-devel libffi-devel zlib-devel openssl-devel readline-devel curl-devel pcre-devel git memcached-devel valgrind-devel ImageMagick-devel ImageMagick
+sudo yum install --enablerepo epel -y daemonize
 
 function install_from_s3 {
 echo $@
