@@ -1,0 +1,15 @@
+---
+  - name: ECR Stack
+    cloudformation:
+      stack_name: "ecr-{{repository_name}}-{{aws_region}}"
+      state: present
+      region: "{{aws_region}}"
+      disable_rollback: true
+      template: cloudformation/ecr.yml
+      template_parameters:
+        RepositoryName: "{{repository_name}}"
+      tags:
+        project: "{{project}}"
+        application: ecr
+        lob: International
+        env: "{{env}}"
