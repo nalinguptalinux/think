@@ -20,7 +20,7 @@ nat_subnet_supernet: 10.39.40.0/22
 public_subnet_supernet: 10.39.36.0/22
 private_subnet_supernet: 10.39.32.0/22
 
-ami: ami-a250edc1
+ami: ami-9a44f9f9
 bastion_public_ip:  52.74.223.189
 ssh_from_bastion_sg_id:  sg-042cae63
 pager_duty_arn: arn:aws:sns:ap-southeast-1:866270780045:Low-Priority-Squarefoot-Staging-PagerDuty
