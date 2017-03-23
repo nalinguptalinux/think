@@ -234,7 +234,7 @@ Resources:
         Value: !Ref 'AWS::StackName'
         PropagateAtLaunch: true
       - Key: Name
-        Value: !Join [., [!Ref 'RecordName', !Ref 'Pkg', !Ref 'AB', !Ref 'HostedZoneName']]
+        Value: !Join [., [!Ref 'RecordName', !Ref 'AB', !Ref 'HostedZoneName']]
         PropagateAtLaunch: true
       - Key: Pkg
         Value: !Ref 'Pkg'
