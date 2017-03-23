@@ -60,6 +60,9 @@ Parameters:
   NewRelicLicenseKey:
     Description: New Relic License Key
     Type: String
+  ZkHosts:
+    Description: Zookeeper hosts
+    Type: String
   NewRelicRPM:
     Description: New Relic RPM
     Type: String
