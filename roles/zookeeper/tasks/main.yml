@@ -26,6 +26,6 @@
         S3Repository: "{{resource_bucket_name}}"
       tags:
         project: "{{project}}"
-        application: "zookeeper"
+        application: "{{application}}"
         lob: "regional-web"
         env: "{{env}}"

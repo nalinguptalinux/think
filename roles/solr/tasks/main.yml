@@ -5,14 +5,14 @@
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
-      template: cloudformation/aws/solr-stack.json
-      stack_policy: cloudformation/aws/stack-policy.json
+      template: cloudformation/solr.yml
+      stack_policy: cloudformation/stack-policy.json
       template_parameters:
         AMI: "{{ami}}"
-        HostedZoneName: "{{private_host_zone}}"
+        HostedZoneName: "{{private_zone}}"
         InstanceType: "{{instance_type}}"
-        KeyName: "{{keyname}}"
-        VpcID: "{{vpc}}"
+        KeyName: "{{key_name}}"
+        VpcID: "{{aws_vpc_id}}"
         Pkg: "{{pkg}}"
         RecordName: solr
         AppPort: '8983'
@@ -21,12 +21,13 @@
         PrivateSubnets: "{{solr_subnet}}"
         ASGMaxSize: "{{as_max}}"
         ASGMinSize: "{{as_min}}"
-        S3Repository: "{{s3_dist_bucket}}"
-        S3Region: "{{s3_dist_region}}"
+        ResourceBucketName: "{{resource_bucket_name}}"
         JVMHeapSize: "{{jvm_heap_size}}"
-        VpcNet: "{{vpc_net}}"
+        VpcNet: "{{vpc_cidr}}"
+        ZkHosts: "{{solr_zk_hosts}}"
+        NewRelicLicenseKey: "{{new_relic_license_key}}"
       tags:
         project: "{{project}}"
-        application: solr
-        lob: MyFun
+        application: "{{application}}"
+        lob: "regional-web"
         env: "{{env}}"

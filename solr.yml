@@ -1,5 +1,4 @@
 ---
-- include: config-svc.yml
 
 - hosts: solr
   connection: local

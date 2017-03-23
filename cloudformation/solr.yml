@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: solr Stack
+Description: Solr Stack
 Parameters:
   Pkg:
     Description: Name of the solr package to be installed
@@ -63,16 +63,13 @@ Parameters:
   ZkHosts:
     Description: Zookeeper hosts
     Type: String
-  NewRelicRPM:
-    Description: New Relic RPM
-    Type: String
 
 Conditions:
   RegionCondition: !Not [!Equals [!Ref 'AWS::Region', cn-north-1]]
 Resources:
   Role:
     Type: AWS::IAM::Role
-    Properties:http://169.254.169.254/latest/meta-data
+    Properties:
       Path: /
       AssumeRolePolicyDocument:
         Statement:
@@ -209,18 +206,18 @@ Resources:
           aws s3 cp s3://${ResourceBucketName}/solr/${Pkg} /tmp/ --region ${AWS::Region} || error_exit 'failed to download solr rpm package'
           yum install -y /tmp/${Pkg} || error_exit 'failed to install solr rpm package'
           echo 'SOLR_JAVA_MEM="-Xms${JVMHeapSize} -Xmx${JVMHeapSize}"' >> /etc/default/solr.in.sh
-          sed -i 's/NEWRELIC_KEY=/NEWRELIC_KEY=${NewRelicLicenseKey}/g' /etc/rea/credentials/solr-cloud.sh
-          sed -i 's/SOLR_ZK_HOSTS=/NEWRELIC_KEY=${ZkHosts}/g' /etc/rea/credentials/solr-cloud.sh
+          sed -i 's/export NEWRELIC_KEY=/export NEWRELIC_KEY=${NewRelicLicenseKey}/g' /etc/rea/credentials/solr-cloud.sh
+          sed -i 's/export SOLR_ZK_HOSTS=/export SOLR_ZK_HOSTS=${ZkHosts}/g' /etc/rea/credentials/solr-cloud.sh
           /etc/init.d/newrelic-sysmond start
 
           service solr start || error_exit 'failed to start solr application'
           # Start up the cfn-hup daemon to listen for changes
           /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
           /opt/aws/bin/cfn-signal -e 0 -r "SolrInstance instance Stack Complete."  '${WaitHandle}'
-  SolrPlacementGroup:
-    Type: AWS::EC2::PlacementGroup
-    Properties:
-      Strategy: cluster
+#  SolrPlacementGroup:
+#    Type: AWS::EC2::PlacementGroup
+#    Properties:
+#      Strategy: cluster
   SolrASGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
@@ -231,7 +228,7 @@ Resources:
       MaxSize: !Ref 'ASGMaxSize'
       LoadBalancerNames:
       - !Ref 'SolrELB'
-      PlacementGroup: !Ref 'SolrPlacementGroup'
+#      PlacementGroup: !Ref 'SolrPlacementGroup'
       Tags:
       - Key: CloudFormationStack
         Value: !Ref 'AWS::StackName'
@@ -246,8 +243,9 @@ Resources:
     Type: AWS::Route53::RecordSet
     Condition: RegionCondition
     Properties:
-      HostedZoneName: !Ref 'HostedZoneName'
-      Name: !Join [., [!Ref 'RecordName', !Ref 'Pkg', !Ref 'AB', !Ref 'HostedZoneName']]
+      HostedZoneName:  !Join ['', [!Ref 'HostedZoneName', '.']]
+      Comment: DNS name for solr
+      Name: !Join ['', [!Ref 'RecordName', ., !Ref 'AB', ., !Ref 'HostedZoneName', .]]
       Type: CNAME
       TTL: 60
       ResourceRecords:

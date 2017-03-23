@@ -13,19 +13,22 @@ backup_duration=5
 solr.staging.squarefoot-singapore.ipga.local
 
 [solr:vars]
-ab=a
+application=solr
+ab=b
 pkg=solr-6.0.0.4-1.noarch.rpm
 instance_type=t2.medium
-as_max=6
-as_min=6
+as_max=3
+as_min=3
 jvm_heap_size=3g
-solr_subnet=
-solr_az=
+solr_subnet=subnet-d6ddafa0
+solr_az=ap-southeast-1a
+solr_zk_hosts=zk1:2181,zk2:2181,zk3:2181
 
 [zookeeper]
 zookeeper.staging.squarefoot-singapore.ipga.local
 
 [zookeeper:vars]
+application=zookeeper
 ab=b
 pkg=zookeeper-3.4.6.1-1.noarch.rpm
 instance_type=t2.micro
@@ -53,3 +56,4 @@ java_headless_rpm=java-1.8.0-openjdk-headless-1.8.0.65-0.b17.el6_7.x86_64.rpm
 java_rpm=java-1.8.0-openjdk-1.8.0.65-0.b17.el6_7.x86_64.rpm
 ruby_package=ruby-2.1.5.tar.gz
 rubygems_rpm=rubygem-bundle-1.2.1-3.x86_64.rpm
+base_ami=ami-dc9339bf
