@@ -1,0 +1,12 @@
+[frontend]
+web.dev.rumah123.ipp.com.
+
+[frontend:vars]
+endpoint=dev.rumah123.ipp.com
+application=frontend
+ab=a
+ecs_instance_type=t2.medium
+build=latest
+min_asg_size=2
+max_asg_size=4
+desired_asg_capacity=2
