@@ -40,17 +40,17 @@ install_from_s3 ${ResourceBucket} 'ruby' ${RubyGems} ${Region}
 sudo gem install bundler io-console --no-ri --no-rdoc
 
 #Setup NTP for time correction
-sudo service ntpd start
+sudo service ntpd restart
 sudo chkconfig ntpd on
 sudo chkconfig --list ntpd
-sudo ntpstat
+sudo ntpstat || echo 'Time not in sync yet, hopefully at next boot of this ami'
 
 #For gem ffi just in case
 sudo ln -s /usr/lib64/libffi.so.6.0.1 /usr/lib64/libffi.so.5
 
 #Cleanup and Exit
 sudo yum clean all
-sudo rm -rf /tmp/*
 sudo rm -f /home/ec2-user/.ssh/authorized_keys
 sudo rm -f /root/.ssh/authorized_keys
+sudo rm -rf /tmp/*
 echo 'installation complete'
