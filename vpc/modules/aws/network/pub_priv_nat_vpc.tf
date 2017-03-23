@@ -130,6 +130,14 @@ resource "aws_network_acl" "public" {
     to_port = 65535
   }
   ingress {
+    protocol = "udp"
+    rule_no = 5
+    action = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port = 123
+    to_port = 123
+  }
+  ingress {
     protocol = "icmp"
     rule_no = 6
     action = "allow"
@@ -211,6 +219,14 @@ resource "aws_network_acl" "private" {
     to_port = 65535
   }
   ingress {
+    protocol = "udp"
+    rule_no = 5
+    action = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port = 123
+    to_port = 123
+  }
+  ingress {
     protocol = "icmp"
     rule_no = 7
     action = "allow"
@@ -273,6 +289,14 @@ resource "aws_network_acl" "nat" {
     cidr_block =  "0.0.0.0/0"
     from_port = 1024
     to_port = 65535
+  }
+  ingress {
+    protocol = "udp"
+    rule_no = 5
+    action = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port = 123
+    to_port = 123
   }
   ingress {
     protocol = "icmp"
