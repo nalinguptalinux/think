@@ -3,6 +3,14 @@ Description: >
 
 Parameters:
 
+  BusinessUnit:
+    Type: String
+    Description: Two letters country code for billing purpose
+    AllowedValues:
+    - HK
+    - MY
+    - ID
+
   VPC:
     Description: Choose which VPC the Jenkins server should be installed to
     Type: AWS::EC2::VPC::Id
@@ -213,6 +221,8 @@ Resources:
       Tags:
       - Key: Name
         Value: jenkins-server
+      - Key: "business unit"
+        Value: !Ref BusinessUnit
       BlockDeviceMappings:
         -
           DeviceName: /dev/xvda
