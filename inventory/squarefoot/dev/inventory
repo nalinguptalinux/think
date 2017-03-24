@@ -10,3 +10,6 @@ build=latest
 min_asg_size=2
 max_asg_size=4
 desired_asg_capacity=2
+hp_ecr_repo=hp
+srp_pdp_ecr_repo=srp-pdp
+nginx_ecr_repo=nginx
