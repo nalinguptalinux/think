@@ -4,5 +4,4 @@
   user: ec2-user
   gather_facts: False
   roles:
-    - {role: ecr, repo: 'capi-squarefoot-listing'}
-    - {role: ecr, repo: 'capi-squarefoot-suggestion'}
+    - ecr

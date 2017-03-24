@@ -1,4 +1,5 @@
 [ecr]
 ecr.squarefoot-singapore.ipga.local
 [ecr:vars]
-repository_name={{repo}}
+repository_name=hp
+account_arns=arn:aws:iam::866270780045:root,arn:aws:iam::394595319667:root,arn:aws:iam::331887960933:root

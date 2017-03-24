@@ -4,6 +4,9 @@ Parameters:
   RepositoryName:
     Description: repository name of the ECR
     Type: String
+  AccountARNs:
+    Description: "Comma-delimited list of three CIDR blocks"
+    Type: CommaDelimitedList
 Resources:
   Repository:
     Type: AWS::ECR::Repository
@@ -16,10 +19,7 @@ Resources:
             Sid: allowCrossAccountPullAndPush
             Effect: Allow
             Principal:
-              AWS:
-                - arn:aws:iam::866270780045:root
-                - arn:aws:iam::394595319667:root
-                - arn:aws:iam::331887960933:root
+              AWS: !Ref 'AccountARNs'
             Action:
               - ecr:GetDownloadUrlForLayer
               - ecr:BatchGetImage

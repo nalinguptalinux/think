@@ -8,8 +8,8 @@
       template: cloudformation/ecr.yml
       template_parameters:
         RepositoryName: "{{repository_name}}"
+        AccountARNs: "{{account_arns}}"
       tags:
         project: "{{project}}"
-        application: ecr
-        lob: International
+        lob: "regional-web"
         env: "{{env}}"
