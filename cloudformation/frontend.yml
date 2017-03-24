@@ -11,6 +11,14 @@ Parameters:
     Description: Tag for billing purpose
     Default: SquareFoot-Dev
 
+  BusinessUnit:
+    Type: String
+    Description: Two letters country code for billing purpose
+    AllowedValues:
+    - HK
+    - MY
+    - ID
+
   DesiredCapacity:
     Type: Number
     Default: '2'
@@ -154,6 +162,10 @@ Resources:
       DesiredCapacity:
         Ref: DesiredCapacity
       Tags:
+      - Value:
+          Ref: BusinessUnit
+        Key: "business unit"
+        PropagateAtLaunch: true
       - Value:
           Ref: BillingTag
         Key: Billing
@@ -381,6 +393,10 @@ Resources:
       CrossZone: true
       Tags:
       - Value:
+          Ref: BusinessUnit
+        Key: "business unit"
+        PropagateAtLaunch: true
+      - Value:
           Ref: BillingTag
         Key: Billing
       - Value:
@@ -449,6 +465,9 @@ Resources:
         Enabled: true
         Timeout: 45
       Tags:
+      - Value:
+          Ref: BusinessUnit
+        Key: "business unit"
       - Value:
           Ref: BillingTag
         Key: Billing
@@ -687,6 +706,9 @@ Resources:
         Timeout: 45
       CrossZone: true
       Tags:
+      - Value:
+          Ref: BusinessUnit
+        Key: "business unit"
       - Value:
           Ref: BillingTag
         Key: Billing

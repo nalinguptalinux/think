@@ -9,6 +9,7 @@
       stack_policy: "cloudformation/stack-policy.json"
       template_parameters:
         BillingTag: "{{project}}"
+        BusinessUnit: "{{business_unit}}"
         DesiredCapacity: "{{desired_asg_capacity}}"
         ECRRegistry: "{{deployment_ecr}}"
         HpECRRepo: "{{hp_ecr_repo}}"
