@@ -89,6 +89,39 @@ Mappings:
 
 Resources:
 
+  JenkinsInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: jenkins
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - s3:*
+            - ecr:GetAuthorizationToken
+            - ecr:BatchCheckLayerAvailability
+            - ecr:GetDownloadUrlForLayer
+            - ecr:GetRepositoryPolicy
+            - ecr:DescribeRepositories
+            - ecr:ListImages
+            - ecr:DescribeImages
+            - ecr:BatchGetImage
+            - ecr:InitiateLayerUpload
+            - ecr:UploadLayerPart
+            - ecr:CompleteLayerUpload
+            - ecr:PutImage
+            Resource: "*"
+
   EC2Instance:
     Type: AWS::EC2::Instance
     Metadata:
@@ -168,6 +201,7 @@ Resources:
 
     Properties:
       InstanceType: !Ref 'InstanceType'
+      Role: !Ref JenkinsInstanceRole
       Tags:
       - Key: String
         Value: Jenkins
