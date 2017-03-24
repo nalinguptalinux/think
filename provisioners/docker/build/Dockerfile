@@ -7,8 +7,14 @@ RUN yum install -y rpm-build
 
 ENV JAVA_HOME /usr/lib/jvm/java-1.8.0
 
-RUN yum -y install nodejs npm
-RUN yum install -y python-pip make gcc python-devel && pip install awscli
+RUN yum install -y make gcc wget
+RUN curl --silent --location https://rpm.nodesource.com/setup_7.x | bash -
+RUN yum -y install nodejs
+
+RUN wget https://dl.yarnpkg.com/rpm/yarn.repo -O /etc/yum.repos.d/yarn.repo
+RUN yum install -y yarn
+
+RUN yum install -y python-pip python-devel && pip install awscli
 
 ENV JAVA_HOME /usr/lib/jvm/java-1.8.0
 
