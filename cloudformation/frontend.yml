@@ -121,7 +121,7 @@ Resources:
         Environment:
         - Name: NODE_ENV
           Value: staging
-        Image: !Ref HpECRRepo
+        Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'HpECRRepo']]
 
   ECSAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -423,7 +423,7 @@ Resources:
             - Fn::GetAtt:
               - ECSSrpPdpELB
               - DNSName
-        Image: !Ref NginxECRRepo
+        Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'NginxECRRepo']]
 
   ECSWebELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
@@ -670,7 +670,7 @@ Resources:
         Environment:
         - Name: NODE_ENV
           Value: staging
-        Image: !Ref SrpPdpECRRepo
+        Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'SrpPdpECRRepo']]
 
   ECSSrpPdpELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
