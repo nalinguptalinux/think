@@ -395,7 +395,6 @@ Resources:
       - Value:
           Ref: BusinessUnit
         Key: "business unit"
-        PropagateAtLaunch: true
       - Value:
           Ref: BillingTag
         Key: Billing
