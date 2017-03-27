@@ -59,10 +59,10 @@ build=build-171
 
 ##For Setting up VPC using Terraform
 
-* cd terraform-vpc
-* export AWS_ACCESS_KEY_ID=xxxx
-* export AWS_SECRET_ACCESS_KEY=xx/xx/xx
-* export AWS_DEFAULT_REGION=region for your vpc
+* `cd terraform-vpc`
+* `export AWS_ACCESS_KEY_ID=xxxx`
+* `export AWS_SECRET_ACCESS_KEY=xx/xx/xx`
+* `export AWS_DEFAULT_REGION=region for your vpc`
 
 1. You need to update the tfvars for your environment
 1. Once you run the script please copy your tfstate to a environment specific directory(Never create/modify tfstate manually, it is automatically generated)
@@ -70,10 +70,11 @@ build=build-171
 
 To configure a environment:
 
-* terraform get -var-file="environment.tfvars"
-* terraform plan -var-file="environment.tfvars" --state="tfstate/website/environment/environment.tfstate"
-e.g. * terraform plan -var-file="tfvars/ipropertymy/development-ap-southeast-1.tfvars"  --state="tfstate/ipropertymy/development/iproperty-my-dev.tfstate"
-* terraform apply -var-file="environment.tfvars" --state="tfstate/website/environment/environment.tfstate"
+* `terraform get -var-file="environment.tfvars"`
+* `terraform plan -var-file="environment.tfvars" --state="tfstate/website/environment/environment.tfstate"`
+e.g.
+* `terraform plan -var-file="tfvars/ipropertymy/development-ap-southeast-1.tfvars" --state="tfstate/ipropertymy/development/iproperty-my-dev.tfstate`
+* `terraform apply -var-file="environment.tfvars" --state="tfstatewebsite/environment/environment.tfstate"`
 
 
 
