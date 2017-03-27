@@ -1,5 +1,7 @@
 provider "aws" {
   region = "${var.region}"
+  profile = "ipropertymydev"
+  shared_credentials_file = "/root/.aws/credentials"
 }
 module "network" {
   source = "./modules/aws/network"
