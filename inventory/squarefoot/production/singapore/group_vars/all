@@ -26,7 +26,7 @@ private_subnet_supernet: 10.39.0.0/22
 ami: ami-dc9339bf
 bastion_public_ip: 52.74.72.75
 ssh_from_bastion_sg_id: sg-6094f007
-pager_duty_arn: arn:aws:sns:ap-southeast-1:678965432744:Low-Priority-Squarefoot-Prod-Tk-PagerDuty
+pager_duty_arn: arn:aws:sns:ap-southeast-1:678965432744:Low-Priority-Squarefoot-Prod-Sg-PagerDuty
 
 resource_bucket_name: prod-sg-sfhk-infra-common
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
