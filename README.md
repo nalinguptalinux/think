@@ -64,9 +64,9 @@ build=build-171
 * export AWS_SECRET_ACCESS_KEY=xx/xx/xx
 * export AWS_DEFAULT_REGION=region for your vpc
 
-1 You need to update the tfvars for your environment
-2 Once you run the script please copy your tfstate to a environment specific directory(Never create/modify tfstate manually, it is automatically generated)
-3 Important: Do not run this against existing aws environments with VPC
+1. You need to update the tfvars for your environment
+1. Once you run the script please copy your tfstate to a environment specific directory(Never create/modify tfstate manually, it is automatically generated)
+1. Important: Do not run this against existing aws environments with VPC
 
 To configure a environment:
 
