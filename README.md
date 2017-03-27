@@ -62,12 +62,19 @@ build=build-171
 * cd terraform-vpc
 * export AWS_ACCESS_KEY_ID=xxxx
 * export AWS_SECRET_ACCESS_KEY=xx/xx/xx
-* export AWS_DEFAULT_REGION=eu-west-1
-* terraform get -var-file="network.tfvars"
-* terraform plan -var-file="network.tfvars"
-* terraform apply -var-file="network.tfvars"
+* export AWS_DEFAULT_REGION=region for your vpc
 
-####Note: Do not run this against existing aws environments with VPC
+1 You need to update the tfvars for your environment
+2 Once you run the script please copy your tfstate to a environment specific directory(Never create/modify tfstate manually, it is automatically generated)
+3 Important: Do not run this against existing aws environments with VPC
+
+To configure a environment:
+
+* terraform get -var-file="environment.tfvars"
+* terraform plan -var-file="environment.tfvars"
+* terraform apply -var-file="environment.tfvars"
+
+
 ---
 Spend some time on [ansible playbooks](http://docs.ansible.com/ansible/playbooks.html) and [cloudformation](https://aws.amazon.com/cloudformation/)
 

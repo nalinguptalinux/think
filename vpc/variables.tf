@@ -12,7 +12,7 @@ variable "private_subnet_cidr_blocks" { type = "list" }
 variable "nat_subnet_supernet" {}
 variable "public_subnet_supernet" { }
 variable "private_subnet_supernet" { }
-
+variable "profile_custom_profile" { }
 #For Bastion
 variable "instance_type" { }
 variable "ami" { }
