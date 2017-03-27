@@ -1,0 +1,35 @@
+---
+- name: create capi adapter
+  cloudformation:
+    stack_name: "{{adapter_name}}-{{build_number}}-{{ab}}"
+    state: present
+    region: "{{aws_region}}"
+    disable_rollback: true
+    template: "cloudformation/capi-adapter.yml"
+    stack_policy: "cloudformation/stack-policy.json"
+    template_parameters:
+      BillingTag: "{{project}}"
+      BusinessUnit: "{{business_unit}}"
+      DesiredCapacity: "{{desired_asg_capacity}}"
+      ImageRegistry: "{{deployment_ecr}}/{{adapter_name}}"
+      InstanceType: "{{instance_type}}"
+      KeyPair: "{{key_name}}"
+      MaxSizeASG: "{{max_size_asg}}"
+      MinSizeASG: "{{min_size_asg}}"
+      RecordName: "{{adapter_name}}-{{build_number}}-{{ab}}"
+      PrivateSubnets: "{{private_subnets}}"
+      PublicSubnets: "{{public_subnets}}"
+      ELBPort: "{{elb_port}}"
+      HostPort: "{{host_port}}"
+      ContainerPort: "{{container_port}}"
+      ELBProtocol: "{{elb_protocol}}"
+      HealthCheckPath: "{{health_check_path}}"
+      VpcId: "{{aws_vpc_id}}"
+      InstanceType: "{{instance_type}}"
+      BuildNumber: "{{build_number}}"
+
+    tags:
+      project: "{{project}}"
+      application: "capi-suggestion-adapter-{{project}}"
+      lob: "international"
+      env: "{{env}}"
