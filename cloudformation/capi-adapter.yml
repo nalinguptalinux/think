@@ -1,0 +1,426 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Stack for capi adapter"
+
+Parameters:
+  BillingTag:
+    Type: String
+    Description: "tag for billing purpose"
+    Default: "regional-web-dev"
+  BusinessUnit:
+    Type: String
+    Description: Two letters country code for billing purpose
+    AllowedValues:
+    - HK
+    - MY
+    - ID
+  DesiredCapacity:
+    Type: Number
+    Default: '1'
+    Description: Number of Desired Size AS instance
+  ImageRegistry:
+    Type: String
+    Description: ECR of image used
+  InstanceType:
+    Description: EC2 instance type.
+    Type: String
+    AllowedValues:
+    - t2.nano
+    - t2.medium
+    - m3.medium
+    - m3.large
+    - m4.large
+    - m4.2xlarge
+  KeyPair:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+  MaxSizeASG:
+    Type: Number
+    Default: '2'
+    Description: Maximum number of instances that can be launched in your ECS cluster
+  MinSizeASG:
+    Type: Number
+    Default: '1'
+    Description: Minimum number of instances that can be launched in your ECS cluster
+  RecordName:
+    Type: String
+    Description: the name of the DNS record
+  PrivateSubnets:
+    Type: CommaDelimitedList
+    Description: private subnets
+  PublicSubnets:
+    Type: CommaDelimitedList
+    Description: public subnets
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC id that used for deployment
+  HostPort:
+    Type: Number
+    Description: host port for containers
+    Default: '3000'
+  ContainerPort:
+    Type: Number
+    Description: port that containers expose
+    Default: 3000
+  BuildNumber:
+    Type: Number
+    Description: build number that used for deployment
+  ELBPort:
+    Type: Number
+    Description: port for ELB
+    Default: '80'
+  ELBProtocol:
+    Type: String
+    Description: protocol used for ELB
+    Default: HTTP
+  HealthCheckPath:
+    Type: String
+    Description: HealthCheck path for ELB
+
+
+Mappings:
+  AWSRegionArch2AMI:
+    ap-southeast-1:
+      HVM64: ami-a88530cb
+    ap-northeast-1:
+      HVM64: ami-c393d6a4
+    ap-southeast-2:
+      HVM64: ami-8af8ffe9
+
+Resources:
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: "capi-adapter"
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+        - Name: capi-adapter
+          Cpu: '512'
+          Essential: 'true'
+          Memory: '512'
+          PortMappings:
+            - HostPort: !Ref 'HostPort'
+              Protocol: tcp
+              ContainerPort: !Ref 'ContainerPort'
+          Image: !Join ['', [!Ref 'ImageRegistry', ':', !Ref 'BuildNumber']]
+
+  ELBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ELB Security Group
+      VpcId: !Ref 'VpcId'
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: !Ref 'ELBPort'
+        ToPort: !Ref 'ELBPort'
+        IpProtocol: tcp
+
+  ELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Subnets: !Ref 'PublicSubnets'
+      Listeners:
+      - LoadBalancerPort: !Ref 'ELBPort'
+        InstancePort: !Ref 'HostPort'
+        Protocol: !Ref 'ELBProtocol'
+      Scheme: internet-facing
+      ConnectionDrainingPolicy:
+        Enabled: true
+        Timeout: 45
+      CrossZone: true
+      Tags:
+      - Value: !Ref 'BusinessUnit'
+        Key: "business unit"
+      - Value: !Ref 'BillingTag'
+        Key: Billing
+      SecurityGroups:
+      - Ref: ELBSecurityGroup
+      HealthCheck:
+        Target: !Ref 'HealthCheckPath'
+        HealthyThreshold: '2'
+        UnhealthyThreshold: '10'
+        Interval: '30'
+        Timeout: '5'
+
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        Ref: PrivateSubnets
+      LaunchConfigurationName:
+        Ref: LaunchConfig
+      AvailabilityZones:
+      - ap-southeast-1a
+      - ap-southeast-1b
+      Cooldown: '40'
+      HealthCheckGracePeriod: '60'
+      HealthCheckType: EC2
+      MinSize:
+        Ref: MinSizeASG
+      MaxSize:
+        Ref: MaxSizeASG
+      DesiredCapacity:
+        Ref: DesiredCapacity
+      LoadBalancerNames:
+        - Ref: ELB
+
+      Tags:
+      - Value:
+          Ref: BusinessUnit
+        Key: "business unit"
+        PropagateAtLaunch: true
+      - Value:
+          Ref: BillingTag
+        Key: Billing
+        PropagateAtLaunch: true
+      - Value:
+          Ref: AWS::StackName
+        Key: CF-Name
+        PropagateAtLaunch: true
+      - Key: Name
+        Value:
+          Ref: RecordName
+        PropagateAtLaunch: true
+
+  LaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          InstallAndRun:
+          - Configure
+        Configure:
+          commands:
+            01_add_instance_to_cluster:
+              command:
+                Fn::Join:
+                - ''
+                - - "#!/bin/bash\n"
+                  - echo ECS_CLUSTER=
+                  - Ref: ECSCluster
+                  - " >> /etc/ecs/ecs.config"
+          files:
+            "/etc/cfn/cfn-hup.conf":
+              content:
+                Fn::Join:
+                - ''
+                - - "[main]\n"
+                  - stack=
+                  - Ref: AWS::StackId
+                  - region=
+                  - Ref: AWS::Region
+              mode: '000400'
+              owner: root
+              group: root
+            "/etc/ecs/ecs.config":
+              content:
+                Fn::Join:
+                - ''
+                - - ECS_CLUSTER=
+                  - Ref: ECSCluster
+              mode: '000755'
+              owner: root
+              group: root
+            "/etc/cfn/hooks.d/cfn-auto-reloader.conf":
+              content:
+                Fn::Join:
+                - ''
+                - - "[cfn-auto-reloader-hook]\n"
+                  - 'triggers=post.update'
+                  - 'path=Resources.ContainerInstances.Metadata.AWS::CloudFormation::Init'
+                  - 'action=/opt/aws/bin/cfn-init -v '
+                  - "         --stack "
+                  - Ref: AWS::StackName
+                  - "         --resource ContainerInstances "
+                  - "         --region "
+                  - Ref: AWS::Region
+                  - 'runas=root'
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                - "/etc/cfn/cfn-hup.conf"
+                - "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
+    Properties:
+      KeyName:
+        Ref: KeyPair
+      ImageId:
+        Fn::FindInMap:
+        - AWSRegionArch2AMI
+        - Ref: AWS::Region
+        - HVM64
+      InstanceType:
+        Ref: InstanceType
+      InstanceMonitoring: true
+      AssociatePublicIpAddress: 'true'
+      IamInstanceProfile:
+        Ref: EC2InstanceProfile
+      SecurityGroups:
+      - Ref: EC2SecurityGroup
+      UserData:
+        "Fn::Base64": !Sub |
+          #!/bin/bash -ex
+          ######--------------------------Install software----------------------######
+          /usr/bin/yum update -y
+          /usr/bin/yum install -y sysstat nmap telnet curl wget
+          /usr/bin/yum install -y aws-cfn-bootstrap
+          /usr/bin/easy_install awscli
+          ######-----------------------------Bootstrap--------------------------######
+          /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --configsets InstallAndRun --resource ContainerInstances
+          ######-----------------Configure Hostname on EC2 Host-----------------######
+          function configure_hosts {
+            recordName=${RecordName}
+            instance_ip=$(/usr/bin/curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
+            domain=$(/bin/awk '/^search/ { print $2 }' /etc/resolv.conf)
+            ipend=`/bin/echo $instance_ip | /bin/sed 's/\./\-/g'`
+            /bin/echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
+            /bin/hostname $recordName-$ipend
+          }
+          ######---------------------Final config steps-------------------------######
+          configure_hosts
+          ######--------------------------Signal success------------------------######
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AutoScalingGroup --region ${AWS::Region}
+
+  ECSScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      AutoScalingGroupName:
+        Ref: AutoScalingGroup
+      Cooldown: '300'
+      ScalingAdjustment: '1'
+
+  ECSScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      AutoScalingGroupName:
+        Ref: AutoScalingGroup
+      Cooldown: '300'
+      ScalingAdjustment: "-1"
+
+  ECSHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Scale-up if CPU > 80% for 10 minutes
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: '300'
+      EvaluationPeriods: '2'
+      Threshold: '80'
+      AlarmActions:
+      - Ref: ECSScaleUpPolicy
+      Dimensions:
+      - Name: AutoScalingGroupName
+        Value:
+          Ref: AutoScalingGroup
+      ComparisonOperator: GreaterThanThreshold
+
+  ECSLow:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Scale-down if CPU < 40% for 10 minutes
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: '300'
+      EvaluationPeriods: '2'
+      Threshold: '20'
+      AlarmActions:
+      - Ref: ECSScaleDownPolicy
+      Dimensions:
+      - Name: AutoScalingGroupName
+        Value:
+          Ref: AutoScalingGroup
+      ComparisonOperator: LessThanThreshold
+
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: ecs-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - ecs:CreateCluster
+            - ecs:DeregisterContainerInstance
+            - ecs:DiscoverPollEndpoint
+            - ecs:Poll
+            - ecs:RegisterContainerInstance
+            - ecs:StartTelemetrySession
+            - ecs:Submit*
+            - ec2:Describe*
+            - ecr:Get*
+            - ecr:BatchGetImage
+            - ecr:BatchCheckLayerAvailability
+            - ecr:PutImage
+            - ecr:InitiateLayerUpload
+            - ecr:UploadLayerPart
+            - ecr:CompleteLayerUpload
+            - ecr:ListImages
+            - ecr:Describe*
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: "*"
+          - Effect: Allow
+            Action:
+            - s3:Get*
+            - s3:List*
+            Resource: "*"
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: EC2Role
+
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: EC2SecurityGroup.
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '3000'
+        ToPort: '3000'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: icmp
+        FromPort: "-1"
+        ToPort: "-1"
+        CidrIp: 0.0.0.0/0
+
+
+Outputs:
+  ElasticLoadBalancer:
+    Value:
+      Fn::Join:
+        - ''
+        - - 'http://'
+          - !GetAtt ELB.DNSName
+    Description: ECS ELB
+  ECSClusterName:
+    Value:
+      Ref: ECSCluster
