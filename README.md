@@ -71,8 +71,10 @@ build=build-171
 To configure a environment:
 
 * terraform get -var-file="environment.tfvars"
-* terraform plan -var-file="environment.tfvars"
-* terraform apply -var-file="environment.tfvars"
+* terraform plan -var-file="environment.tfvars" --state="tfstate/website/environment/environment.tfstate"
+e.g. * terraform plan -var-file="tfvars/ipropertymy/development-ap-southeast-1.tfvars"  --state="tfstate/ipropertymy/development/iproperty-my-dev.tfstate"
+* terraform apply -var-file="environment.tfvars" --state="tfstate/website/environment/environment.tfstate"
+
 
 
 ---
