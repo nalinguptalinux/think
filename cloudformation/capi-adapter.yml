@@ -92,13 +92,13 @@ Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: "capi-adapter"
+      ClusterName: !Ref 'RecordName'
 
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
       ContainerDefinitions:
-        - Name: capi-adapter
+        - Name: !Ref 'RecordName'
           Cpu: '512'
           Essential: 'true'
           Memory: '512'
@@ -111,7 +111,7 @@ Resources:
   ELBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: ELB Security Group
+      GroupDescription: !Join [' ', ['ELB Security Group for', !Ref RecordName]]
       VpcId: !Ref 'VpcId'
       SecurityGroupIngress:
       - CidrIp: 0.0.0.0/0
@@ -122,6 +122,8 @@ Resources:
   ELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
+      LoadBalancerName:
+        Ref: RecordName
       Subnets: !Ref 'PublicSubnets'
       Listeners:
       - LoadBalancerPort: !Ref 'ELBPort'
@@ -142,8 +144,8 @@ Resources:
       HealthCheck:
         Target: !Ref 'HealthCheckPath'
         HealthyThreshold: '2'
-        UnhealthyThreshold: '10'
-        Interval: '30'
+        UnhealthyThreshold: '5'
+        Interval: '10'
         Timeout: '5'
 
   AutoScalingGroup:
@@ -152,7 +154,7 @@ Resources:
       VPCZoneIdentifier:
         Ref: PrivateSubnets
       LaunchConfigurationName:
-        Ref: LaunchConfig
+        Ref: ECSLaunchConfig
       AvailabilityZones:
       - ap-southeast-1a
       - ap-southeast-1b
@@ -186,7 +188,7 @@ Resources:
           Ref: RecordName
         PropagateAtLaunch: true
 
-  LaunchConfig:
+  ECSLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:
       AWS::CloudFormation::Init:
@@ -194,15 +196,6 @@ Resources:
           InstallAndRun:
           - Configure
         Configure:
-          commands:
-            01_add_instance_to_cluster:
-              command:
-                Fn::Join:
-                - ''
-                - - "#!/bin/bash\n"
-                  - echo ECS_CLUSTER=
-                  - Ref: ECSCluster
-                  - " >> /etc/ecs/ecs.config"
           files:
             "/etc/cfn/cfn-hup.conf":
               content:
@@ -258,7 +251,6 @@ Resources:
       InstanceType:
         Ref: InstanceType
       InstanceMonitoring: true
-      AssociatePublicIpAddress: 'true'
       IamInstanceProfile:
         Ref: EC2InstanceProfile
       SecurityGroups:
@@ -272,7 +264,7 @@ Resources:
           /usr/bin/yum install -y aws-cfn-bootstrap
           /usr/bin/easy_install awscli
           ######-----------------------------Bootstrap--------------------------######
-          /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --configsets InstallAndRun --resource ContainerInstances
+          /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --configsets InstallAndRun --resource ECSLaunchConfig
           ######-----------------Configure Hostname on EC2 Host-----------------######
           function configure_hosts {
             recordName=${RecordName}
@@ -284,6 +276,8 @@ Resources:
           }
           ######---------------------Final config steps-------------------------######
           configure_hosts
+          REG_ID=$(echo ${ImageRegistry} | cut -f1 -d.)
+          eval $(/usr/local/bin/aws ecr get-login --registry-ids $REG_ID --region ${AWS::Region})
           ######--------------------------Signal success------------------------######
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AutoScalingGroup --region ${AWS::Region}
 
@@ -392,6 +386,42 @@ Resources:
       Roles:
       - Ref: EC2Role
 
+  ECSServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ecs.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: !Ref 'RecordName'
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - elasticloadbalancing:Describe*
+            - elasticloadbalancing:DeregisterInstancesFromLoadBalancer
+            - elasticloadbalancing:RegisterInstancesWithLoadBalancer
+            - ec2:Describe*
+            - ecr:Get*
+            - ecr:BatchGetImage
+            - ecr:BatchCheckLayerAvailability
+            - ecr:PutImage
+            - ecr:InitiateLayerUpload
+            - ecr:UploadLayerPart
+            - ecr:CompleteLayerUpload
+            - ecr:ListImages
+            - ecr:Describe*
+            - elasticloadbalancing:DeregisterTargets
+            - elasticloadbalancing:RegisterTargets
+            - ec2:AuthorizeSecurityGroupIngress
+            Resource: "*"
+
   EC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -412,6 +442,28 @@ Resources:
         ToPort: "-1"
         CidrIp: 0.0.0.0/0
 
+  ECSService:
+    Type: AWS::ECS::Service
+    DependsOn:
+    - AutoScalingGroup
+    Properties:
+      Cluster:
+        Ref: ECSCluster
+      DesiredCount:
+        Ref: DesiredCapacity
+      DeploymentConfiguration:
+        MaximumPercent: '150'
+        MinimumHealthyPercent: '50'
+      LoadBalancers:
+      - ContainerName: !Ref 'RecordName'
+        ContainerPort:
+          Ref: ContainerPort
+        LoadBalancerName:
+          Ref: ELB
+      Role:
+        Ref: ECSServiceRole
+      TaskDefinition:
+        Ref: TaskDefinition
 
 Outputs:
   ElasticLoadBalancer:
