@@ -16,4 +16,4 @@ do
 done
 
 # Add build number to the list file
-/bin/sed -i "1s;builds=;builds=${BUILD_NUMBER},;" ../${JOB_BASE_NAME}-build-numbers.txt
+/bin/sed -i "1s;builds=;builds=${BUILD_NUMBER},;" ${WORKSPACE}/../${JOB_BASE_NAME}-build-numbers.txt
