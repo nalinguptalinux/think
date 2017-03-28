@@ -9,9 +9,10 @@ class Deployment():
     """Class to handle deployments"""
 
     def __init__(self, new_stack):
-        self.cloudformation_client = boto3.client('cloudformation')
-        self.route53_client = boto3.client('route53')
-        self.elb_client = boto3.client('elb')
+        region_name='ap-southeast-1'
+        self.cloudformation_client = boto3.client('cloudformation', region_name=region_name)
+        self.route53_client = boto3.client('route53', region_name=region_name)
+        self.elb_client = boto3.client('elb', region_name=region_name)
         self.new_stack = new_stack
         self.new_elb = None
 
