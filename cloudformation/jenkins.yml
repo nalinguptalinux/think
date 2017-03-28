@@ -147,6 +147,7 @@ Resources:
             - iam:ListRoles
             - iam:PassRole
             - iam:PutRolePolicy
+            - route53:ChangeResourceRecordSets
             - s3:*
             Resource: "*"
 
