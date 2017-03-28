@@ -14,3 +14,6 @@ do
   docker push ${repository_uri}/nginx:build-${BUILD_NUMBER}
   docker rmi ${repository_uri}/nginx:build-${BUILD_NUMBER}
 done
+
+# Add build number to the list file
+/bin/sed -i "1s;builds=;builds=${BUILD_NUMBER},;" ../${JOB_BASE_NAME}-build-numbers.txt
