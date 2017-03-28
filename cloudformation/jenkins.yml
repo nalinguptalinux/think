@@ -115,19 +115,39 @@ Resources:
           Statement:
           - Effect: Allow
             Action:
-            - s3:*
-            - ecr:GetAuthorizationToken
+            - autoscaling:*
+            - cloudformation:CreateStack
+            - cloudformation:DeleteStack
+            - cloudformation:Describe*
+            - cloudformation:ListStack*
+            - cloudformation:UpdateStack
+            - cloudwatch:*
+            - ec2:*
+            - ec2:AuthorizeSecurityGroupIngress
+            - ec2:CreateSecurityGroup
+            - ec2:Describe*
             - ecr:BatchCheckLayerAvailability
+            - ecr:BatchGetImage
+            - ecr:CompleteLayerUpload
+            - ecr:DescribeImages
+            - ecr:DescribeRepositories
+            - ecr:GetAuthorizationToken
             - ecr:GetDownloadUrlForLayer
             - ecr:GetRepositoryPolicy
-            - ecr:DescribeRepositories
-            - ecr:ListImages
-            - ecr:DescribeImages
-            - ecr:BatchGetImage
             - ecr:InitiateLayerUpload
-            - ecr:UploadLayerPart
-            - ecr:CompleteLayerUpload
+            - ecr:ListImages
             - ecr:PutImage
+            - ecr:UploadLayerPart
+            - ecs:*
+            - elasticloadbalancing:*
+            - iam:AddRoleToInstanceProfile
+            - iam:CreateInstanceProfile
+            - iam:CreateRole
+            - iam:ListInstanceProfiles
+            - iam:ListRoles
+            - iam:PassRole
+            - iam:PutRolePolicy
+            - s3:*
             Resource: "*"
 
   EC2Instance:
