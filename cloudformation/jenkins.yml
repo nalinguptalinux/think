@@ -143,10 +143,12 @@ Resources:
             - iam:AddRoleToInstanceProfile
             - iam:CreateInstanceProfile
             - iam:CreateRole
+            - iam:DeleteRolePolicy
             - iam:ListInstanceProfiles
             - iam:ListRoles
             - iam:PassRole
             - iam:PutRolePolicy
+            - iam:RemoveRoleFromInstanceProfile
             - route53:ChangeResourceRecordSets
             - s3:*
             Resource: "*"
