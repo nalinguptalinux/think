@@ -3,3 +3,14 @@ ecr.squarefoot-tokyo.ipga.local
 [ecr:vars]
 repository_name=hp
 account_arns=arn:aws:iam::866270780045:root,arn:aws:iam::394595319667:root,arn:aws:iam::331887960933:root
+
+[redis]
+elasticache.production.squarefoot-tokyo.ipga.local
+
+[redis:vars]
+application=redis
+cluster_node_type=cache.m3.medium
+cluster_node_count=2
+redis_port=6379
+ab=a
+backup_duration=5

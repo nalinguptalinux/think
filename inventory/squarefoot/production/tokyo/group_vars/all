@@ -6,7 +6,7 @@ private_zone: production.squarefoot-tokyo.ipga.local
 public_zone: prod.tk.squarefoot.ippstatic.com
 aws_region: ap-northeast-1
 key_name: awscloud-squarefoot-production-tokyo
-aws_vpc_id:  vpc-1c70e178
+aws_vpc_id:  vpc-ea7cf18e
 vpc_cidr: 10.39.16.0/20
 dns_servers: AmazonProvidedDNS 10.39.16.2
 zones: ap-northeast-1a,ap-northeast-1c
