@@ -23,6 +23,7 @@
         SrpPdpECRRepo: "{{srp_pdp_ecr_repo}}"
         RecordName: "frontend-{{ab}}-{{build}}"
         ResourceBucketName: "{{resource_bucket_name}}"
+        SSLCertificateARN: "{{ssl_certificate_arn}}"
         SubnetID: "{{public_subnets}}"
         SumoLogicInstallerFileName: "{{sumo_logic_installer}}"
         SumoLogicAccessId: "{{sumo_logic_access_id}}"

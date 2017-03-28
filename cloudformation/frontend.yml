@@ -36,12 +36,17 @@ Parameters:
     Description: EC2 instance type.
     Type: String
     AllowedValues:
-    - t2.nano
+    - t2.micro
+    - t2.small
     - t2.medium
     - m3.medium
     - m3.large
     - m4.large
+    - m4.xlarge
     - m4.2xlarge
+    - c4.large
+    - c4.xlarge
+    - c4.2xlarge
 
   KeyNamessh:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
@@ -80,6 +85,10 @@ Parameters:
 
   ResourceBucketName:
     Description: Name of the S3 bucket to retrieve the downloaded scripts or installation files
+    Type: String
+
+  SSLCertificateARN:
+    Description: The SSL certificate ARN as specified in Route 53
     Type: String
 
   SubnetID:
@@ -422,9 +431,6 @@ Resources:
         - HostPort: '80'
           Protocol: tcp
           ContainerPort: '80'
-        - HostPort: '443'
-          Protocol: tcp
-          ContainerPort: '443'
         Command:
         - Fn::Join:
           - ''
@@ -449,10 +455,11 @@ Resources:
       Listeners:
       - LoadBalancerPort: '80'
         InstancePort: '80'
-        Protocol: tcp
+        Protocol: HTTP
       - LoadBalancerPort: '443'
-        InstancePort: '443'
-        Protocol: tcp
+        InstancePort: '80'
+        Protocol: HTTPS
+        SSLCertificateId: !Ref 'SSLCertificateARN'
       HealthCheck:
         Target: TCP:80
         HealthyThreshold: '2'

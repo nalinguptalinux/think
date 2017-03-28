@@ -12,12 +12,13 @@ desired_asg_capacity=2
 hp_ecr_repo=hp:latest
 srp_pdp_ecr_repo=srp-pdp:latest
 nginx_ecr_repo=nginx:latest
+ssl_certificate_arn=arn:aws:acm:ap-southeast-1:331887960933:certificate/7ec489aa-7b4a-4f37-80a6-58f1674013d6
 
 [capi-adapter]
 adapter.dev.squarefoot.ipp.com
 [capi-adapter:vars]
 ab=a
-build_number=33
+build_number=35
 adapter_name=capi-squarefoot-suggestion
 instance_type=t2.nano
 max_size_asg=4

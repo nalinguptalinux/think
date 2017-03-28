@@ -25,7 +25,6 @@
       ELBProtocol: "{{elb_protocol}}"
       HealthCheckPath: "{{health_check_path}}"
       VpcId: "{{aws_vpc_id}}"
-      InstanceType: "{{instance_type}}"
       BuildNumber: "{{build_number}}"
 
     tags:

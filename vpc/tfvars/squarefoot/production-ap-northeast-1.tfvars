@@ -1,6 +1,6 @@
 #Network Vars
 common_name = "squarefoot-production"
-domain = "production.squarefoot-singapore.ipga.local"
+domain = "production.squarefoot-tokyo.ipga.local"
 region = "ap-northeast-1"
 key_name = "awscloud-squarefoot-production-tokyo"
 
