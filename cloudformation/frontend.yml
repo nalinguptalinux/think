@@ -82,6 +82,10 @@ Parameters:
     Description: Name of the S3 bucket to retrieve the downloaded scripts or installation files
     Type: String
 
+  SSLCertificateARN:
+    Description: The SSL certificate ARN as specified in Route 53
+    Type: String
+
   SubnetID:
     Description: Public subnets
     Type: CommaDelimitedList
@@ -422,9 +426,6 @@ Resources:
         - HostPort: '80'
           Protocol: tcp
           ContainerPort: '80'
-        - HostPort: '443'
-          Protocol: tcp
-          ContainerPort: '443'
         Command:
         - Fn::Join:
           - ''
@@ -449,10 +450,11 @@ Resources:
       Listeners:
       - LoadBalancerPort: '80'
         InstancePort: '80'
-        Protocol: tcp
+        Protocol: HTTP
       - LoadBalancerPort: '443'
-        InstancePort: '443'
-        Protocol: tcp
+        InstancePort: '80'
+        Protocol: HTTPS
+        SSLCertificateId: !Ref 'SSLCertificateARN'
       HealthCheck:
         Target: TCP:80
         HealthyThreshold: '2'
@@ -667,7 +669,7 @@ Resources:
       - IpProtocol: tcp
         FromPort: '443'
         ToPort: '443'
-        CidrIp: 0.0.0.0/0        
+        CidrIp: 0.0.0.0/0
       - IpProtocol: tcp
         FromPort: '4000'
         ToPort: '4000'
