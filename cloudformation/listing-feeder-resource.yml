@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS Resource stack for squarefoot Listing Feeder
+Parameters:
+    VpcId:
+      Description: Vpc Id
+      Type: String
+    LambdaDeploymentBucketName:
+      Description: Name of S3 bucket for Serverless Lambda deployment
+      Type: String
+    ListingFeederJsonBucketName:
+      Description: Name of S3 bucket to which Listing feeder to upload listings
+      Type: String
+    ListingFeederJsonBucketExpireDays:
+      Description: Number of days before an object is expired in ListingFeedJsonBucket
+      Type: Number
+      Default: '180'
+    ListingUpdateQueueName:
+      Description: Name of the SQS Queue for listing update messages
+      Type: String
+    BillingTag:
+      Description: Billing tag for LOB
+      Type: String
+Conditions:
+  RegionCondition: !Not [!Equals [!Ref 'AWS::Region', cn-north-1]]
+Resources:
+  LambdaDeploymentBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref 'LambdaDeploymentBucketName'
+      Tags:
+      - Value:
+          Ref: BillingTag
+        Key: Billing
+  ListingFeederJsonBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref 'ListingFeederJsonBucketName'
+      LifecycleConfiguration:
+        Rules:
+        - ExpirationInDays: !Ref 'ListingFeederJsonBucketExpireDays'
+          Status: Enabled
+      Tags:
+      - Value:
+          Ref: BillingTag
+        Key: Billing
+  ListingUpdateQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref 'ListingUpdateQueueName'
+      VisibilityTimeout: 300
+      DelaySeconds: 0
+      MessageRetentionPeriod: 1209600
+      ReceiveMessageWaitTimeSeconds: 2
+  ListingFeederLambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow Lambdas to access VPC resource
+      VpcId: !Ref 'VpcId'
+      Tags:
+      - Value:
+          Ref: BillingTag
+        Key: Billing
+Outputs:
+  LambdaDeploymentBucketName:
+    Description: Name of S3 bucket for Serverless Lambda deployment
+    Value: !Ref 'LambdaDeploymentBucketName'
+  ListingFeederJsonBucketName:
+    Description: Name of S3 bucket to which Listing feeder to upload listings
+    Value: !Ref 'ListingFeederJsonBucketName'
+  ListingFeederLambdaSecurityGroupId:
+    Description: Listing feeder lambda security group Id
+    Value: !GetAtt [ListingFeederLambdaSecurityGroup, GroupId]
+  ListingUpdateQueueName:
+    Description: URL of the SQS Queue for listing update messages
+    Value: !GetAtt [ListingUpdateQueue, QueueName]
+
+
+          
+      
+      

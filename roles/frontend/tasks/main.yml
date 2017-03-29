@@ -1,5 +1,5 @@
 ---
-  - name: setup squarefoot frontend stack
+  - name: setup frontend stack
     cloudformation:
       stack_name: "frontend-{{ab}}-{{build}}"
       state: present
@@ -21,7 +21,7 @@
         NewRelicLicenseKey: "{{new_relic_license_key}}"
         NginxECRRepo: "{{nginx_ecr_repo}}"
         SrpPdpECRRepo: "{{srp_pdp_ecr_repo}}"
-        RecordName: "frontend-{{ab}}-{{build}}"
+        RecordName: "{{dns_hostname}}.{{public_zone}}"
         ResourceBucketName: "{{resource_bucket_name}}"
         SSLCertificateARN: "{{ssl_certificate_arn}}"
         SubnetID: "{{public_subnets}}"

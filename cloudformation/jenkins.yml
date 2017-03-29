@@ -143,6 +143,7 @@ Resources:
             - iam:AddRoleToInstanceProfile
             - iam:CreateInstanceProfile
             - iam:CreateRole
+            - iam:DeleteRole
             - iam:DeleteRolePolicy
             - iam:ListInstanceProfiles
             - iam:ListRoles
@@ -150,6 +151,7 @@ Resources:
             - iam:PutRolePolicy
             - iam:RemoveRoleFromInstanceProfile
             - route53:ChangeResourceRecordSets
+            - route53:ListHostedZonesByName
             - s3:*
             Resource: "*"
 
@@ -232,20 +234,19 @@ Resources:
 
     Properties:
       InstanceType: !Ref 'InstanceType'
-      Role: !Ref JenkinsInstanceRole
+      IamInstanceProfile: !Ref EC2InstanceProfile
       Tags:
       - Key: String
         Value: Jenkins
+      - Key: Name
+        Value: jenkins-server
+      - Key: "business unit"
+        Value: !Ref BusinessUnit
       SubnetId: !Ref 'SubnetId'
       SecurityGroupIds:
       - !Ref 'InstanceSecurityGroup'
       KeyName: !Ref 'KeyName'
       ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
-      Tags:
-      - Key: Name
-        Value: jenkins-server
-      - Key: "business unit"
-        Value: !Ref BusinessUnit
       BlockDeviceMappings:
         -
           DeviceName: /dev/xvda
@@ -258,6 +259,7 @@ Resources:
           yum -y update
           # Install Jenkins
           wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins.io/redhat-stable/jenkins.repo
+          echo "enabled=1" >> /etc/yum.repos.d/jenkins.repo
           rpm --import http://pkg.jenkins.io/redhat-stable/jenkins.io.key
           yum install -y jenkins
           /etc/init.d/jenkins start
@@ -268,6 +270,13 @@ Resources:
           yum install -y aws-cfn-bootstrap
           /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --configsets InstallAndRun --resource EC2Instance
           /opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource EC2Instance
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: JenkinsInstanceRole
 
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup

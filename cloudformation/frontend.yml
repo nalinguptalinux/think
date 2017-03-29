@@ -776,29 +776,20 @@ Resources:
 Outputs:
 
   WebElasticLoadBalancer:
-    Value:
-      Fn::Join:
-        - ''
-        - - 'http://'
-          - !GetAtt ECSWebELB.DNSName
+    Value: !GetAtt ECSWebELB.DNSName
     Description: Web ELB
 
   HpElasticLoadBalancer:
-    Value:
-      Fn::Join:
-        - ''
-        - - http://
-          - !GetAtt EcsHpELB.DNSName
+    Value: !GetAtt EcsHpELB.DNSName
     Description: HP ELB
 
   SrpPdpElasticLoadBalancer:
-    Value:
-      Fn::Join:
-        - ''
-        - - http://
-          - !GetAtt ECSSrpPdpELB.DNSName
+    Value: !GetAtt ECSSrpPdpELB.DNSName
     Description: SRP ELB
 
   EcsClusterName:
-    Value:
-      Ref: ECSCluster
+    Value: !Ref 'ECSCluster'
+
+  RecordName:
+    Value: !Ref 'RecordName'
+

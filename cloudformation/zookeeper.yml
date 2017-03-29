@@ -56,15 +56,6 @@ Parameters:
   Zk03RecordName:
     Description: The name of the DNS record to create for zk3.
     Type: String
-  Zk01AZ:
-    Description: The name of the DNS record to create for zk1.
-    Type: String
-  Zk02AZ:
-    Description: The name of the DNS record to create for zk2.
-    Type: String
-  Zk03AZ:
-    Description: The name of the DNS record to create for zk3.
-    Type: String
 Conditions:
   RegionCondition: !Not [!Equals [!Ref 'AWS::Region', cn-north-1]]
 Resources:
@@ -282,7 +273,7 @@ Resources:
 
   Zk02:
     Type: AWS::EC2::Instance
-    DependsOn: !Ref 'Zk01'
+    DependsOn: 'Zk01'
     Metadata:
       AWS::CloudFormation::Init:
         configSets:
@@ -410,7 +401,7 @@ Resources:
 
   Zk03:
     Type: AWS::EC2::Instance
-    DependsOn: !Ref 'Zk02'
+    DependsOn: 'Zk02'
     Metadata:
       AWS::CloudFormation::Init:
         configSets:

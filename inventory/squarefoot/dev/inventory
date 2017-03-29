@@ -2,7 +2,7 @@
 web.dev.squarefoot.ipp.com.
 
 [frontend:vars]
-endpoint=dev.squarefoot.ipp.com
+dns_hostname=web
 application=frontend
 ab=a
 ecs_instance_type=t2.medium
@@ -13,6 +13,16 @@ hp_ecr_repo=hp:latest
 srp_pdp_ecr_repo=srp-pdp:latest
 nginx_ecr_repo=nginx:latest
 ssl_certificate_arn=arn:aws:acm:ap-southeast-1:331887960933:certificate/7ec489aa-7b4a-4f37-80a6-58f1674013d6
+
+[listing-feeder-resource]
+localhost
+
+[listing-feeder-resource:vars]
+application=listing-feeder
+lambda_deployment_bucket_name=sqft.lambda.deployment.dev
+listing_feeder_json_bucket=sqft.listing.updates.dev
+listing_feeder_json_bucket_expire_days=180
+listing_update_queue_name=squarefoot-updated-listings-dev
 
 [capi-adapter]
 adapter.dev.squarefoot.ipp.com
