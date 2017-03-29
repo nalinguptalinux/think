@@ -242,6 +242,8 @@ Resources:
           chkconfig jenkins on
           # Install Ansible
           pip install ansible
+          # Install docker-compose
+          pip install docker-compose
           # Install cloud init
           yum install -y aws-cfn-bootstrap
           /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --configsets InstallAndRun --resource EC2Instance
