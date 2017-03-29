@@ -28,6 +28,7 @@
         SumoLogicInstallerFileName: "{{sumo_logic_installer}}"
         SumoLogicAccessId: "{{sumo_logic_access_id}}"
         SumoLogicAccessKey: "{{sumo_logic_access_key}}"
+        VPC: "{{aws_vpc_id}}"
 
       tags:
         project: "{{project}}"

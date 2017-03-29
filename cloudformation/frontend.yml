@@ -108,6 +108,10 @@ Parameters:
     Description: Sumo Logic access key
     Type: String
 
+  VPC:
+    Description: Choose which VPC the Jenkins server should be installed to
+    Type: AWS::EC2::VPC::Id
+
 Mappings:
 
   AWSRegionArch2AMI:
@@ -500,7 +504,7 @@ Resources:
         FromPort: 22
         IpProtocol: tcp
         ToPort: 22
-      VpcId: vpc-c9ef63ad
+      VpcId: !Ref 'VPC'
 
   Webservice:
     Type: AWS::ECS::Service
@@ -539,7 +543,7 @@ Resources:
         FromPort: 80
         IpProtocol: tcp
         ToPort: 80
-      VpcId: vpc-c9ef63ad
+      VpcId: !Ref 'VPC'
 
   HPService:
     Type: AWS::ECS::Service
@@ -653,7 +657,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: ECSSecurityGroup.
-      VpcId: vpc-c9ef63ad
+      VpcId: !Ref 'VPC'
       SecurityGroupIngress:
       - IpProtocol: tcp
         FromPort: '22'
@@ -750,7 +754,7 @@ Resources:
         FromPort: 80
         IpProtocol: tcp
         ToPort: 80
-      VpcId: vpc-c9ef63ad
+      VpcId: !Ref 'VPC'
 
   SRPService:
     Type: AWS::ECS::Service
