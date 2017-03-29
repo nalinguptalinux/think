@@ -237,9 +237,9 @@ Resources:
           echo "enabled=1" >> /etc/yum.repos.d/jenkins.repo
           rpm --import http://pkg.jenkins.io/redhat-stable/jenkins.io.key
           yum install -y jenkins
+          gpasswd -a jenkins docker
           /etc/init.d/jenkins start
           chkconfig jenkins on
-          gpasswd -a jenkins docker
           # Install Ansible
           pip install ansible
           # Install cloud init
