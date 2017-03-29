@@ -2,7 +2,7 @@
 web.dev.rumah123.ipp.com.
 
 [frontend:vars]
-endpoint=dev.rumah123.ipp.com
+dns_hostname=web
 application=frontend
 ab=a
 ecs_instance_type=t2.medium

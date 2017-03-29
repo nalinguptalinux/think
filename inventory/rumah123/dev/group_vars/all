@@ -2,6 +2,7 @@ project: rumah123
 business_unit: ID
 env: rumah123-development
 private_zone: development.rumah123-singapore.ipga.local
+public_zone: dev.sg.rumah123.ippstatic.com
 aws_region: ap-southeast-1
 key_name: awscloud-rumah123-development-singapore
 aws_vpc_id: vpc-e19d0285

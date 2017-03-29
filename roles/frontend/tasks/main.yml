@@ -21,7 +21,7 @@
         NewRelicLicenseKey: "{{new_relic_license_key}}"
         NginxECRRepo: "{{nginx_ecr_repo}}"
         SrpPdpECRRepo: "{{srp_pdp_ecr_repo}}"
-        RecordName: "{{hostname}}.{{endpoint}}"
+        RecordName: "{{dns_hostname}}.{{public_zone}}"
         ResourceBucketName: "{{resource_bucket_name}}"
         SSLCertificateARN: "{{ssl_certificate_arn}}"
         SubnetID: "{{public_subnets}}"
