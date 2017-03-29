@@ -66,7 +66,7 @@ resource "aws_subnet" "nat" {
   count = "${length(var.nat_subnet_cidr_blocks)}"
   cidr_block = "${element(var.nat_subnet_cidr_blocks, count.index)}"
   availability_zone = "${element(var.zones, count.index)}"
-  map_public_ip_on_launch = false
+  map_public_ip_on_launch = true
 
   tags {
     Name = "nat_${element(var.zones, count.index)}"
