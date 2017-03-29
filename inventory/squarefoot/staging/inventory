@@ -38,9 +38,6 @@ zk3name=zk3
 private_subnet_1=subnet-d6ddafa0
 private_subnet_2=subnet-d6ddafa0
 private_subnet_3=subnet-d6ddafa0
-zk01az=ap-southeast-1a
-zk02az=ap-southeast-1a
-zk03az=ap-southeast-1a
 
 [ami]
 localhost
