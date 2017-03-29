@@ -109,7 +109,7 @@ Parameters:
     Type: String
 
   VPC:
-    Description: Choose which VPC the Jenkins server should be installed to
+    Description: Choose which VPC we should be deploying the stack to
     Type: AWS::EC2::VPC::Id
 
 Mappings:
