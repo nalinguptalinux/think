@@ -16,7 +16,7 @@ ab=a
 backup_duration=5
 
 [solr]
-solr.staging.squarefoot-tokyo.ipga.local
+solr.production.squarefoot-singapore.ipga.local
 
 [solr:vars]
 application=solr
@@ -31,7 +31,7 @@ solr_az=ap-southeast-1a
 solr_zk_hosts=zk1:2181,zk2:2181,zk3:2181
 
 [zookeeper]
-zookeeper.staging.squarefoot-tokyo.ipga.local
+zookeeper.production.squarefoot-singapore.ipga.local
 
 [zookeeper:vars]
 application=zookeeper
