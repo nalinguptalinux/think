@@ -150,6 +150,7 @@ Resources:
             - iam:PutRolePolicy
             - iam:RemoveRoleFromInstanceProfile
             - route53:ChangeResourceRecordSets
+            - route53:ListHostedZonesByName
             - s3:*
             Resource: "*"
 
