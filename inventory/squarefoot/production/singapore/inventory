@@ -20,7 +20,7 @@ solr.production.squarefoot-singapore.ipga.local
 
 [solr:vars]
 application=solr
-ab=a
+ab=b
 pkg=solr-6.0.0.8-1.noarch.rpm
 instance_type=m3.medium
 as_max=3
@@ -35,7 +35,7 @@ zookeeper.production.squarefoot-singapore.ipga.local
 
 [zookeeper:vars]
 application=zookeeper
-ab=a
+ab=b
 pkg=zookeeper-3.4.6.1-1.noarch.rpm
 instance_type=m3.medium
 zk1name=zk1
