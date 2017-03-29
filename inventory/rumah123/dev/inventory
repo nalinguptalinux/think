@@ -10,3 +10,7 @@ build=latest
 min_asg_size=2
 max_asg_size=4
 desired_asg_capacity=2
+hp_ecr_repo=hp:latest
+srp_pdp_ecr_repo=srp-pdp:latest
+nginx_ecr_repo=nginx:latest
+ssl_certificate_arn=arn:aws:acm:ap-southeast-1:538471682716:certificate/c8a01b44-8d7b-4226-ab82-04bd520461d8
