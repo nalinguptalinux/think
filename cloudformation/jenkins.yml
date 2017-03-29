@@ -258,6 +258,7 @@ Resources:
           yum -y update
           # Install Jenkins
           wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins.io/redhat-stable/jenkins.repo
+          echo "enabled=1" >> /etc/yum.repos.d/jenkins.repo
           rpm --import http://pkg.jenkins.io/redhat-stable/jenkins.io.key
           yum install -y jenkins
           /etc/init.d/jenkins start
