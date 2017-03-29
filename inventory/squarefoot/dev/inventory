@@ -19,8 +19,8 @@ localhost
 
 [listing-feeder-resource:vars]
 application=listing-feeder
-lambda_deployment_bucket_name=sqft.lambda.deployment.dev
-listing_feeder_json_bucket=sqft.listing.updates.dev
+lambda_deployment_bucket_name=sqft-lambda-deployment-dev
+listing_feeder_json_bucket=sqft-listing-updates-dev
 listing_feeder_json_bucket_expire_days=180
 listing_update_queue_name=squarefoot-updated-listings-dev
 

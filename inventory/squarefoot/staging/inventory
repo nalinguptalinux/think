@@ -60,8 +60,8 @@ localhost
 
 [listing-feeder-resource:vars]
 application=listing-feeder
-lambda_deployment_bucket_name='sqft.lambda.deployment.bucket.staging'
-listing_feeder_json_bucket='sqft.listing.updates.staging'
+lambda_deployment_bucket_name=sqft-lambda-deployment-bucket-staging
+listing_feeder_json_bucket=sqft-listing-updates-staging
 listing_feeder_json_bucket_expire_days=180
 listing_update_queue_name=squarefoot-updated-listings-staging
 
