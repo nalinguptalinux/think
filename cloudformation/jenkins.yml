@@ -233,20 +233,19 @@ Resources:
 
     Properties:
       InstanceType: !Ref 'InstanceType'
-      Role: !Ref JenkinsInstanceRole
+      IamInstanceProfile: !Ref EC2InstanceProfile
       Tags:
       - Key: String
         Value: Jenkins
+      - Key: Name
+        Value: jenkins-server
+      - Key: "business unit"
+        Value: !Ref BusinessUnit
       SubnetId: !Ref 'SubnetId'
       SecurityGroupIds:
       - !Ref 'InstanceSecurityGroup'
       KeyName: !Ref 'KeyName'
       ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
-      Tags:
-      - Key: Name
-        Value: jenkins-server
-      - Key: "business unit"
-        Value: !Ref BusinessUnit
       BlockDeviceMappings:
         -
           DeviceName: /dev/xvda
@@ -269,6 +268,13 @@ Resources:
           yum install -y aws-cfn-bootstrap
           /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --configsets InstallAndRun --resource EC2Instance
           /opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource EC2Instance
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: JenkinsInstanceRole
 
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
