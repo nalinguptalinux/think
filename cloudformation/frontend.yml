@@ -146,7 +146,7 @@ Resources:
           ContainerPort: '3000'
         Environment:
         - Name: NODE_ENV
-          Value: staging
+          Value: production
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'HpECRRepo']]
 
   ECSAutoScalingGroup:
@@ -700,7 +700,7 @@ Resources:
           ContainerPort: '4000'
         Environment:
         - Name: NODE_ENV
-          Value: staging
+          Value: production
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'SrpPdpECRRepo']]
 
   ECSSrpPdpELB:
