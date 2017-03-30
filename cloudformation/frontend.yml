@@ -9,7 +9,7 @@ Parameters:
   BillingTag:
     Type: String
     Description: Tag for billing purpose
-    Default: SquareFoot-Dev
+    Default: Regional-web-tag
 
   BusinessUnit:
     Type: String
