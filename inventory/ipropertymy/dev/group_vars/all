@@ -16,7 +16,7 @@ public_subnets:  subnet-63783415,subnet-c4e2baa0
 
 nat_subnet_cidr_blocks: 10.90.56.0/23, 10.90.58.0/23
 public_subnet_cidr_blocks: 10.90.52.0/23, 10.90.54.0/23
-private_subnet_cidr_blo cks: 10.90.48.0/23, 10.90.50.0/23
+private_subnet_cidr_blocks: 10.90.48.0/23, 10.90.50.0/23
 
 nat_subnet_supernet: 10.90.56.0/22
 public_subnet_supernet: 10.90.52.0/22
