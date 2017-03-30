@@ -1,0 +1,35 @@
+project: rumah123
+business_unit: MY
+env: rumah123-staging
+private_zone: staging.rumah123-singapore.ipga.local
+public_zone: stg.sg.rumah123.ippstatic.com
+aws_region: ap-southeast-1
+key_name: awscloud-rumah123-staging-singapore
+aws_vpc_id: vpc-db4cdebf
+vpc_cidr: 10.89.32.0/20
+dns_servers: AmazonProvidedDNS 10.89.32.2
+zones: ap-southeast-1a,ap-southeast-1b
+
+nat_subnets: subnet-94ca89e2,subnet-0f306e6b
+private_subnets: subnet-95ca89e3,subnet-0d306e69
+public_subnets: subnet-97ca89e1,subnet-0e306e6a
+
+nat_subnet_cidr_blocks: 10.89.40.0/23,10.89.42.0/23
+public_subnet_cidr_blocks: 10.89.36.0/23,10.89.38.0/23
+private_subnet_cidr_blocks: 10.89.32.0/23,10.89.34.0/23
+
+nat_subnet_supernet: 10.89.40.0/22
+public_subnet_supernet: 10.89.36.0/22
+private_subnet_supernet: 10.89.32.0/22
+
+ami: ami-9a44f9f9
+bastion_public_ip: 52.221.147.183
+ssh_from_bastion_sg_id: sg-9aabc9fd
+//pager_duty_arn: arn:aws:sns:ap-southeast-1:866270780045:Low-Priority-Squarefoot-Staging-PagerDuty
+
+//resource_bucket_name: prod-sg-sfhk-infra-common
+sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
+sumo_logic_access_id: su37UzMYy9KsP0
+sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf
+new_relic_rpm: newrelic-sysmond-2.3.0.132-1.x86_64.rpm
+new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df

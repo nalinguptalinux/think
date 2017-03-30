@@ -2,6 +2,7 @@ project: ipropertymy
 business_unit: MY
 env: ipropertymy-staging
 private_zone: staging.ipropertymy-singapore.ipga.local
+public_zone: stg.sg.ipropertymy.ippstatic.com
 aws_region: ap-southeast-1
 key_name: awscloud-ipropertymy-staging-singapore
 aws_vpc_id: vpc-5b6cf33f

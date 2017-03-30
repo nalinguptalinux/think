@@ -1,5 +1,5 @@
 [redis]
-elasticache.staging.ipropertymy-singapore.ipga.local
+elasticache.staging.rumah123-singapore.ipga.local
 
 [redis:vars]
 application=redis
@@ -10,7 +10,7 @@ ab=a
 backup_duration=5
 
 [solr]
-solr.staging.ipropertymy-singapore.ipga.local
+solr.staging.rumah123-singapore.ipga.local
 
 [solr:vars]
 application=solr
@@ -25,7 +25,7 @@ solr_az=ap-southeast-1a
 solr_zk_hosts=zk1:2181,zk2:2181,zk3:2181
 
 [zookeeper]
-zookeeper.staging.ipropertymy-singapore.ipga.local
+zookeeper.staging.rumah123-singapore.ipga.local
 
 [zookeeper:vars]
 application=zookeeper
