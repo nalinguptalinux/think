@@ -112,6 +112,11 @@ Parameters:
     Description: Choose which VPC we should be deploying the stack to
     Type: AWS::EC2::VPC::Id
 
+  VpcCidr:
+    Description: Enter VPC Cidr
+    Type: String
+
+
 Mappings:
 
   AWSRegionArch2AMI:
@@ -418,8 +423,8 @@ Resources:
       - Ref: ILBSecurityGroup
       HealthCheck:
         Target: TCP:3000
-        HealthyThreshold: '2'
-        UnhealthyThreshold: '10'
+        HealthyThreshold: '10'
+        UnhealthyThreshold: '5'
         Interval: '30'
         Timeout: '5'
 
@@ -466,8 +471,8 @@ Resources:
         SSLCertificateId: !Ref 'SSLCertificateARN'
       HealthCheck:
         Target: TCP:80
-        HealthyThreshold: '2'
-        UnhealthyThreshold: '10'
+        HealthyThreshold: '10'
+        UnhealthyThreshold: '5'
         Interval: '30'
         Timeout: '5'
       Scheme: internet-facing
@@ -500,7 +505,7 @@ Resources:
         FromPort: 80
         IpProtocol: tcp
         ToPort: 80
-      - CidrIp: 10.39.50.0/23
+      - CidrIp: !Ref 'VpcCidr'
         FromPort: 22
         IpProtocol: tcp
         ToPort: 22
@@ -532,7 +537,7 @@ Resources:
     Properties:
       GroupDescription: ilb-securitygroup-stack
       SecurityGroupIngress:
-      - CidrIp: 0.0.0.0/0
+      - CidrIp: !Ref 'VpcCidr'
         FromPort: 3000
         IpProtocol: tcp
         ToPort: 3000
@@ -659,15 +664,11 @@ Resources:
       - IpProtocol: tcp
         FromPort: '22'
         ToPort: '22'
-        CidrIp: 10.39.50.0/23
-      - IpProtocol: tcp
-        FromPort: '22'
-        ToPort: '22'
-        CidrIp: 0.0.0.0/0
+        CidrIp: !Ref 'VpcCidr'
       - IpProtocol: tcp
         FromPort: '3000'
         ToPort: '3000'
-        CidrIp: 0.0.0.0/0
+        CidrIp: !Ref 'VpcCidr'
       - IpProtocol: tcp
         FromPort: '80'
         ToPort: '80'
@@ -679,11 +680,11 @@ Resources:
       - IpProtocol: tcp
         FromPort: '4000'
         ToPort: '4000'
-        CidrIp: 0.0.0.0/0
+        CidrIp: !Ref 'VpcCidr'
       - IpProtocol: icmp
         FromPort: "-1"
         ToPort: "-1"
-        CidrIp: 10.39.48.0/20
+        CidrIp: !Ref 'VpcCidr'
 
   SRPTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -730,8 +731,8 @@ Resources:
       - Ref: ILBhpSecurityGroup
       HealthCheck:
         Target: TCP:4000
-        HealthyThreshold: '2'
-        UnhealthyThreshold: '10'
+        HealthyThreshold: '10'
+        UnhealthyThreshold: '5'
         Interval: '30'
         Timeout: '5'
 
@@ -740,7 +741,7 @@ Resources:
     Properties:
       GroupDescription: ilb-securitygroup-stack
       SecurityGroupIngress:
-      - CidrIp: 0.0.0.0/0
+      - CidrIp: !Ref 'VpcCidr'
         FromPort: 4000
         IpProtocol: tcp
         ToPort: 4000
@@ -790,4 +791,3 @@ Outputs:
 
   RecordName:
     Value: !Ref 'RecordName'
-
