@@ -29,6 +29,7 @@
         SumoLogicAccessId: "{{sumo_logic_access_id}}"
         SumoLogicAccessKey: "{{sumo_logic_access_key}}"
         VPC: "{{aws_vpc_id}}"
+        VpcCidr: "{{vpc_cidr}}"
 
       tags:
         project: "{{project}}"
