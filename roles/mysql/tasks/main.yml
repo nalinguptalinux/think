@@ -1,0 +1,27 @@
+---
+  - name: setup rds mysql stack
+    cloudformation:
+      stack_name: "squarefoot-mysql-{{ab}}"
+      state: present
+      region: "{{aws_region}}"
+      disable_rollback: true
+      template: "cloudformation/mysql.yml"
+      stack_policy: "cloudformation/stack-policy.json"
+      template_parameters:
+        VpcId: "{{aws_vpc_id}}"
+        Subnets: "{{public_subnets}}"
+        DBName: "{{db_name}}"
+        DBUsername: "{{db_username}}"
+        DBPassword: "{{db_password}}"
+        DBClass: "{{db_class}}"
+        DBAllocatedStorage: "{{db_allocated_storage}}"
+        BackupRetentionPeriod: "{{backup_duration}}"
+        PubliclyAccessible: "{{public_access}}"
+        EngineVersion: "{{db_engine_version}}"
+        BillingTag: "{{project}}"
+        BusinessUnit: "{{business_unit}}"
+      tags:
+        project: "{{project}}"
+        application: "{{application}}"
+        lob: "regional-web"
+        env: "{{env}}"
