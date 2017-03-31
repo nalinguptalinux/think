@@ -2,6 +2,7 @@
 jenkins.web.stg.ipropertymy.ipp.com
 
 [frontend]
+//awaiting acm cert approval
 web.stg.ipropertymy.ipp.com
 
 [frontend:vars]
