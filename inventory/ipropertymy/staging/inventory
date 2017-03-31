@@ -1,3 +1,23 @@
+[jenkins]
+jenkins.web.stg.ipropertymy.ipp.com
+
+[frontend]
+web.stg.ipropertymy.ipp.com
+
+[frontend:vars]
+dns_hostname=web
+application=frontend
+ab=a
+ecs_instance_type=t2.medium
+build=latest
+min_asg_size=2
+max_asg_size=4
+desired_asg_capacity=2
+hp_ecr_repo=hp:latest
+srp_pdp_ecr_repo=srp-pdp:latest
+nginx_ecr_repo=nginx:latest
+//acm cert awaiting approval
+ssl_certificate_arn=arn:aws:acm:ap-southeast-1:904385174501:certificate/26f11d44-85f0-44a7-bd52-e323b4edb0dc
 [redis]
 elasticache.staging.ipropertymy-singapore.ipga.local
 
@@ -14,13 +34,13 @@ solr.staging.ipropertymy-singapore.ipga.local
 
 [solr:vars]
 application=solr
-ab=b
+ab=a
 pkg=solr-6.0.0.8-1.noarch.rpm
 instance_type=t2.medium
 as_max=3
 as_min=3
 jvm_heap_size=3g
-solr_subnet=subnet-d6ddafa0
+//solr_subnet=subnet-d6ddafa0
 solr_az=ap-southeast-1a
 solr_zk_hosts=zk1:2181,zk2:2181,zk3:2181
 
@@ -35,9 +55,9 @@ instance_type=t2.micro
 zk1name=zk1
 zk2name=zk2
 zk3name=zk3
-private_subnet_1=subnet-d6ddafa0
-private_subnet_2=subnet-d6ddafa0
-private_subnet_3=subnet-d6ddafa0
+//private_subnet_1=subnet-d6ddafa0
+//private_subnet_2=subnet-d6ddafa0
+//private_subnet_3=subnet-d6ddafa0
 
 [ami]
 localhost
@@ -45,7 +65,7 @@ localhost
 [ami:vars]
 instance_type=m3.medium
 ssh_username=ec2-user
-nat_subnet_id=subnet-d7ddafa1
+//nat_subnet_id=subnet-d7ddafa1
 provisioners_file=provisioners/ami/ami.sh
 instance_profile=s3-read
 timestamp={{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}
@@ -55,3 +75,28 @@ ruby_package=ruby-2.1.5.tar.gz
 rubygems_rpm=rubygem-bundle-1.2.1-3.x86_64.rpm
 base_ami=ami-dc9339bf
 
+[listing-feeder-resource]
+localhost
+
+[listing-feeder-resource:vars]
+application=listing-feeder
+lambda_deployment_bucket_name=sqft-lambda-deployment-bucket-staging
+listing_feeder_json_bucket=sqft-listing-updates-staging
+listing_feeder_json_bucket_expire_days=180
+listing_update_queue_name=ipropertymy-updated-listings-staging
+
+[capi-adapter]
+adapter.dev.ipropertymy.ipp.com
+[capi-adapter:vars]
+ab=a
+build_number=15
+adapter_name=capi-ipropertymy-listing
+instance_type=t2.medium
+max_size_asg=4
+min_size_asg=1
+elb_port=80
+host_port=3000
+container_port=3000
+elb_protocol=HTTP
+health_check_path=http:3000/diagnostic/status/heartbeat
+desired_asg_capacity=1
