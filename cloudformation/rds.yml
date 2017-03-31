@@ -50,6 +50,9 @@ Parameters:
   PubliclyAccessible:
     Description: Can the database be accesed publicly
     Type: String
+  DBInstanceIdentifier:
+    Description: DBInstanceIdentifier Name ex MySQL
+    Type: String
   Engine:
     Description: Engine Name ex MySQL
     Type: String
@@ -58,6 +61,9 @@ Parameters:
     Type: String
   Port:
     Description: Port for DB
+    Type: String
+  PagerDutyArn:
+    Description: Billing Tag
     Type: String
   BusinessUnit:
     Description: Business Unit
@@ -84,6 +90,7 @@ Resources:
   RDSDB:
     Type: AWS::RDS::DBInstance
     Properties:
+      DBInstanceIdentifier: !Ref 'DBInstanceIdentifier'
       DBName: !Ref 'DBName'
       AllocatedStorage: !Ref 'DBAllocatedStorage'
       DBInstanceClass: !Ref 'DBClass'
@@ -103,6 +110,86 @@ Resources:
         Key: "business unit"
       - Value: !Ref 'BillingTag'
         Key: Billing
+  RDSCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: { "Fn::Join" : ["", [{ "Ref" : "RDSDB" }, ": HIGH RDS CPU utilization." ]]}
+      Namespace: AWS/RDS
+      MetricName: CPUUtilization
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value : { "Ref" : "RDSDB" }
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: '80'
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+      - !Ref 'PagerDutyArn'
+      InsufficientDataActions:
+      - !Ref 'PagerDutyArn'
+      OKActions:
+      - !Ref 'PagerDutyArn'
+  RDSFreeSpaceAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: { "Fn::Join" : ["", [{ "Ref" : "RDSDB" }, ": LOW free storage space." ]]}
+      Namespace: AWS/RDS
+      MetricName: FreeStorageSpace
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value : { "Ref" : "RDSDB" }
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1000000000
+      ComparisonOperator: LessThanOrEqualToThreshold
+      AlarmActions:
+      - !Ref 'PagerDutyArn'
+      InsufficientDataActions:
+      - !Ref 'PagerDutyArn'
+      OKActions:
+      - !Ref 'PagerDutyArn'
+  RDSReadLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: { "Fn::Join" : ["", [{ "Ref" : "RDSDB" }, ": HIGH read latency." ]]}
+      Namespace: AWS/RDS
+      MetricName: ReadLatency
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value : { "Ref" : "RDSDB" }
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 0.1
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+      - !Ref 'PagerDutyArn'
+      InsufficientDataActions:
+      - !Ref 'PagerDutyArn'
+      OKActions:
+      - !Ref 'PagerDutyArn'
+  RDSWriteLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: { "Fn::Join" : ["", [{ "Ref" : "DBInstanceIdentifier" }, ": HIGH write latency." ]]}
+      Namespace: AWS/RDS
+      MetricName: WriteLatency
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value : { "Ref" : "RDSDB" }
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 0.1
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+      - !Ref 'PagerDutyArn'
+      InsufficientDataActions:
+      - !Ref 'PagerDutyArn'
+      OKActions:
+      - !Ref 'PagerDutyArn'
 Outputs:
   JDBCConnectionString:
     Description: JDBC connection string for database

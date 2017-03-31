@@ -1,7 +1,7 @@
 ---
   - name: setup rds db stack
     cloudformation:
-      stack_name: "squarefoot-rds-{{db_engine}}-{{ab}}"
+      stack_name: "{{project}}-{{application}}-{{ab}}"
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
@@ -17,9 +17,11 @@
         DBAllocatedStorage: "{{db_allocated_storage}}"
         BackupRetentionPeriod: "{{backup_duration}}"
         PubliclyAccessible: "{{public_access}}"
+        DBInstanceIdentifier: "{{project}}-{{application}}-{{ab}}"
         Engine: "{{db_engine}}"
         EngineVersion: "{{db_engine_version}}"
         Port: "{{db_port}}"
+        PagerDutyArn: "{{pager_duty_arn}}"
         BillingTag: "{{project}}"
         BusinessUnit: "{{business_unit}}"
       tags:
