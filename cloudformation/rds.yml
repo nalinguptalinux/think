@@ -1,0 +1,196 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'RDS Stack'
+Parameters:
+  VpcId:
+    Type: String
+    Description: VpcId of your existing Virtual Private Cloud (VPC)
+  Subnets:
+    Type: CommaDelimitedList
+    Description: The list of SubnetIds, for at least two Availability Zones in the
+      region in your Virtual Private Cloud (VPC)
+  DBName:
+    Description: The database name
+    Type: String
+    MinLength: '1'
+    MaxLength: '64'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric
+      characters.
+  DBUsername:
+    NoEcho: 'true'
+    Description: The database admin account username
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric
+      characters.
+  DBPassword:
+    NoEcho: 'true'
+    Description: The database admin account password
+    Type: String
+    MinLength: '1'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.
+  DBClass:
+    Description: Database instance class
+    Type: String
+  DBAllocatedStorage:
+    Description: The size of the database (Gb)
+    Type: Number
+    MinValue: '5'
+    MaxValue: '1024'
+    ConstraintDescription: must be between 5 and 1024Gb.
+  BackupRetentionPeriod:
+    Description: Backup retention period of RDS in days
+    Type: Number
+    MinValue: '5'
+    MaxValue: '100'
+  PubliclyAccessible:
+    Description: Can the database be accesed publicly
+    Type: String
+  DBInstanceIdentifier:
+    Description: DBInstanceIdentifier Name ex MySQL
+    Type: String
+  Engine:
+    Description: Engine Name ex MySQL
+    Type: String
+  EngineVersion:
+    Description: Engine Version
+    Type: String
+  Port:
+    Description: Port for DB
+    Type: String
+  PagerDutyArn:
+    Description: Billing Tag
+    Type: String
+  BusinessUnit:
+    Description: Business Unit
+    Type: String
+  BillingTag:
+    Description: Billing Tag
+    Type: String
+Resources:
+  RDSDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnets available for the RDS DB Instance
+      SubnetIds: !Ref 'Subnets'
+  VPCSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for RDS DB Instance.
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: !Ref 'Port'
+        ToPort: !Ref 'Port'
+        IpProtocol: tcp
+      VpcId: !Ref 'VpcId'
+  RDSDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: !Ref 'DBInstanceIdentifier'
+      DBName: !Ref 'DBName'
+      AllocatedStorage: !Ref 'DBAllocatedStorage'
+      DBInstanceClass: !Ref 'DBClass'
+      Engine: !Ref 'Engine'
+      EngineVersion: !Ref 'EngineVersion'
+      MasterUsername: !Ref 'DBUsername'
+      MasterUserPassword: !Ref 'DBPassword'
+      DBSubnetGroupName: !Ref 'RDSDBSubnetGroup'
+      BackupRetentionPeriod: !Ref 'BackupRetentionPeriod'
+      PubliclyAccessible: !Ref 'PubliclyAccessible'
+      MultiAZ: 'true'
+      Port: !Ref 'Port'
+      VPCSecurityGroups:
+      - !Ref 'VPCSecurityGroup'
+      Tags:
+      - Value: !Ref 'BusinessUnit'
+        Key: "business unit"
+      - Value: !Ref 'BillingTag'
+        Key: Billing
+  RDSCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: { "Fn::Join" : ["", [{ "Ref" : "RDSDB" }, ": HIGH RDS CPU utilization." ]]}
+      Namespace: AWS/RDS
+      MetricName: CPUUtilization
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value : { "Ref" : "RDSDB" }
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: '70'
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+      - !Ref 'PagerDutyArn'
+      InsufficientDataActions:
+      - !Ref 'PagerDutyArn'
+      OKActions:
+      - !Ref 'PagerDutyArn'
+  RDSFreeSpaceAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: { "Fn::Join" : ["", [{ "Ref" : "RDSDB" }, ": LOW free storage space." ]]}
+      Namespace: AWS/RDS
+      MetricName: FreeStorageSpace
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value : { "Ref" : "RDSDB" }
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1000000000
+      ComparisonOperator: LessThanOrEqualToThreshold
+      AlarmActions:
+      - !Ref 'PagerDutyArn'
+      InsufficientDataActions:
+      - !Ref 'PagerDutyArn'
+      OKActions:
+      - !Ref 'PagerDutyArn'
+  RDSReadLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: { "Fn::Join" : ["", [{ "Ref" : "RDSDB" }, ": HIGH read latency." ]]}
+      Namespace: AWS/RDS
+      MetricName: ReadLatency
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value : { "Ref" : "RDSDB" }
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 0.1
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+      - !Ref 'PagerDutyArn'
+      InsufficientDataActions:
+      - !Ref 'PagerDutyArn'
+      OKActions:
+      - !Ref 'PagerDutyArn'
+  RDSWriteLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: { "Fn::Join" : ["", [{ "Ref" : "DBInstanceIdentifier" }, ": HIGH write latency." ]]}
+      Namespace: AWS/RDS
+      MetricName: WriteLatency
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value : { "Ref" : "RDSDB" }
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 0.1
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+      - !Ref 'PagerDutyArn'
+      InsufficientDataActions:
+      - !Ref 'PagerDutyArn'
+      OKActions:
+      - !Ref 'PagerDutyArn'
+Outputs:
+  JDBCConnectionString:
+    Description: JDBC connection string for database
+    Value: !Join ['', ['jdbc:rds://', !GetAtt [RDSDB, Endpoint.Address], ':', !GetAtt [RDSDB, Endpoint.Port], /, !Ref 'DBName']]
