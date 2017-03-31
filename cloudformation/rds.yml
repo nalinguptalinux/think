@@ -93,6 +93,7 @@ Resources:
       DBInstanceIdentifier: !Ref 'DBInstanceIdentifier'
       DBName: !Ref 'DBName'
       AllocatedStorage: !Ref 'DBAllocatedStorage'
+      StorageType: 'gp2'
       DBInstanceClass: !Ref 'DBClass'
       Engine: !Ref 'Engine'
       EngineVersion: !Ref 'EngineVersion'
