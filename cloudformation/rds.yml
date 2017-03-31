@@ -119,10 +119,10 @@ Resources:
       Dimensions:
         - Name: DBInstanceIdentifier
           Value : { "Ref" : "RDSDB" }
-      Statistic: Average
-      Period: 300
+      Statistic: Maximum
+      Period: 60
       EvaluationPeriods: 1
-      Threshold: '80'
+      Threshold: '70'
       ComparisonOperator: GreaterThanThreshold
       AlarmActions:
       - !Ref 'PagerDutyArn'
