@@ -55,7 +55,7 @@ Parameters:
     Description: JVMHeapSize size
     Type: String
   VpcNet:
-    Description: AutoScaling min size
+    Description: VPC CidrIp
     Type: String
   NewRelicLicenseKey:
     Description: New Relic License Key
