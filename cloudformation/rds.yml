@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'MySQL RDS for Squarefoot'
+Description: 'RDS Stack'
 Parameters:
   VpcId:
     Type: String
@@ -9,7 +9,6 @@ Parameters:
     Description: The list of SubnetIds, for at least two Availability Zones in the
       region in your Virtual Private Cloud (VPC)
   DBName:
-    Default: MyDatabase
     Description: The database name
     Type: String
     MinLength: '1'
@@ -18,7 +17,6 @@ Parameters:
     ConstraintDescription: must begin with a letter and contain only alphanumeric
       characters.
   DBUsername:
-    Default: admin
     NoEcho: 'true'
     Description: The database admin account username
     Type: String
@@ -28,7 +26,6 @@ Parameters:
     ConstraintDescription: must begin with a letter and contain only alphanumeric
       characters.
   DBPassword:
-    Default: admin
     NoEcho: 'true'
     Description: The database admin account password
     Type: String
@@ -37,19 +34,15 @@ Parameters:
     AllowedPattern: '[a-zA-Z0-9]*'
     ConstraintDescription: must contain only alphanumeric characters.
   DBClass:
-    Default: db.m4.large
     Description: Database instance class
     Type: String
-    ConstraintDescription: must select a valid database instance type.
   DBAllocatedStorage:
-    Default: '100'
     Description: The size of the database (Gb)
     Type: Number
     MinValue: '5'
     MaxValue: '1024'
     ConstraintDescription: must be between 5 and 1024Gb.
   BackupRetentionPeriod:
-    Default: '20'
     Description: Backup retention period of RDS in days
     Type: Number
     MinValue: '5'
@@ -57,8 +50,14 @@ Parameters:
   PubliclyAccessible:
     Description: Can the database be accesed publicly
     Type: String
+  Engine:
+    Description: Engine Name ex MySQL
+    Type: String
   EngineVersion:
-    Description: Mysql Engine Version
+    Description: Engine Version
+    Type: String
+  Port:
+    Description: Port for DB
     Type: String
   BusinessUnit:
     Description: Business Unit
@@ -67,7 +66,7 @@ Parameters:
     Description: Billing Tag
     Type: String
 Resources:
-  MyDBSubnetGroup:
+  RDSDBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
       DBSubnetGroupDescription: Subnets available for the RDS DB Instance
@@ -76,21 +75,27 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for RDS DB Instance.
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: !Ref 'Port'
+        ToPort: !Ref 'Port'
+        IpProtocol: tcp
       VpcId: !Ref 'VpcId'
-  MyDB:
+  RDSDB:
     Type: AWS::RDS::DBInstance
     Properties:
       DBName: !Ref 'DBName'
       AllocatedStorage: !Ref 'DBAllocatedStorage'
       DBInstanceClass: !Ref 'DBClass'
-      Engine: MySQL
+      Engine: !Ref 'Engine'
       EngineVersion: !Ref 'EngineVersion'
       MasterUsername: !Ref 'DBUsername'
       MasterUserPassword: !Ref 'DBPassword'
-      DBSubnetGroupName: !Ref 'MyDBSubnetGroup'
+      DBSubnetGroupName: !Ref 'RDSDBSubnetGroup'
       BackupRetentionPeriod: !Ref 'BackupRetentionPeriod'
+      PubliclyAccessible: !Ref 'PubliclyAccessible'
       MultiAZ: 'true'
-      Port: 3306
+      Port: !Ref 'Port'
       VPCSecurityGroups:
       - !Ref 'VPCSecurityGroup'
       Tags:
@@ -101,5 +106,4 @@ Resources:
 Outputs:
   JDBCConnectionString:
     Description: JDBC connection string for database
-    Value: !Join ['', ['jdbc:mysql://', !GetAtt [MyDB, Endpoint.Address], ':', !GetAtt [
-          MyDB, Endpoint.Port], /, !Ref 'DBName']]
+    Value: !Join ['', ['jdbc:rds://', !GetAtt [RDSDB, Endpoint.Address], ':', !GetAtt [RDSDB, Endpoint.Port], /, !Ref 'DBName']]
