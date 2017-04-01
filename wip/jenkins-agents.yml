@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Jenkins slave autoscaling group
+Parameters:
+  ImageId:
+    Description: Base AMI to launch from
+    Type: String
+  DesiredCapacity:
+    Description: Desired number of slaves to launch
+    Type: String
+    Default: '1'
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: jenkins-user
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  InstanceType:
+    Description: WebServer EC2 instance type
+    Type: String
+    Default: m3.medium
+    AllowedValues:
+    - m3.medium
+    - m3.large
+    - m3.xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  NodeName:
+    Description: Name of the nodes, set in AWS and Jenkins
+    Type: String
+    Default: executor
+Resources:
+  ASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones:
+      - us-east-1a
+      HealthCheckType: EC2
+      LaunchConfigurationName: !Ref 'LaunchConfig'
+      DesiredCapacity: !Ref 'DesiredCapacity'
+      MinSize: 1
+      MaxSize: 5
+      Tags:
+      - Key: Name
+        Value: !Ref 'NodeName'
+        PropagateAtLaunch: 'true'
+  LaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref 'ImageId'
+      InstanceType: !Ref 'InstanceType'
+      KeyName: jenkins-user
+      SecurityGroups:
+      - jenkins-slave
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: '120'
+      UserData: !Base64
+        Fn::Join:
+                #!/bin/bash
+                set -e
+                node_name=${NodeName}
+
+                host_id=$node_name-$(curl http://169.254.169.254/latest/meta-data/instance-id)-$(date +%s)
+                export HOME=/root
+
+                if [ "$node_name" == "executor" ]; then
+                  echo "Placing jenkins key material"
+                  chown -R jenkins:jenkins /var/lib/jenkins
+                  ssh_dir=/var/lib/jenkins/.ssh
+                  cd $ssh_dir
+                  chmod 600 id_rsa
+                  ssh-keygen -y -f id_rsa > id_rsa.pub
+                  ssh-keygen -y -f id_rsa > authorized_keys
+                  chown -R jenkins:jenkins $ssh_dir
+                  chmod 644 id_rsa.pub
+                  chmod 640 authorized_keys
+                fi
+
+                echo "Connecting with Jenkins Swarm plugin"
+                sudo -H -u jenkins bash -c '
+                curl -kL -o $HOME/swarm-client.jar \
+                  http://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/2.0/swarm-client-2.0-jar-with-dependencies.jar
+
+                sudo -H -u jenkins bash -c "
+                java -jar \$HOME/swarm-client.jar \
+                  -disableSslVerification \
+                  -fsroot /var/lib/jenkins \
+                  -executors 6 \
+                  -labels docker -labels $node_name \
+                  -master http://jenkins.dev.sg.squarefoot.com.hk/ \
+                  -name $node_name -mode exclusive \
+                  -username slaves -password password &
+                  echo "All set!"
+
+                   java -jar swarm-client-3.3.jar -username  -password
