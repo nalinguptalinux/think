@@ -5,8 +5,8 @@
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
-      template: cloudformation/zookeeper.yml
-      stack_policy: cloudformation/stack-policy.json
+      template: "cloudformation/squarefoot/zookeeper.yml"
+      stack_policy: "policies/cloudformation/stack-policy.json"
       template_parameters:
         AMI: "{{ami}}"
         HostedZoneName: "{{private_zone}}"

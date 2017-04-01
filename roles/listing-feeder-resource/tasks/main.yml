@@ -5,8 +5,8 @@
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
-      template: "cloudformation/listing-feeder-resource.yml"
-      stack_policy: "cloudformation/stack-policy.json"
+      template: "cloudformation/squarefoot/listing-feeder-resource.yml"
+      stack_policy: "policies/cloudformation/stack-policy.json"
       template_parameters:
         VpcId: "{{aws_vpc_id}}"
         BillingTag: "{{project}}"

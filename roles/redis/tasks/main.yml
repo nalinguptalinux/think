@@ -5,8 +5,8 @@
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
-      template: "cloudformation/redis.yml"
-      stack_policy: "cloudformation/stack-policy.json"
+      template: "cloudformation/squarefoot/redis.yml"
+      stack_policy: "policies/cloudformation/stack-policy.json"
       template_parameters:
         ClusterNodeType: "{{cluster_node_type}}"
         RedisPort: "{{redis_port}}"
