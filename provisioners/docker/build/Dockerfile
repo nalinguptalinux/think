@@ -1,22 +1,16 @@
-FROM centos:centos6
+FROM centos:centos7
 
 MAINTAINER Hash <harshad.wankhede@rea-group.com>
+RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+RUN yum install -y make gcc wget python-pip python-devel
 
-RUN yum install -y http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm java-1.8.0-openjdk-devel
-RUN yum install -y rpm-build
-
-ENV JAVA_HOME /usr/lib/jvm/java-1.8.0
-
-RUN yum install -y make gcc wget
 RUN curl --silent --location https://rpm.nodesource.com/setup_7.x | bash -
 RUN yum -y install nodejs
 
 RUN wget https://dl.yarnpkg.com/rpm/yarn.repo -O /etc/yum.repos.d/yarn.repo
 RUN yum install -y yarn
 
-RUN yum install -y python-pip python-devel && pip install awscli
-
-ENV JAVA_HOME /usr/lib/jvm/java-1.8.0
-
 COPY install_ruby.sh /root/install_ruby.sh
 RUN /root/install_ruby.sh
+
+RUN pip install awscli boto ansible
