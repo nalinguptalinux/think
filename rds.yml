@@ -3,4 +3,4 @@
   connection: local
   gather_facts: False
   roles:
-    - rds
+    - squarefoot/rds

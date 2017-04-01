@@ -4,4 +4,4 @@
   user: ec2-user
   gather_facts: False
   roles:
-    - listing-feeder-resource
+    - squarefoot/listing-feeder-resource

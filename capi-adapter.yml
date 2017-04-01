@@ -3,4 +3,4 @@
   connection: local
   gather_facts: False
   roles:
-    - capi-adapter
+    - squarefoot/capi-adapter
