@@ -1,7 +1,7 @@
 ---
 - name: create capi adapter
   cloudformation:
-    stack_name: "{{adapter_name}}-{{build_number}}-{{ab}}"
+    stack_name: "{{adapter_name}}-{{build_number}}"
     state: present
     region: "{{aws_region}}"
     disable_rollback: true
@@ -16,7 +16,7 @@
       KeyPair: "{{key_name}}"
       MaxSizeASG: "{{max_size_asg}}"
       MinSizeASG: "{{min_size_asg}}"
-      RecordName: "{{adapter_name}}-{{build_number}}-{{ab}}"
+      RecordName: "{{adapter_name}}-{{build_number}}"
       PrivateSubnets: "{{private_subnets}}"
       PublicSubnets: "{{public_subnets}}"
       ELBPort: "{{elb_port}}"

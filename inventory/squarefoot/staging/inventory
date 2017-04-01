@@ -68,7 +68,6 @@ listing_update_queue_name=squarefoot-updated-listings-staging
 [capi-adapter]
 adapter.dev.squarefoot.ipp.com
 [capi-adapter:vars]
-ab=a
 build_number=15
 adapter_name=capi-squarefoot-listing
 instance_type=t2.medium
