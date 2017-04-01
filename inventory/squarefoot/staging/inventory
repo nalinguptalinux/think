@@ -79,3 +79,12 @@ container_port=3000
 elb_protocol=HTTP
 health_check_path=http:3000/diagnostic/status/heartbeat
 desired_asg_capacity=1
+
+
+[switch-stack]
+127.0.0.1
+
+[switch-stack:vars]
+new_stack_name=capi-squarefoot-listing-37-a
+old_stack_name=capi-squarefoot-listing-35-a
+elb=capi-adapter-listing

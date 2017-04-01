@@ -1,0 +1,80 @@
+---
+- name: Get describe result from new stack
+  command: aws cloudformation describe-stack-resources --stack-name {{ new_stack_name }} --region {{aws_region}}
+  register: new_stack_result
+
+- name: Parse new stack result to json format
+  set_fact:
+    stack_output: "{{new_stack_result.stdout | from_json}}"
+
+- name: Get the new ASG name
+  set_fact:
+    new_asg_name: "{{ item.PhysicalResourceId }}"
+  when: item.ResourceType == "AWS::AutoScaling::AutoScalingGroup"
+  with_items:
+    - "{{ stack_output.StackResources }}"
+
+- name: Get describe result from old stack
+  command: aws cloudformation describe-stack-resources --stack-name {{ old_stack_name }} --region {{aws_region}}
+  register: old_stack_result
+
+- name: Parse old stack result to json format
+  set_fact:
+    old_stack_output: "{{old_stack_result.stdout | from_json}}"
+
+- name: Get the old ASG name
+  set_fact:
+    old_asg_name: "{{ item.PhysicalResourceId }}"
+  when: item.ResourceType == "AWS::AutoScaling::AutoScalingGroup"
+  with_items:
+    - "{{ old_stack_output.StackResources }}"
+
+- name: Get the new ELB name
+  set_fact:
+    new_elb_name: "{{ item.PhysicalResourceId }}"
+  when: item.ResourceType == "AWS::ElasticLoadBalancing::LoadBalancer"
+  with_items:
+    - "{{ stack_output.StackResources }}"
+
+- name: Get instances health describe result from ELB
+  command: aws elb describe-instance-health --load-balancer-name {{ new_elb_name }} --region {{aws_region}}
+  register: instance_health_result
+
+- name: Read instance health result from json
+  set_fact:
+    elb_output: "{{ instance_health_result.stdout | from_json }}"
+
+- name: Check the instance state is "InService"
+  fail: msg="Not all instance in new ELB is InService!!!"
+  when: item.State == "OutOfService"
+  with_items:
+    - "{{ elb_output.InstanceStates }}"
+
+- name: Attach elb to new ASG
+  command: aws autoscaling attach-load-balancers --load-balancer-names {{ elb }} --auto-scaling-group-name {{ new_asg_name }} --region {{aws_region}}
+
+- pause: minutes=1
+
+- name: Get instances health result from ELB
+  command: aws elb describe-instance-health --load-balancer-name {{ elb }} --region {{aws_region}}
+  register: elb_instance_health_result
+
+- name: Read instance health result from ELB
+  set_fact: 
+    elb_output: "{{ elb_instance_health_result.stdout | from_json }}"
+
+- name: Check all instances state is "InService" in ELB
+  fail: msg="Not all instance in ELB is InService!!!"
+  when: item.State == "OutOfService"
+  with_items:
+    - "{{ elb_output.InstanceStates }}"
+  register: elb_check_result
+  ignore_errors: true
+
+- name: roll_back
+  command: aws autoscaling detach-load-balancers --load-balancer-names {{ elb }} --auto-scaling-group-name {{ new_asg_name }} --region {{aws_region}}
+  when: elb_check_result | failed
+
+- name: Detach ELB from old ASG
+  command: aws autoscaling detach-load-balancers --load-balancer-names {{ elb }} --auto-scaling-group-name {{ old_asg_name }} --region {{aws_region}}
+  when: elb_check_result | success
