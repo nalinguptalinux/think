@@ -4,6 +4,7 @@ import sys
 import re
 import os
 import boto3
+import time
 
 class Deployment():
     """Class to handle deployments"""
@@ -95,4 +96,6 @@ DEPLOYER = Deployment(sys.argv[1])
 DEPLOYER.get_facts()
 # TODO: Check new stack before switching?
 DEPLOYER.update_dns()
+print "Sleeping for a while for DNS to fully propagate before destroying the old stack"
+time.sleep(60)
 DEPLOYER.delete_old_stack()
