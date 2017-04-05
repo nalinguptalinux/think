@@ -9,9 +9,9 @@ events {
   }
 
 http {
-  #####  DDOS protection  #####
-  #limit_req_zone $binary_remote_addr zone=one:10m rate=20r/s;
-  #limit_req zone=one burst=5 nodelay;
+  ####  DDOS protection  #####
+  limit_req_zone $binary_remote_addr zone=one:10m rate=20r/s;
+  limit_req zone=one burst=5 nodelay;
 
 
   log_format keyvalue 'ip=$remote_addr user=$remote_user '
@@ -48,7 +48,7 @@ http {
 
   server {
 		listen       80;
-		#server_name  localhost;
+		server_name  localhost;
 
     # Proxy
 		proxy_buffering off;
