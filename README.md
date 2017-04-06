@@ -1,22 +1,48 @@
 # Infra-Code
 AWS Infrastructure Code for IPP Regional Web
 
-## For Cloudformation
-
-### Dependencies
+## Dependencies
 - [Ansible](http://docs.ansible.com/ansible/intro_installation.html)
 - [AWS CLI](https://aws.amazon.com/cli/)
+- [Terraform](https://www.terraform.io)
 
-### How to create AMI's
+## Setting up VPC using Terraform
 
-```sh
-ansible-playbook ami.yml -i inventory/staging/ -e "private_key_file=/home/hash/aws/awscloud-squarefoot-staging-singapore.pem"
+```bash
+cd provisioners/vpc
+export AWS_ACCESS_KEY_ID=xxxx
+export AWS_SECRET_ACCESS_KEY=xx/xx/xx
+export AWS_DEFAULT_REGION=<region_for_your_vpc>
 ```
 
+### Notes:
+
+1. You need to update the tfvars for your environment
+1. Once you run the script please copy your tfstate to a environment specific directory(Never create/modify tfstate manually, it is automatically generated)
+1. **Important: Do not run this against existing aws environments with VPC**
+
+To provision an environment:
+
+```bash
+$ terraform get -var-file="environment.tfvars"
+$ terraform plan -var-file="tfvars/<website>/<environment>-<aws_region>.tfvars" --state="tfstate/<website>/<environment>/terraform.tfstate"
+```
+
+Example:
+
+```bash
+$ terraform plan -var-file="tfvars/ipropertymy/development-ap-southeast-1.tfvars" --state="tfstate/ipropertymy/development/terraform.tfstate"
+$ terraform apply -var-file="tfvars/ipropertymy/development-ap-southeast-1.tfvars" --state="tfstate/ipropertymy/development/terraform.tfstate"
+```
+
+## For Cloudformation
+
 ### How to run the deployment task.
+
 ##### 1. export your AWS keys in env.
+
 ```sh
-export AWS_REGION="ap-southeast-1 or ap-southeast-1"
+export AWS_REGION="<ap-southeast-1 or ap-southeast-1>"
 export AWS_ACCESS_KEY_ID=xxxxxxxx
 export AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxx
 ```
@@ -30,10 +56,14 @@ build=build-171
 
 ##### 3. run the ansible task.
 
-`ansible-playbook solr.yml -i inventory/singapore/staging -vvvv`
+```bash
+ansible-playbook solr.yml -i inventory/singapore/staging -vvvv
+```
 
-### add a new deployment task
+### Add a new deployment task
+
 ##### 1. add a playbook
+
 ```yaml
 ---
 - hosts: solr
@@ -52,30 +82,17 @@ build=build-171
 * add host and customized params in `inventory` file.
 * add common params in `all` file under `group_vars` folder.
 
+-----
+
+### How to create AMI's
+
+```sh
+ansible-playbook ami.yml -i inventory/staging/ -e "private_key_file=/home/hash/aws/awscloud-squarefoot-staging-singapore.pem"
+```
+
 ## For Windows
 
 *  vagrant up --provider virtualbox
-
-
-##For Setting up VPC using Terraform
-
-* `cd terraform-vpc`
-* `export AWS_ACCESS_KEY_ID=xxxx`
-* `export AWS_SECRET_ACCESS_KEY=xx/xx/xx`
-* `export AWS_DEFAULT_REGION=region for your vpc`
-
-1. You need to update the tfvars for your environment
-1. Once you run the script please copy your tfstate to a environment specific directory(Never create/modify tfstate manually, it is automatically generated)
-1. Important: Do not run this against existing aws environments with VPC
-
-To configure a environment:
-
-* `terraform get -var-file="environment.tfvars"`
-* `terraform plan -var-file="environment.tfvars" --state="tfstate/website/environment/environment.tfstate"`
-e.g.
-* `terraform plan -var-file="tfvars/ipropertymy/development-ap-southeast-1.tfvars" --state="tfstate/ipropertymy/development/iproperty-my-dev.tfstate`
-* `terraform apply -var-file="environment.tfvars" --state="tfstatewebsite/environment/environment.tfstate"`
-
 
 
 ---
