@@ -441,18 +441,8 @@ Resources:
           Protocol: tcp
           ContainerPort: '80'
         Command:
-        - Fn::Join:
-          - ''
-          - - http://
-            - Fn::GetAtt:
-              - EcsHpELB
-              - DNSName
-        - Fn::Join:
-          - ''
-          - - http://
-            - Fn::GetAtt:
-              - ECSSrpPdpELB
-              - DNSName
+        - !GetAtt EcsHpELB.DNSName
+        - !GetAtt ECSSrpPdpELB.DNSName
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'NginxECRRepo']]
 
   ECSWebELB:
