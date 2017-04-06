@@ -12,7 +12,7 @@ SITE="$1"
 ENVIRONMENT="$2"
 ENVIRONMENT=${ENVIRONMENT:=dev}
 
-INVENTORY_FILE="inventory/${SITE}/${ENV}/inventory"
+INVENTORY_FILE="inventory/${SITE}/${ENVIRONMENT}/inventory"
 
 if [ ! -e "${INVENTORY_FILE}" ]; then
   echo "Unable to locate inventory file ${INVENTORY_FILE}"
