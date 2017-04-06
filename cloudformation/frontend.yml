@@ -363,7 +363,7 @@ Resources:
           #!/bin/bash -ex
           ######--------------------------Install software----------------------######
           /usr/bin/yum update -y
-          /usr/bin/yum install -y sysstat nmap telnet curl wget
+          /usr/bin/yum install -y sysstat nmap telnet curl wget vim elinks
           /usr/bin/yum install -y aws-cfn-bootstrap
           /usr/bin/easy_install awscli
           ######-----------------------------Bootstrap--------------------------######
