@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -ex
+
 export PATH=$PATH:/usr/local/bin
 
 if [ -z "$1" ]; then
