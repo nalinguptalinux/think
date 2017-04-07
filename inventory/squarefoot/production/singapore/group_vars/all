@@ -7,7 +7,7 @@ public_zone: prod.sg.squarefoot.ippstatic.com
 key_name: awscloud-squarefoot-production-singapore
 aws_vpc_id:  vpc-1c70e178
 vpc_cidr: 10.39.0.0/20
-dns_servers: AmazonProvidedDNS 10.39.0.2
+dns_servers: 169.254.169.253,10.39.0.2
 zones: ap-southeast-1a,ap-southeast-1b
 
 nat_subnets: subnet-90b0f6e6,subnet-4ce6b428

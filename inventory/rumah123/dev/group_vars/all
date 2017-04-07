@@ -7,7 +7,7 @@ aws_region: ap-southeast-1
 key_name: awscloud-rumah123-development-singapore
 aws_vpc_id: vpc-e19d0285
 vpc_cidr: 10.89.48.0/20
-dns_servers: AmazonProvidedDNS 10.89.48.2
+dns_servers: 169.254.169.253,10.89.48.2
 zones: ap-southeast-1a,ap-southeast-1b
 
 nat_subnets: subnet-b4733fc2,subnet-3d114a59

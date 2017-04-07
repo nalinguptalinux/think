@@ -7,7 +7,7 @@ aws_region: ap-southeast-1
 key_name: awscloud-ipropertymy-development-singapore2
 aws_vpc_id: vpc-4ee9762a
 vpc_cidr: 10.90.48.0/20
-dns_servers: AmazonProvidedDNS 10.90.48.2
+dns_servers: 169.254.169.253,10.90.48.2
 zones: ap-southeast-1a,ap-southeast-1b
 
 nat_subnets:  subnet-0b7d317d,subnet-2fe2ba4b
