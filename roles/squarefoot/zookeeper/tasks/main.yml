@@ -21,6 +21,7 @@
         Zk02RecordName: "{{zk2name}}"
         Zk03RecordName: "{{zk3name}}"
         S3Repository: "{{resource_bucket_name}}"
+        NewRelicLicenseKey: "{{new_relic_license_key}}"
       tags:
         project: "{{project}}"
         application: "{{application}}"

@@ -56,6 +56,9 @@ Parameters:
   Zk03RecordName:
     Description: The name of the DNS record to create for zk3.
     Type: String
+  NewRelicLicenseKey:
+    Description: New Relic License Key
+    Type: String
 Conditions:
   RegionCondition: !Not [!Equals [!Ref 'AWS::Region', cn-north-1]]
 Resources:
@@ -240,6 +243,10 @@ Resources:
 
           aws s3 cp s3://${S3Repository}/solr/${Pkg} /tmp/ --region ${AWS::Region}  || error_exit 'failed to download zookeeper rpm package'
           yum install -y /tmp/${Pkg} || error_exit 'failed to install zookeeper rpm package'
+
+          #Configure New Relic
+          /etc/init.d/newrelic-sysmond restart
+
           /opt/aws/bin/cfn-init -s ${AWS::StackName} -r Zk01  --region ${AWS::Region} --role ${ReplicasetCfnRole} || error_exit 'Failed to run cfn-init'
           # Start up the cfn-hup daemon to listen for changes
           /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'

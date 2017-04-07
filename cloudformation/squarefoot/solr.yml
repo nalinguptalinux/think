@@ -208,7 +208,7 @@ Resources:
           echo 'SOLR_JAVA_MEM="-Xms${JVMHeapSize} -Xmx${JVMHeapSize}"' >> /etc/default/solr.in.sh
           sed -i 's/export NEWRELIC_KEY=/export NEWRELIC_KEY=${NewRelicLicenseKey}/g' /etc/rea/credentials/solr-cloud.sh
           sed -i 's/export SOLR_ZK_HOSTS=/export SOLR_ZK_HOSTS=${ZkHosts}/g' /etc/rea/credentials/solr-cloud.sh
-          /etc/init.d/newrelic-sysmond start
+          /etc/init.d/newrelic-sysmond restart
 
           service solr start || error_exit 'failed to start solr application'
           # Start up the cfn-hup daemon to listen for changes
