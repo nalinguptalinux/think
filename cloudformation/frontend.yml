@@ -407,7 +407,7 @@ Resources:
       Scheme: internal
       ConnectionDrainingPolicy:
         Enabled: true
-        Timeout: 45
+        Timeout: 30
       CrossZone: true
       Tags:
       - Value:
@@ -468,7 +468,7 @@ Resources:
       Scheme: internet-facing
       ConnectionDrainingPolicy:
         Enabled: true
-        Timeout: 45
+        Timeout: 30
       Tags:
       - Value:
           Ref: BusinessUnit
@@ -705,7 +705,7 @@ Resources:
       Scheme: internal
       ConnectionDrainingPolicy:
         Enabled: true
-        Timeout: 45
+        Timeout: 30
       CrossZone: true
       Tags:
       - Value:
