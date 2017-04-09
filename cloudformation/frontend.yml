@@ -423,8 +423,8 @@ Resources:
       - Ref: ILBSecurityGroup
       HealthCheck:
         Target: TCP:3000
-        HealthyThreshold: '10'
-        UnhealthyThreshold: '5'
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '3'
         Interval: '30'
         Timeout: '5'
 
@@ -461,8 +461,8 @@ Resources:
         SSLCertificateId: !Ref 'SSLCertificateARN'
       HealthCheck:
         Target: TCP:80
-        HealthyThreshold: '10'
-        UnhealthyThreshold: '5'
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '3'
         Interval: '30'
         Timeout: '5'
       Scheme: internet-facing
@@ -721,8 +721,8 @@ Resources:
       - Ref: ILBhpSecurityGroup
       HealthCheck:
         Target: TCP:4000
-        HealthyThreshold: '10'
-        UnhealthyThreshold: '5'
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '3'
         Interval: '30'
         Timeout: '5'
 
