@@ -1,0 +1,112 @@
+user www-data;
+worker_processes auto;
+error_log /var/log/nginx/error.log;
+pid /var/run/nginx.pid;
+include /usr/share/nginx/modules/*.conf;
+
+events {
+  worker_connections 1024;
+  }
+
+http {
+
+  log_format keyvalue 'ip=$remote_addr user=$remote_user '
+  'req="$request" status=$status bytes_sent=$body_bytes_sent '
+  'req_time=$request_time ref="$http_referer" '
+  'ua="$http_user_agent" forwarded="$http_x_forwarded_for" ';
+
+  access_log  /var/log/nginx/access.log  keyvalue;
+
+  sendfile            on;
+  tcp_nopush          on;
+  tcp_nodelay         on;
+  keepalive_timeout   65;
+  types_hash_max_size 2048;
+  server_tokens off;
+
+  include             /etc/nginx/mime.types;
+  default_type        application/octet-stream;
+  include              /etc/nginx/conf.d/*.conf;
+  index                index.html index.htm;
+
+  gzip on;
+  gzip_disable "MSIE [1-6]\.(?!.*SV1)";
+  gzip_vary on;
+  gzip_proxied any;
+  gzip_comp_level 6;
+  gzip_buffers 16 8k;
+  gzip_http_version 1.1;
+  gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+  resolver 169.254.169.253 valid=10s;
+
+  # Only these 2 upstreams gets updated when replacing with ELB hostname
+  upstream HP_UPSTREAM {
+    server <HP_INTERNAL_ELB>;
+  }
+
+  upstream SRPPDP_UPSTREAM {
+    server <SRPPDP_INTERNAL_ELB>;
+  }
+
+  server {
+    listen       80;
+    server_name  _;
+
+    proxy_buffering off;
+    proxy_set_header HOST $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+    auth_basic "Restricted";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+
+    location /api {
+      proxy_pass_request_headers on;
+      proxy_pass http://SRPPDP_UPSTREAM/api;
+    }
+
+    location ~ ^/api/(?<section>.*)$ {
+      proxy_pass_request_headers on;
+      proxy_pass http://SRPPDP_UPSTREAM/api/$section$is_args$args;
+      rewrite ^/(.*)/$ /$1 permanent;
+    }
+
+    location /property {
+      proxy_pass_request_headers on;
+      proxy_pass http://SRPPDP_UPSTREAM/property;
+    }
+
+    location ~ ^/property/(?<section>.*)$ {
+      proxy_pass_request_headers on;
+      proxy_pass http://SRPPDP_UPSTREAM/property/$section$is_args$args;
+      rewrite ^/(.*)/$ /$1 permanent;
+    }
+
+    location ~ /srp-pdp {
+      proxy_pass http://SRPPDP_UPSTREAM;
+    }
+
+    location /buy {
+      proxy_pass_request_headers on;
+      proxy_pass http://SRPPDP_UPSTREAM;
+    }
+
+    location /rent {
+      proxy_pass http://SRPPDP_UPSTREAM;
+    }
+
+    location /rental {
+      proxy_pass http://HP_UPSTREAM;
+    }
+
+      location /hp {
+      proxy_pass http://HP_UPSTREAM;
+    }
+
+    location / {
+      proxy_pass http://HP_UPSTREAM;
+    }
+  }
+}
