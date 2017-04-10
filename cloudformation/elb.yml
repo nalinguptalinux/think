@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: setup an static ELB
+Parameters:
+  LoadBalancerName:
+    Description: Name of the load balancer
+    Type: String
+  AppPort:
+    Description: Application Http port for HealthCheck
+    Type: String
+  InstancePort:
+    Description: Instance port from ELB forwarded to
+    Type: String
+  Subnets:
+    Description: The subnets which the ELB is hosted.
+    Type: CommaDelimitedList
+  VpcID:
+    Description: Id of the VPC
+    Type: String
+    AllowedPattern: vpc-[a-f0-9]{8}
+  Application:
+    Description: application name
+    Type: String
+  Scheme:
+    Description: scheme of ELB
+    Type: String
+    Default: internet-facing
+  ELBPort:
+    Description: opened port of ELB
+    Type: String
+  CertificateName:
+    Description: name of SSL certificate
+    Type: String
+  Protocol:
+    Description: Protocol used in ELB
+    Type: String
+    Default: HTTP
+  IdleTimeout:
+    Description: The number of seconds a connection can be idle before load balancer
+      closes the connection
+    Type: String
+    Default: '180'
+Conditions:
+  HttpsUsed: !Equals [!Ref 'Protocol', HTTPS]
+Resources:
+  ELBConnectionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Join [' ', [Allowing, !Ref 'Application', client connection]]
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: !Ref 'ELBPort'
+        ToPort: !Ref 'ELBPort'
+      VpcId: !Ref 'VpcID'
+  ELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Scheme: !Ref 'Scheme'
+      Subnets: !Ref 'Subnets'
+      SecurityGroups:
+      - !Ref 'ELBConnectionSecurityGroup'
+      LoadBalancerName: !Ref 'LoadBalancerName'
+      CrossZone: true
+      LoadBalancerAttributes:
+        ConnectionSettings:
+          IdleTimeout: !Ref 'IdleTimeout'
+      ConnectionDrainingPolicy:
+        Enabled: true
+        Timeout: 60
+      Listeners:
+      - InstancePort: !Ref 'InstancePort'
+        LoadBalancerPort: !Ref 'ELBPort'
+        Protocol: !Ref 'Protocol'
+        SSLCertificateId: !If [HttpsUsed, !Join ['', ['arn:aws:iam::', !Ref 'AWS::AccountId',
+              ':server-certificate/', !Ref 'CertificateName']], !Ref 'AWS::NoValue']
+      HealthCheck:
+        HealthyThreshold: '2'
+        Interval: '60'
+        Timeout: '4'
+        Target: !Join ['', ['HTTP:', !Ref 'AppPort', /diagnostic/status/heartbeat]]
+        UnhealthyThreshold: '2'
+Outputs:
+  ELBEndpoint:
+    Description: ELB dns name.
+    Value: !GetAtt [ELB, DNSName]
