@@ -46,3 +46,10 @@ desired_asg_capacity=2
 [switch-stack:vars]
 new_stack_name=capi-squarefoot-listing-37-a
 elb=capi-adapter-listing
+
+
+[cleanup-stack]
+127.0.0.1
+
+[cleanup-stack:vars]
+elb_name=capi-adapter-listing

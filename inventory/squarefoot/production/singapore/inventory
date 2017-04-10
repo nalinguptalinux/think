@@ -91,3 +91,9 @@ container_port=3000
 elb_protocol=HTTP
 health_check_path=http:3000/diagnostic/status/heartbeat
 desired_asg_capacity=1
+
+[cleanup-stack]
+127.0.0.1
+
+[cleanup-stack:vars]
+elb_name=capi-adapter-listing

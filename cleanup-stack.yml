@@ -1,0 +1,6 @@
+---
+- hosts: cleanup-stack
+  connection: local
+  gather_facts: False
+  roles:
+    - squarefoot/cleanup-stack
