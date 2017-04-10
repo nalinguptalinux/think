@@ -1,0 +1,4 @@
+aws_region: ap-southeast-1
+project: rumah123
+env: production-singapore
+business_unit: ID

@@ -1,0 +1,5 @@
+[ecr]
+ecr.rumah123-tokyo.ipga.local
+[ecr:vars]
+repository_name=hp
+account_arns=arn:aws:iam::538471682716:root,arn:aws:iam::546096582539:root
