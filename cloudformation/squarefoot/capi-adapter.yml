@@ -204,8 +204,11 @@ Resources:
                 - - "[main]\n"
                   - stack=
                   - Ref: AWS::StackId
+                  - "\n"
                   - region=
                   - Ref: AWS::Region
+                  - "\n"
+                  - interval=1
               mode: '000400'
               owner: root
               group: root
@@ -223,15 +226,16 @@ Resources:
                 Fn::Join:
                 - ''
                 - - "[cfn-auto-reloader-hook]\n"
-                  - 'triggers=post.update'
-                  - 'path=Resources.ECSLaunchConfig.Metadata.AWS::CloudFormation::Init'
-                  - 'action=/opt/aws/bin/cfn-init -v '
-                  - "         --stack "
+                  - "triggers=post.update\n"
+                  - "path=Resources.ECSLaunchConfig.Metadata.AWS::CloudFormation::Init\n"
+                  - "action=/opt/aws/bin/cfn-init -v "
+                  - " --stack "
                   - Ref: AWS::StackName
-                  - "         --resource ECSLaunchConfig"
-                  - "         --region "
+                  - " --resource ECSLaunchConfig"
+                  - " --region "
                   - Ref: AWS::Region
-                  - 'runas=root'
+                  - "\n"
+                  - "runas=root\n"
           services:
             sysvinit:
               cfn-hup:
