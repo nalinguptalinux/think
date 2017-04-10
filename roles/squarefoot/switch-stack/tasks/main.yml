@@ -1,4 +1,24 @@
 ---
+- name: Describe the fixed ELB
+  command: aws elb describe-load-balancers --load-balancer-names {{elb}} --region {{aws_region}}
+  register: fixed_elb_output
+
+- name: Parse the result to json
+  set_fact:
+    fixed_elb_json: "{{fixed_elb_output.stdout | from_json }}"
+
+- name: Describe the instance attached to the fixed elb
+  command: aws ec2 describe-instances --instance-ids {{ fixed_elb_json.LoadBalancerDescriptions[0].Instances[0].InstanceId }} --region {{aws_region}}
+  register: instance_result
+
+- name: Parse the instance describe result to json
+  set_fact:
+    instance_result_json: "{{ instance_result.stdout| from_json }}"
+
+- name: Get old stack name from the instance describe output
+  set_fact:
+    old_stack_name: "{{ instance_result_json.Reservations[0].Instances[0].Tags | selectattr('Key', 'equalto', 'CF-Name') | map(attribute = 'Value') | join('')}}"
+
 - name: Get describe result from new stack
   command: aws cloudformation describe-stack-resources --stack-name {{ new_stack_name }} --region {{aws_region}}
   register: new_stack_result

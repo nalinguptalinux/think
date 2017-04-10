@@ -1,0 +1,27 @@
+---
+  - name: setup an static ELB
+    cloudformation:
+      stack_name: "{{elb_stack_name}}"
+      state: present
+      region: "{{aws_region}}"
+      disable_rollback: true
+      template: cloudformation/elb.json
+      stack_policy: policies/cloudformation/stack-policy.json
+      template_parameters:
+        VpcID: "{{vpc}}"
+        AppPort: "{{app_port}}"
+        Subnets: "{{subnets}}"
+        LoadBalancerName: "{{load_balancer_name}}"
+        Application: "{{application_name}}"
+        InstancePort: "{{instance_port}}"
+        ELBPort: "{{elb_port}}"
+        Scheme: "{{scheme}}"
+        Protocol: "{{protocol}}"
+        CertificateName: "{{certificate_name}}"
+        IdleTimeout: "{{elb_idle_timeout}}"
+      tags:
+        project: "{{project}}"
+        application: "{{application}}"
+        lob: "regional-web"
+        env: "{{env}}"
+

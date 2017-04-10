@@ -65,7 +65,6 @@ ab=b
 
 [switch-stack:vars]
 new_stack_name=capi-squarefoot-listing-37-a
-old_stack_name=capi-squarefoot-listing-35-a
 elb=capi-adapter-listing
 
 [capi-adapter]

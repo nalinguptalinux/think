@@ -4,7 +4,7 @@ env: ipropertymy-development
 private_zone: development.ipropertymy-singapore.ipga.local
 public_zone: dev.sg.ipropertymy.ippstatic.com
 aws_region: ap-southeast-1
-key_name: awscloud-ipropertymy-development-singapore2
+key_name: awscloud-ipropertymy-development-singapore
 aws_vpc_id: vpc-4ee9762a
 vpc_cidr: 10.90.48.0/20
 dns_servers: 169.254.169.253,10.90.48.2
@@ -24,7 +24,7 @@ public_subnet_supernet: 10.90.52.0/22
 private_subnet_supernet: 10.90.48.0/22
 
 ami: ami-dc9339bf
-bastion_public_ip:  52.220.237.14
+bastion_public_ip: 13.228.10.227
 ssh_from_bastion_sg_id: sg-0cbad36b
 
 resource_bucket_name: prod-sg-sfhk-infra-common
