@@ -27,7 +27,7 @@ ami: ami-dc9339bf
 bastion_public_ip: 13.228.10.227
 ssh_from_bastion_sg_id: sg-0cbad36b
 
-resource_bucket_name: prod-sg-sfhk-infra-common
+resource_bucket_name: prod-sg-ipmy-infra-common
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
 sumo_logic_access_id: su37UzMYy9KsP0
 sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf

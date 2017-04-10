@@ -28,7 +28,7 @@ bastion_public_ip: 52.221.147.183
 ssh_from_bastion_sg_id: sg-9aabc9fd
 //pager_duty_arn: arn:aws:sns:ap-southeast-1:866270780045:Low-Priority-Squarefoot-Staging-PagerDuty
 
-//resource_bucket_name: prod-sg-sfhk-infra-common
+resource_bucket_name: prod-sg-rmid-infra-common
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
 sumo_logic_access_id: su37UzMYy9KsP0
 sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf
