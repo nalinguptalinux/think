@@ -98,3 +98,5 @@
 - name: Detach ELB from old ASG
   command: aws autoscaling detach-load-balancers --load-balancer-names {{ elb }} --auto-scaling-group-name {{ old_asg_name }} --region {{aws_region}}
   when: elb_check_result | success
+
+- pause: minutes=1
