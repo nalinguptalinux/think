@@ -8,6 +8,7 @@ key_name: awscloud-squarefoot-staging-singapore
 aws_vpc_id:  vpc-74d35f10
 vpc_cidr: 10.39.32.0/20
 dns_servers: 169.254.169.253,10.39.32.2
+vpc_dns: 10.39.32.2
 zones: ap-southeast-1a,ap-southeast-1b
 
 nat_subnets: subnet-d7ddafa1,subnet-759fd111

@@ -8,6 +8,7 @@ key_name: awscloud-squarefoot-production-tokyo
 aws_vpc_id:  vpc-ea7cf18e
 vpc_cidr: 10.39.16.0/20
 dns_servers: 169.254.169.253,10.39.16.2
+vpc_dns: 10.39.16.2
 zones: ap-northeast-1a,ap-northeast-1c
 
 nat_subnets: subnet-53c98325,subnet-38b42260

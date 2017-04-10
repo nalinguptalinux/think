@@ -116,6 +116,10 @@ Parameters:
     Description: Enter VPC Cidr
     Type: String
 
+  VpcDns:
+    Description: 'Enter VPC DNS must be end with X.X.0.2'
+    Type: String
+
 
 Mappings:
 
@@ -443,6 +447,7 @@ Resources:
         Command:
         - !GetAtt EcsHpELB.DNSName
         - !GetAtt ECSSrpPdpELB.DNSName
+        - Ref: VpcDns
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'NginxECRRepo']]
 
   ECSWebELB:

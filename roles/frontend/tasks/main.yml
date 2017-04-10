@@ -30,6 +30,7 @@
         SumoLogicAccessKey: "{{sumo_logic_access_key}}"
         VPC: "{{aws_vpc_id}}"
         VpcCidr: "{{vpc_cidr}}"
+        VpcDns: "{{vpc_dns}}"
 
       tags:
         project: "{{project}}"

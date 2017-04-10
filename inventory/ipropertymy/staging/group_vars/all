@@ -8,6 +8,7 @@ key_name: awscloud-ipropertymy-staging-singapore
 aws_vpc_id: vpc-5b6cf33f
 vpc_cidr: 10.90.32.0/20
 dns_servers: 169.254.169.253,10.90.32.2
+vpc_dns: 10.90.32.2
 zones: ap-southeast-1a,ap-southeast-1b
 
 nat_subnets: subnet-f599c291,subnet-e3fcb095
