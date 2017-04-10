@@ -23,7 +23,7 @@ ami = "ami-dc9339bf"
 //Outputs:
 
 //aws_vpc_id = vpc-4ee9762a
-//bastion_public_ip = 52.220.237.14
+//bastion_public_ip = 13.228.10.227
 //nat_subnets = subnet-0b7d317d,subnet-2fe2ba4b
 //private_subnets = subnet-f57e3283,subnet-71e4bc15
 //public_subnets = subnet-63783415,subnet-c4e2baa0
