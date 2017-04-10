@@ -7,6 +7,8 @@ if [[ ! -z "$1" ]] && [[ ! -z "$2" ]];
 then
         /bin/sed -i "s|<HP_INTERNAL_ELB>|$1|g" /etc/nginx/nginx.conf
         /bin/sed -i "s|<SRPPDP_INTERNAL_ELB>|$2|g" /etc/nginx/nginx.conf
+        /bin/sed -i "s|vpc-dns|$3|g" /etc/nginx/nginx.conf      #######   For DNS change
+
 fi
 
 /usr/sbin/nginx -g 'daemon off;'
