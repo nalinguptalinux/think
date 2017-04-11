@@ -24,23 +24,14 @@ Parameters:
     Description: scheme of ELB
     Type: String
     Default: internet-facing
-  ELBPort:
-    Description: opened port of ELB
-    Type: String
   CertificateName:
     Description: name of SSL certificate
     Type: String
-  Protocol:
-    Description: Protocol used in ELB
-    Type: String
-    Default: HTTP
   IdleTimeout:
     Description: The number of seconds a connection can be idle before load balancer
       closes the connection
     Type: String
     Default: '180'
-Conditions:
-  HttpsUsed: !Equals [!Ref 'Protocol', HTTPS]
 Resources:
   ELBConnectionSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -69,16 +60,18 @@ Resources:
         Timeout: 60
       Listeners:
       - InstancePort: !Ref 'InstancePort'
-        LoadBalancerPort: !Ref 'ELBPort'
-        Protocol: !Ref 'Protocol'
-        SSLCertificateId: !If [HttpsUsed, !Join ['', ['arn:aws:iam::', !Ref 'AWS::AccountId',
-              ':server-certificate/', !Ref 'CertificateName']], !Ref 'AWS::NoValue']
+        LoadBalancerPort: '443'
+        Protocol: 'HTTPS'
+        SSLCertificateId: !Ref 'CertificateARN'
+      - InstancePort: !Ref 'InstancePort'
+        LoadBalancerPort: '80'
+        Protocol: 'HTTP'
       HealthCheck:
-        HealthyThreshold: '2'
-        Interval: '60'
-        Timeout: '4'
-        Target: !Join ['', ['HTTP:', !Ref 'AppPort', /diagnostic/status/heartbeat]]
-        UnhealthyThreshold: '2'
+        Target: TCP:80
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '3'
+        Interval: '30'
+        Timeout: '5'
 Outputs:
   ELBEndpoint:
     Description: ELB dns name.

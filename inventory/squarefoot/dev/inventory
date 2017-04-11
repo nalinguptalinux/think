@@ -53,3 +53,15 @@ elb=capi-adapter-listing
 
 [cleanup-stack:vars]
 elb_name=capi-adapter-listing
+
+[elb]
+127.0.0.1
+
+[elb:vars]
+elb_stack_name=frontend-elb
+application_name=hp-pdp-srp
+load_balancer_name=frontend-elb
+app_port=80
+instance_port=80
+scheme=internet-facing
+subnets={{public_subnet}}
