@@ -1,5 +1,5 @@
 [ecr]
-ecr.ipropertymy-singapore.ipga.local
+ecr.ipropertymy-tokyo.ipga.local
 [ecr:vars]
 repository_name=hp
 account_arns=arn:aws:iam::407510221296:root,arn:aws:iam::904385174501:root
