@@ -19,7 +19,7 @@
         AvailabilityZones: "{{zones}}"
         ClusterNodeCount: "{{cluster_node_count}}"
         VpcNet: "{{vpc_cidr}}"
-        PagerDutyArn: "{{pager_duty_arn}}"
+        PagerDutyArn: "{{low_pager_duty_arn}}"
         BackupDuration: "{{backup_duration}}"
         BillingTag: "{{project}}"
       tags:

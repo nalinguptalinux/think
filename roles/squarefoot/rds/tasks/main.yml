@@ -21,7 +21,7 @@
         Engine: "{{db_engine}}"
         EngineVersion: "{{db_engine_version}}"
         Port: "{{db_port}}"
-        PagerDutyArn: "{{pager_duty_arn}}"
+        PagerDutyArn: "{{low_pager_duty_arn}}"
         BillingTag: "{{project}}"
         BusinessUnit: "{{business_unit}}"
       tags:
