@@ -12,6 +12,7 @@
         DnsPrefix: "jenkins.{{public_zone}}"
         DnsZoneName: "{{public_zone}}"
         KeyName: "{{key_name}}"
+        SubnetId: "{{nat_subnets.split(',')[0]}}"
         VPC: "{{aws_vpc_id}}"
         VpcCidr: "{{vpc_cidr}}"
       tags:
