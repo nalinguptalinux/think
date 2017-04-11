@@ -77,6 +77,9 @@ Parameters:
   HealthCheckPath:
     Type: String
     Description: HealthCheck path for ELB
+  AZs:
+    Type: CommaDelimitedList
+    Description: availability zones
 
 
 Mappings:
@@ -156,8 +159,7 @@ Resources:
       LaunchConfigurationName:
         Ref: ECSLaunchConfig
       AvailabilityZones:
-      - ap-southeast-1a
-      - ap-southeast-1b
+        Ref: AZs
       Cooldown: '40'
       HealthCheckGracePeriod: '60'
       HealthCheckType: EC2

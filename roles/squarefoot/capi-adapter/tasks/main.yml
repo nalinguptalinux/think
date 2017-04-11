@@ -26,6 +26,7 @@
       HealthCheckPath: "{{health_check_path}}"
       VpcId: "{{aws_vpc_id}}"
       BuildNumber: "{{build_number}}"
+      AZs: "{{zones}}"
 
     tags:
       project: "{{project}}"
