@@ -17,7 +17,7 @@ public_subnets:  subnet-49c6b43f,subnet-9c9bd5f8
 
 nat_subnet_cidr_blocks: 10.39.56.0/23, 10.39.58.0/23
 public_subnet_cidr_blocks: 10.39.52.0/23, 10.39.54.0/23
-private_subnet_cidr_blo cks: 10.39.48.0/23, 10.39.50.0/23
+private_subnet_cidr_blocks: 10.39.48.0/23, 10.39.50.0/23
 
 nat_subnet_supernet: 10.39.56.0/22
 public_subnet_supernet: 10.39.52.0/22
