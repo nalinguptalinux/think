@@ -10,6 +10,7 @@ Parameters:
     - HK
     - MY
     - ID
+    - SG
 
   VPC:
     Description: Choose which VPC the Jenkins server should be installed to

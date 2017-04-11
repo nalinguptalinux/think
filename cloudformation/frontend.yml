@@ -18,6 +18,7 @@ Parameters:
     - HK
     - MY
     - ID
+    - SG
 
   DesiredCapacity:
     Type: Number
