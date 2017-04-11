@@ -27,7 +27,7 @@ ami: ami-9a44f9f9
 bastion_public_ip:  52.74.223.189
 ssh_from_bastion_sg_id:  sg-042cae63
 low_pager_duty_arn: arn:aws:sns:ap-southeast-1:866270780045:Low-Priority-Squarefoot-Staging-PagerDuty
-low_pager_duty_arn: arn:aws:sns:ap-southeast-1:866270780045:High-Priority-Squarefoot-Staging-PagerDuty
+high_pager_duty_arn: arn:aws:sns:ap-southeast-1:866270780045:High-Priority-Squarefoot-Staging-PagerDuty
 ssl_cert_arn: arn:aws:acm:ap-southeast-1:866270780045:certificate/01130418-81c9-471e-b7cc-999725598295
 
 resource_bucket_name: prod-sg-sfhk-infra-common
