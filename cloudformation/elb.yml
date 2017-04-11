@@ -24,8 +24,8 @@ Parameters:
     Description: scheme of ELB
     Type: String
     Default: internet-facing
-  CertificateName:
-    Description: name of SSL certificate
+  CertificateARN:
+    Description: arn of SSL certificate
     Type: String
   IdleTimeout:
     Description: The number of seconds a connection can be idle before load balancer
@@ -40,8 +40,12 @@ Resources:
       SecurityGroupIngress:
       - CidrIp: 0.0.0.0/0
         IpProtocol: tcp
-        FromPort: !Ref 'ELBPort'
-        ToPort: !Ref 'ELBPort'
+        FromPort: 80
+        ToPort: 80
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
       VpcId: !Ref 'VpcID'
   ELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
@@ -52,9 +56,8 @@ Resources:
       - !Ref 'ELBConnectionSecurityGroup'
       LoadBalancerName: !Ref 'LoadBalancerName'
       CrossZone: true
-      LoadBalancerAttributes:
-        ConnectionSettings:
-          IdleTimeout: !Ref 'IdleTimeout'
+      ConnectionSettings:
+        IdleTimeout: !Ref 'IdleTimeout'
       ConnectionDrainingPolicy:
         Enabled: true
         Timeout: 60

@@ -8,15 +8,14 @@
       template: "cloudformation/elb.yml"
       stack_policy: "policies/cloudformation/stack-policy.json"
       template_parameters:
-        VpcID: "{{vpc}}"
+        VpcID: "{{aws_vpc_id}}"
         AppPort: "{{app_port}}"
         Subnets: "{{subnets}}"
         LoadBalancerName: "{{load_balancer_name}}"
-        Application: "{{application_name}}"
+        Application: "{{application}}"
         InstancePort: "{{instance_port}}"
         Scheme: "{{scheme}}"
-        Protocol: "{{protocol}}"
-        CertificateName: "{{ssl_cert_arn}}"
+        CertificateARN: "{{ssl_cert_arn}}"
         IdleTimeout: "{{elb_idle_timeout}}"
       tags:
         project: "{{project}}"
