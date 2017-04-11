@@ -1,0 +1,20 @@
+---
+  - name: Jenkins Stack
+    cloudformation:
+      stack_name: "jenkins"
+      state: present
+      region: "{{aws_region}}"
+      disable_rollback: true
+      template: "cloudformation/jenkins.yml"
+      stack_policy: "policies/cloudformation/stack-policy.json"
+      template_parameters:
+        BusinessUnit: "{{business_unit}}"
+        DnsPrefix: "jenkins.{{public_zone}}"
+        DnsZoneName: "{{public_zone}}"
+        KeyName: "{{key_name}}"
+        VPC: "{{aws_vpc_id}}"
+        VpcCidr: "{{vpc_cidr}}"
+      tags:
+        project: "{{project}}"
+        lob: "regional-web"
+        env: "{{env}}"
