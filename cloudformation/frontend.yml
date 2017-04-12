@@ -5,6 +5,9 @@ Description: >
     This template will install the development stack
 
 Parameters:
+  AvailabilityZones:
+    Description: The availability zones in the VPC
+    Type: CommaDelimitedList
 
   BillingTag:
     Type: String
@@ -129,6 +132,7 @@ Parameters:
     Description: 'Enter VPC DNS must be end with X.X.0.2'
     Type: String
 
+
 Mappings:
 
   AWSRegionArch2AMI:
@@ -168,9 +172,7 @@ Resources:
         Ref: SubnetID
       LaunchConfigurationName:
         Ref: ContainerInstances
-      AvailabilityZones:
-      - ap-southeast-1a
-      - ap-southeast-1b
+      AvailabilityZones: !Ref 'AvailabilityZones'
       Cooldown: '40'
       HealthCheckGracePeriod: '60'
       HealthCheckType: EC2

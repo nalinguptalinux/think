@@ -8,6 +8,7 @@
       template: "cloudformation/frontend.yml"
       stack_policy: "policies/cloudformation/stack-policy.json"
       template_parameters:
+        AvailabilityZones: "{{zones}}"
         BillingTag: "{{project}}"
         BusinessUnit: "{{business_unit}}"
         DesiredCapacity: "{{desired_asg_capacity}}"
