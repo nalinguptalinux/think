@@ -36,4 +36,4 @@ fi
 # Let ansible run the deployment
 
 ansible-playbook -i ${INVENTORY_FILE} frontend.yml -vvvv \
-  --extra-vars="build=${BUILD_NUMBER} nginx_ecr_repo=nginx:${BUILD_NGINX} hp_ecr_repo=hp:${VERSION_HP} srp_pdp_ecr_repo=srp-pdp:${VERSION_SRPPDP}"
+  --extra-vars="build=${BUILD_NUMBER} version=${BUILD_NGINX}-${VERSION_HP}-${VERSION_SRPPDP} nginx_ecr_repo=nginx:${BUILD_NGINX} hp_ecr_repo=hp:${VERSION_HP} srp_pdp_ecr_repo=srp-pdp:${VERSION_SRPPDP}"

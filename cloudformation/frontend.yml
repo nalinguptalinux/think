@@ -33,6 +33,10 @@ Parameters:
     Description: Homepage ECR Repo
     Type: String
 
+  HostedZoneName:
+    Description: Hosted Zone for Route53 record
+    Type: String
+
   Instancestype:
     Description: EC2 instance type.
     Type: String
@@ -124,7 +128,6 @@ Parameters:
   VpcDns:
     Description: 'Enter VPC DNS must be end with X.X.0.2'
     Type: String
-
 
 Mappings:
 
@@ -776,6 +779,18 @@ Resources:
         Ref: ECSServiceRole
       TaskDefinition:
         Ref: SRPTaskDefinition
+
+  FrontendRecordSet:
+    Type: AWS::Route53::RecordSet
+    Condition: RegionCondition
+    Properties:
+      HostedZoneName:  !Join ['', [!Ref 'HostedZoneName', '.']]
+      Comment: DNS for frontend
+      Name: !Join ['', [!Ref 'RecordName', ., !Ref 'HostedZoneName', .]]
+      Type: CNAME
+      TTL: 60
+      ResourceRecords:
+      - !GetAtt [ECSWebELB, DNSName]
 
 Outputs:
 

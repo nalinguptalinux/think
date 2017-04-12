@@ -1,7 +1,7 @@
 ---
   - name: setup frontend stack
     cloudformation:
-      stack_name: "frontend-{{ab}}-{{build}}"
+      stack_name: "{{application}}-{{ab}}-{{version}}"
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
@@ -13,6 +13,7 @@
         DesiredCapacity: "{{desired_asg_capacity}}"
         ECRRegistry: "{{deployment_ecr}}"
         HpECRRepo: "{{hp_ecr_repo}}"
+        HostedZoneName: "{{public_zone}}"
         Instancestype: "{{ecs_instance_type}}"
         KeyNamessh: "{{key_name}}"
         MaxSize: "{{max_asg_size}}"
@@ -22,9 +23,9 @@
         NginxECRRepo: "{{nginx_ecr_repo}}"
         PagerDutyArn: "{{low_pager_duty_arn}}"
         SrpPdpECRRepo: "{{srp_pdp_ecr_repo}}"
-        RecordName: "{{dns_hostname}}.{{public_zone}}"
+        RecordName: "{{application}}-{{ab}}-{{version}}"
         ResourceBucketName: "{{resource_bucket_name}}"
-        SSLCertificateARN: "{{ssl_certificate_arn}}"
+        SSLCertificateARN: "{{ssl_cert_arn}}"
         SubnetID: "{{public_subnets}}"
         SumoLogicInstallerFileName: "{{sumo_logic_installer}}"
         SumoLogicAccessId: "{{sumo_logic_access_id}}"
