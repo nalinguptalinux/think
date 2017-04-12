@@ -63,7 +63,7 @@ Parameters:
     Description: Port for DB
     Type: String
   PagerDutyArn:
-    Description: Billing Tag
+    Description: Pager Duty ARN
     Type: String
   BusinessUnit:
     Description: Business Unit

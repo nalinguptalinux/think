@@ -76,6 +76,10 @@ Parameters:
     Description: NGIN ECR Repo
     Type: String
 
+  PagerDutyArn:
+    Description: Pager Duty ARN
+    Type: String
+
   SrpPdpECRRepo:
     Description: SRP PDP ECR Repo
     Type: String
@@ -241,6 +245,11 @@ Resources:
       Threshold: '80'
       AlarmActions:
       - Ref: ECSScaleUpPolicy
+      - Ref: PagerDutyArn
+      InsufficientDataActions:
+      - Ref: PagerDutyArn
+      OKActions:
+      - Ref: PagerDutyArn
       Dimensions:
       - Name: AutoScalingGroupName
         Value:
