@@ -1,5 +1,0 @@
-[ecr]
-ecr.ipropertysg-singapore.ipga.local
-[ecr:vars]
-repository_name=hp
-account_arns=arn:aws:iam::951363673468:root,arn:aws:iam::037018312713:root
