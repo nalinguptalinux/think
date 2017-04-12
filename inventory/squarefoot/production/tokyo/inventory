@@ -106,7 +106,7 @@ live.tk.squarefoot.com.hk
 
 [frontend:vars]
 application=frontend
-ab=a
+ab=b
 ecs_instance_type=t2.medium
 min_asg_size=2
 max_asg_size=4

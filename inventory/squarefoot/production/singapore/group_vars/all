@@ -3,7 +3,7 @@ project: squarefoot
 env: production-singapore
 business_unit: HK
 private_zone: production.squarefoot-singapore.ipga.local
-public_zone: prod.sg.squarefoot.ippstatic.com
+public_zone: sg.squarefoot.com.hk
 key_name: awscloud-squarefoot-production-singapore
 aws_vpc_id:  vpc-1c70e178
 vpc_cidr: 10.39.0.0/20

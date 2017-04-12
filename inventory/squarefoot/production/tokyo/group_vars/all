@@ -3,7 +3,7 @@ project: squarefoot
 env: production-tokyo
 business_unit: HK
 private_zone: production.squarefoot-tokyo.ipga.local
-public_zone: prod.tk.squarefoot.ippstatic.com
+public_zone: tk.squarefoot.com.hk
 key_name: awscloud-squarefoot-production-tokyo
 aws_vpc_id:  vpc-ea7cf18e
 vpc_cidr: 10.39.16.0/20

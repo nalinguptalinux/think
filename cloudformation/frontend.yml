@@ -782,7 +782,6 @@ Resources:
 
   FrontendRecordSet:
     Type: AWS::Route53::RecordSet
-    Condition: RegionCondition
     Properties:
       HostedZoneName:  !Join ['', [!Ref 'HostedZoneName', '.']]
       Comment: DNS for frontend
