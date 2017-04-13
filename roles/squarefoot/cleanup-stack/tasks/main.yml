@@ -1,6 +1,6 @@
 - name: get target group arn
   vars:
-    - name: "{{ application_name }}-beta"
+    - name: "{{ application_name }}-live"
   set_fact:
     target_group_arn: "{{ target_group_arns[name] }}"
 
