@@ -66,17 +66,6 @@ Parameters:
   BuildNumber:
     Type: Number
     Description: build number that used for deployment
-  ELBPort:
-    Type: Number
-    Description: port for ELB
-    Default: '80'
-  ELBProtocol:
-    Type: String
-    Description: protocol used for ELB
-    Default: HTTP
-  HealthCheckPath:
-    Type: String
-    Description: HealthCheck path for ELB
   AZs:
     Type: CommaDelimitedList
     Description: availability zones
@@ -111,46 +100,6 @@ Resources:
               ContainerPort: !Ref 'ContainerPort'
           Image: !Join ['', [!Ref 'ImageRegistry', ':', !Ref 'BuildNumber']]
 
-  ELBSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: !Join [' ', ['ELB Security Group for', !Ref RecordName]]
-      VpcId: !Ref 'VpcId'
-      SecurityGroupIngress:
-      - CidrIp: 0.0.0.0/0
-        FromPort: !Ref 'ELBPort'
-        ToPort: !Ref 'ELBPort'
-        IpProtocol: tcp
-
-  ELB:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
-    Properties:
-      LoadBalancerName:
-        Ref: RecordName
-      Subnets: !Ref 'PublicSubnets'
-      Listeners:
-      - LoadBalancerPort: !Ref 'ELBPort'
-        InstancePort: !Ref 'HostPort'
-        Protocol: !Ref 'ELBProtocol'
-      Scheme: internet-facing
-      ConnectionDrainingPolicy:
-        Enabled: true
-        Timeout: 45
-      CrossZone: true
-      Tags:
-      - Value: !Ref 'BusinessUnit'
-        Key: "business unit"
-      - Value: !Ref 'BillingTag'
-        Key: Billing
-      SecurityGroups:
-      - Ref: ELBSecurityGroup
-      HealthCheck:
-        Target: !Ref 'HealthCheckPath'
-        HealthyThreshold: '5'
-        UnhealthyThreshold: '5'
-        Interval: '10'
-        Timeout: '5'
-
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
@@ -169,8 +118,6 @@ Resources:
         Ref: MaxSizeASG
       DesiredCapacity:
         Ref: DesiredCapacity
-      LoadBalancerNames:
-        - Ref: ELB
 
       Tags:
       - Value:
@@ -460,25 +407,10 @@ Resources:
       DeploymentConfiguration:
         MaximumPercent: '150'
         MinimumHealthyPercent: '50'
-      LoadBalancers:
-      - ContainerName: !Ref 'RecordName'
-        ContainerPort:
-          Ref: ContainerPort
-        LoadBalancerName:
-          Ref: ELB
-      Role:
-        Ref: ECSServiceRole
       TaskDefinition:
         Ref: TaskDefinition
 
 Outputs:
-  ElasticLoadBalancer:
-    Value:
-      Fn::Join:
-        - ''
-        - - 'http://'
-          - !GetAtt ELB.DNSName
-    Description: ECS ELB
   ECSClusterName:
     Value:
       Ref: ECSCluster

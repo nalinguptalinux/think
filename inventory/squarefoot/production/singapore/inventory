@@ -125,3 +125,13 @@ hp_ecr_repo=hp:latest
 srp_pdp_ecr_repo=srp-pdp:latest
 nginx_ecr_repo=nginx:latest
 version=26-31-79
+
+[alb]
+127.0.0.1
+
+[alb:vars]
+alb_stack_name=capi-adapter-alb
+alb_name=capi-adapter
+scheme=internet-facing
+alb_idle_timeout=180
+subnets={{public_subnets}}
