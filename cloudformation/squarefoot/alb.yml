@@ -1,0 +1,174 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Setup an static Application Load Balancer
+Parameters:
+  LoadBalancerName:
+    Description: Name of the load balancer
+    Type: String
+  Subnets:
+    Description: The subnets which the ELB is hosted.
+    Type: CommaDelimitedList
+  VpcID:
+    Description: Id of the VPC
+    Type: String
+    AllowedPattern: vpc-[a-f0-9]{8}
+  Scheme:
+    Description: scheme of ELB
+    Type: String
+    Default: internet-facing
+  IdleTimeout:
+    Description: The number of seconds a connection can be idle before load balancer
+      closes the connection
+    Type: String
+    Default: '180'
+  BillingTag:
+    Type: String
+    Description: Tag for billing purpose
+    Default: Regional-web-tag
+  BusinessUnit:
+    Type: String
+    Description: Two letters country code for billing purpose
+    AllowedValues:
+    - HK
+    - MY
+    - ID
+    - SG
+  PathOfListing:
+    Type: String
+    Description: adapter path of listing search
+  HealthCheckPath:
+    Type: String
+    Description: path of health check
+  InstancePort:
+    Type: String
+    Description: Application port on instance
+  PathOfSuggestion:
+    Type: String
+    Description: adapter path of suggestion
+  ListingTargetGroupName:
+    Type: String
+    Description: name of listing TargetGroup
+  SuggestionTargetGroupName:
+    Type: String
+    Description: name of suggestion TargetGroup
+
+Resources:
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ALB SG
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+      VpcId: !Ref 'VpcID'
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name:
+        Ref: LoadBalancerName
+      Scheme:
+        Ref: Scheme
+      Subnets:
+        Ref: Subnets
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value:
+            Ref: IdleTimeout
+      SecurityGroups:
+        - Ref: SecurityGroup
+      Tags:
+      - Key: Billing
+        Value:
+          Ref: BillingTag
+      - Key: BusinessUnit
+        Value:
+          Ref: BusinessUnit
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn:
+          Ref: TargetGroupListing
+      LoadBalancerArn:
+        Ref: LoadBalancer
+      Port: '80'
+      Protocol: HTTP
+
+  ListenerRuleListing:
+    Type: "AWS::ElasticLoadBalancingV2::ListenerRule"
+    Properties:
+      Actions:
+        - TargetGroupArn:
+            Ref: TargetGroupListing
+          Type : forward
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - Ref: PathOfListing
+      ListenerArn:
+        Ref: ALBListener
+      Priority: 1
+
+  ListenerRuleSuggestion:
+    Type: "AWS::ElasticLoadBalancingV2::ListenerRule"
+    Properties:
+      Actions:
+        - TargetGroupArn:
+            Ref: TargetGroupSuggestion
+          Type : forward
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - Ref: PathOfSuggestion
+      ListenerArn:
+        Ref: ALBListener
+      Priority: 2
+
+  TargetGroupListing:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath:
+        Ref: HealthCheckPath
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      Name:
+        Ref: ListingTargetGroupName
+      Port:
+        Ref: InstancePort
+      Protocol: HTTP
+      UnhealthyThresholdCount: 3
+      VpcId:
+        Ref: VpcID
+
+  TargetGroupSuggestion:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath:
+        Ref: HealthCheckPath
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      Name:
+        Ref: SuggestionTargetGroupName
+      Port:
+        Ref: InstancePort
+      Protocol: HTTP
+      UnhealthyThresholdCount: 3
+      VpcId:
+        Ref: VpcID
+
+Outputs:
+  ELBEndpoint:
+    Description: ALB dns name.
+    Value: !GetAtt [LoadBalancer, DNSName]
