@@ -1,0 +1,25 @@
+---
+- name: create listing rotator stack
+  cloudformation:
+    stack_name: "listing-rotator-{{build_number}}"
+    state: present
+    region: "{{aws_region}}"
+    disable_rollback: true
+    template: "cloudformation/squarefoot/listing-rotator.yml"
+    stack_policy: "policies/cloudformation/stack-policy.json"
+    template_parameters:
+      BillingTag: "{{project}}"
+      BusinessUnit: "{{business_unit}}"
+      ECR: "{{deployment_ecr}}"
+      InstanceType: "{{instance_type}}"
+      KeyPair: "{{key_name}}"
+      RecordName: "listing-rotator-{{build_number}}"
+      PrivateSubnets: "{{private_subnets}}"
+      VpcId: "{{aws_vpc_id}}"
+      BuildNumber: "{{build_number}}"
+
+    tags:
+      project: "{{project}}"
+      application: "listing-rotator-{{project}}"
+      lob: "international"
+      env: "{{env}}"

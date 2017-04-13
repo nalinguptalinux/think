@@ -1,0 +1,210 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Stack for capi adapter"
+
+Parameters:
+  BillingTag:
+    Type: String
+    Description: "tag for billing purpose"
+    Default: "regional-web-dev"
+
+  BusinessUnit:
+    Type: String
+    Description: Two letters country code for billing purpose
+    AllowedValues:
+    - HK
+    - MY
+    - ID
+
+  ECR:
+    Type: String
+    Description: ECR Path
+
+  InstanceType:
+    Description: EC2 instance type.
+    Type: String
+    Default: 't2.small'
+    AllowedValues:
+    - t2.small
+    - t2.medium
+    - m3.medium
+    - m3.large
+    - m4.large
+    - m4.2xlarge
+
+  KeyPair:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+
+  RecordName:
+    Type: String
+    Description: the name of the DNS record
+
+  PrivateSubnets:
+    Type: CommaDelimitedList
+    Description: private subnets
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC id that used for deployment
+
+  BuildNumber:
+    Type: Number
+    Description: build number that used for deployment
+
+Mappings:
+  AWSRegionArch2AMI:
+    ap-southeast-1:
+      HVM64: ami-a2bc03c1
+    ap-northeast-1:
+      HVM64: ami-859bbfe2
+
+Resources:
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        Ref: PrivateSubnets
+      LaunchConfigurationName:
+        Ref: ASGLaunchConfiguration
+      AvailabilityZones:
+      - ap-southeast-1a
+      - ap-southeast-1b
+      Cooldown: '40'
+      HealthCheckGracePeriod: '60'
+      HealthCheckType: EC2
+      MinSize: 1
+      MaxSize: 1
+      DesiredCapacity: 1
+      Tags:
+      - Value:
+          Ref: BusinessUnit
+        Key: "business unit"
+        PropagateAtLaunch: true
+      - Value:
+          Ref: BillingTag
+        Key: Billing
+        PropagateAtLaunch: true
+      - Value:
+          Ref: AWS::StackName
+        Key: CF-Name
+        PropagateAtLaunch: true
+      - Key: Name
+        Value:
+          Ref: RecordName
+        PropagateAtLaunch: true
+
+  ASGLaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      KeyName:
+        Ref: KeyPair
+      ImageId:
+        Fn::FindInMap:
+        - AWSRegionArch2AMI
+        - Ref: AWS::Region
+        - HVM64
+      InstanceType:
+        Ref: InstanceType
+      InstanceMonitoring: true
+      IamInstanceProfile:
+        Ref: EC2InstanceProfile
+      SecurityGroups:
+      - Ref: EC2SecurityGroup
+      UserData:
+        "Fn::Base64": !Sub |
+          #!/bin/bash
+          ######--------------------------Install software----------------------######
+          yum update -y
+          yum install -y sysstat nmap telnet curl wget
+          yum install -y aws-cfn-bootstrap
+          yum install -y aws-cli
+          yum install -y docker
+          ######-----------------Configure Hostname on EC2 Host-----------------######
+          function configure_hosts {
+            recordName=${RecordName}
+            instance_ip=$(/usr/bin/curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
+            domain=$(/bin/awk '/^search/ { print $2 }' /etc/resolv.conf)
+            ipend=`/bin/echo $instance_ip | /bin/sed 's/\./\-/g'`
+            /bin/echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
+            /bin/hostname $recordName-$ipend
+          }
+
+          function error_exit {
+            /opt/aws/bin/cfn-signal -e 1 -r $1 --stack ${AWS::StackName} --resource AutoScalingGroup --region ${AWS::Region}
+          }
+          ######---------------------Final config steps-------------------------######
+          configure_hosts
+
+          service docker restart || error_exit "Failed to start docker service"
+
+          REG_ID=$(echo ${ECR} | cut -f1 -d.)
+          eval $(aws ecr get-login --registry-ids $REG_ID --region ${AWS::Region})
+
+          mkdir -p /var/log/rea
+          docker run -d -v /var/log/rea:/var/log/rea ${ECR}/listing-rotator:${BuildNumber}
+          ######--------------------------Signal success------------------------######
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AutoScalingGroup --region ${AWS::Region}
+
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: listing-rotator-role-policy
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - ec2:Describe*
+            - ecr:Get*
+            - ecr:BatchGetImage
+            - ecr:BatchCheckLayerAvailability
+            - ecr:PutImage
+            - ecr:InitiateLayerUpload
+            - ecr:UploadLayerPart
+            - ecr:CompleteLayerUpload
+            - ecr:ListImages
+            - ecr:Describe*
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - cloudwatch:PutMetricData
+            - cloudwatch:ListMetrics
+            Resource: "*"
+          - Effect: Allow
+            Action:
+            - s3:Get*
+            - s3:List*
+            Resource: "*"
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: EC2Role
+
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: EC2SecurityGroup.
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: icmp
+        FromPort: "-1"
+        ToPort: "-1"
+        CidrIp: 0.0.0.0/0

@@ -121,3 +121,10 @@ hp_ecr_repo=hp:latest
 srp_pdp_ecr_repo=srp-pdp:latest
 nginx_ecr_repo=nginx:latest
 version=26-31-79
+
+[listing-rotator]
+127.0.0.1
+
+[listing-rotator:vars]
+build_number=10
+instance_type=t2.small
