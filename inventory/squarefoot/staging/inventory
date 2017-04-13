@@ -83,14 +83,14 @@ desired_asg_capacity=1
 
 [switch-stack:vars]
 application_name=capi-adapter-suggestion
-build=57
+build=58
 switch_type=beta
 
 [cleanup-stack]
 127.0.0.1
 
 [cleanup-stack:vars]
-elb_name=capi-adapter-listing
+application_name=capi-adapter-suggestion
 
 [elb]
 127.0.0.1

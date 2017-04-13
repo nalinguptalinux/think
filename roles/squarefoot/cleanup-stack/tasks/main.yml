@@ -1,19 +1,24 @@
----
-- name: Describe the fixed ELB
-  command: aws elb describe-load-balancers --load-balancer-names {{elb_name}} --region {{aws_region}}
-  register: fixed_elb_output
-
-- name: Parse the result to json
+- name: get target group arn
+  vars:
+    - name: "{{ application_name }}-beta"
   set_fact:
-    fixed_elb_json: "{{fixed_elb_output.stdout | from_json }}"
+    target_group_arn: "{{ target_group_arns[name] }}"
 
-- name: Describe the instance attached to the fixed elb
-  command: aws ec2 describe-instances --instance-ids {{ fixed_elb_json.LoadBalancerDescriptions[0].Instances[0].InstanceId }} --region {{aws_region}}
+- name: Describe target group
+  command: aws elbv2 describe-target-health --target-group-arn {{ target_group_arn }} --region {{ aws_region }}
+  register: target_group_health
+
+- name: Read instance health result from ELB
+  set_fact:
+    target_group_json: "{{ target_group_health.stdout | from_json }}"
+
+- name: Describe the instance in target group
+  command: aws ec2 describe-instances --instance-ids {{ target_group_json.TargetHealthDescriptions[0].Target.Id }} --region {{aws_region}}
   register: instance_result
 
-- name: Parse the instance describe result to json
+- name: Read instance describe result from ELB
   set_fact:
-    instance_result_json: "{{ instance_result.stdout| from_json }}"
+    instance_result_json: "{{ instance_result.stdout | from_json }}"
 
 - name: Get current stack name from the instance describe output
   set_fact:
@@ -29,13 +34,12 @@
 
 - name: Filter the target stacks
   vars:
-    elb_pattern: "{{elb_name}}"
+    pattern: "{{ application_name }}"
   set_fact:
-    target_stacks: "{{all_stacks_json.StackSummaries | selectattr('StackName', 'match', elb_pattern) | map(attribute='StackName') | list }}"
+    target_stacks: "{{all_stacks_json.StackSummaries | selectattr('StackName', 'match', pattern) | map(attribute='StackName') | list }}"
 
 - name: Delete the filtered stacks
   command: aws cloudformation delete-stack --stack-name {{item}} --region {{aws_region}}
   with_items:
     - "{{target_stacks}}"
   when: target_stacks | length > 0 and item != current_stack_name
-
