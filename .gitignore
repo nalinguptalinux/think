@@ -4,3 +4,5 @@
 .vagrant
 *.retry
 .ssh/
+.DS_Store
+.vscode
