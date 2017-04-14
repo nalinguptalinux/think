@@ -1,7 +1,7 @@
 ---
 - name: create listing rotator stack
   cloudformation:
-    stack_name: "listing-rotator-{{build_number}}"
+    stack_name: "listing-rotator"
     state: present
     region: "{{aws_region}}"
     disable_rollback: true

@@ -124,7 +124,7 @@ version=26-31-79
 127.0.0.1
 
 [listing-rotator:vars]
-build_number=10
+build_number=11
 instance_type=t2.small
 
 [alb]

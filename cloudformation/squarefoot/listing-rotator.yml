@@ -63,6 +63,19 @@ Mappings:
 Resources:
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MaxBatchSize: 1
+        MinInstancesInService: 0
+        MinSuccessfulInstancesPercent: 100
+        SuspendProcesses:
+          - HealthCheck
+          - ReplaceUnhealthy 
+          - AZRebalance 
+          - AlarmNotification 
+          - ScheduledActions
+        WaitOnResourceSignals: true
+        PauseTime: PT5M
     Properties:
       VPCZoneIdentifier:
         Ref: PrivateSubnets
@@ -97,6 +110,51 @@ Resources:
 
   ASGLaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          InstallAndRun:
+          - Configure
+        Configure:
+          files:
+            "/etc/cfn/cfn-hup.conf":
+              content:
+                Fn::Join:
+                - ''
+                - - "[main]\n"
+                  - stack=
+                  - Ref: AWS::StackId
+                  - "\n"
+                  - region=
+                  - Ref: AWS::Region
+                  - "\n"
+                  - interval=1
+              mode: '000400'
+              owner: root
+              group: root
+            "/etc/cfn/hooks.d/cfn-auto-reloader.conf":
+              content:
+                Fn::Join:
+                - ''
+                - - "[cfn-auto-reloader-hook]\n"
+                  - "triggers=post.update\n"
+                  - "path=Resources.ASGLaunchConfiguration.Metadata.AWS::CloudFormation::Init\n"
+                  - "action=/opt/aws/bin/cfn-init -v "
+                  - " --stack "
+                  - Ref: AWS::StackName
+                  - " --resource ASGLaunchConfiguration"
+                  - " --region "
+                  - Ref: AWS::Region
+                  - "\n"
+                  - "runas=root\n"
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                - "/etc/cfn/cfn-hup.conf"
+                - "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
     Properties:
       KeyName:
         Ref: KeyPair
@@ -134,6 +192,8 @@ Resources:
           function error_exit {
             /opt/aws/bin/cfn-signal -e 1 -r $1 --stack ${AWS::StackName} --resource AutoScalingGroup --region ${AWS::Region}
           }
+
+          /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --configsets InstallAndRun --resource ASGLaunchConfiguration
           ######---------------------Final config steps-------------------------######
           configure_hosts
 

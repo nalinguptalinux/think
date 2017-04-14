@@ -112,29 +112,21 @@ Resources:
       Cooldown: '40'
       HealthCheckGracePeriod: '60'
       HealthCheckType: EC2
-      MinSize:
-        Ref: MinSizeASG
-      MaxSize:
-        Ref: MaxSizeASG
-      DesiredCapacity:
-        Ref: DesiredCapacity
-
+      MinSize: !Ref MinSizeASG
+      MaxSize:  !Ref MaxSizeASG
+      DesiredCapacity: !Ref DesiredCapacity
       Tags:
-      - Value:
-          Ref: BusinessUnit
+      - Value: !Ref BusinessUnit
         Key: "business unit"
         PropagateAtLaunch: true
-      - Value:
-          Ref: BillingTag
+      - Value: !Ref BillingTag
         Key: Billing
         PropagateAtLaunch: true
-      - Value:
-          Ref: AWS::StackName
+      - Value: !Ref AWS::StackName
         Key: CF-Name
         PropagateAtLaunch: true
       - Key: Name
-        Value:
-          Ref: RecordName
+        Value: !Ref RecordName
         PropagateAtLaunch: true
 
   ECSLaunchConfig:
