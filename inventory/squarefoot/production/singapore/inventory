@@ -130,17 +130,17 @@ version=26-31-79
 127.0.0.1
 
 [alb:vars]
-alb_stack_name=capi-adapter-alb-beta
-alb_name=capi-adapter-beta
+alb_stack_name=capi-adapter-alb-live
+alb_name=capi-adapter-live
 scheme=internet-facing
 alb_idle_timeout=180
 subnets={{public_subnets}}
-listing_search_path=/capi/getpropertylist
+listing_search_path=/capi/getPropertyList
 listing_detail_path=/capi/getPropertyDetail
 suggestion_path=/capi/getAutoComplete
 healcheck_path=/diagnostic/status/heartbeat
 suggestion_version_path=/diagnostic/suggestion/version
 listing_version_path=/diagnostic/listing/version
 container_host_port=3000
-listing_target_group_name=listing-target-group-beta
-suggestion_target_group_name=suggestion-target-group-beta
+listing_target_group_name=listing-target-group-live
+suggestion_target_group_name=suggestion-target-group-live
