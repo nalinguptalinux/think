@@ -38,9 +38,7 @@ new_relic_rpm: newrelic-sysmond-2.3.0.132-1.x86_64.rpm
 new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df
 
 target_group_arns:
-  capi-adapter-listing-beta: arn:aws:elasticloadbalancing:ap-southeast-1:866270780045:targetgroup/listing-target-group-beta/ee5ebc4011173e62
-  capi-adapter-suggestion-beta: arn:aws:elasticloadbalancing:ap-southeast-1:866270780045:targetgroup/suggestion-target-group-beta/f3e13475a7ecfd31
-  capi-adapter-listing-live: arn:aws:elasticloadbalancing:ap-southeast-1:866270780045:targetgroup/listing-target-group-live/e94ed9d4d87243b7
-  capi-adapter-suggestion-live: arn:aws:elasticloadbalancing:ap-southeast-1:866270780045:targetgroup/suggestion-target-group-live/190a892e9d547862
+  capi-adapter-listing-live: arn:aws:elasticloadbalancing:ap-southeast-1:866270780045:targetgroup/listing-target-group-live/c24c2360f4aef1ad
+  capi-adapter-suggestion-live: arn:aws:elasticloadbalancing:ap-southeast-1:866270780045:targetgroup/suggestion-target-group-live/f8d87ce69cb9cb9c
 
 deployment_ecr: 678965432744.dkr.ecr.ap-southeast-1.amazonaws.com
