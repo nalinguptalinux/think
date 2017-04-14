@@ -1,0 +1,430 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Sharpie Stack
+Parameters:
+  S3Region:
+    Description: Name of the Sharpie tarball s3 region
+    Type: String
+  UpstreamPrimaryRegion:
+    Description: Name of the Sharpie UpstreamPrimaryRegion
+    Type: String
+  UpstreamSecondaryRegion:
+    Description: Name of the Sharpie UpstreamSecondaryRegion
+    Type: String
+  UpstreamPrimaryBucket:
+    Description: Name of the Sharpie UpstreamPrimaryBucket
+    Type: String
+  UpstreamPrimaryHost:
+    Description: Name of the Sharpie UpstreamPrimaryHost
+    Type: String
+  UpstreamSecondaryHost:
+    Description: Name of the Sharpie UpstreamSecondaryHost
+    Type: String
+  UpstreamSecondaryBucket:
+    Description: Name of the Sharpie UpstreamSecondaryBucket
+    Type: String
+  AvailabilityZones:
+    Description: The availability zones in the VPC
+    Type: CommaDelimitedList
+  PublicSubnets:
+    Description: The public subnets in the VPC
+    Type: CommaDelimitedList
+  PrivateSubnets:
+    Description: The private subnets in the VPC
+    Type: CommaDelimitedList
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access
+    Type: String
+  AB:
+    Description: Define a / b stack
+    Type: String
+    AllowedValues:
+    - a
+    - b
+  Build:
+    Description: Define Build Number
+    Type: String
+  HostedZoneName:
+    Description: The Route53 Zone in which to create records
+    Type: String
+  RecordName:
+    Description: The name of the DNS record to create.
+    Type: String
+  AMI:
+    Description: The AMI id of the Platform image.
+    Type: String
+    MinLength: 12
+    MaxLength: 12
+    AllowedPattern: ami-[a-f0-9]{8}
+  InstanceType:
+    Description: The Instance type which used to build stack.
+    Type: String
+  VpcID:
+    Description: The private Subnet ID in VPC that has connection to Equinix.
+    Type: String
+    AllowedPattern: vpc-[a-f0-9]{8}
+  ASGMaxSize:
+    Description: AutoScaling max size
+    Type: Number
+    Default: 3
+  ASGMinSize:
+    Description: AutoScaling min size
+    Type: Number
+    Default: 3
+  S3Repository:
+    Description: Name of the S3 repository bucket hosting all myfun rpm packages
+    Type: String
+  NewRelicKey:
+    Description: NewRelic Key
+    Type: String
+  PagerDutyArn:
+    Description: pager duty arn.
+    Type: String
+  SSLCertArn:
+    Description: ssl cert arn
+    Type: String
+Conditions:
+  RegionCondition: !Not [!Equals [!Ref 'AWS::Region', cn-north-1]]
+Resources:
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal: !If [RegionCondition, {Service: [ec2.amazonaws.com]}, {Service: [
+                ec2.amazonaws.com.cn]}]
+          Action:
+          - sts:AssumeRole
+      Policies:
+      - PolicyName: permit-s3-and-cfn
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - cloudwatch:PutMetricData
+            Resource: '*'
+          - Effect: Allow
+            Action: cloudformation:DescribeStackResource
+            Resource: '*'
+          - Effect: Allow
+            Action: elasticloadbalancing:DescribeInstanceHealth
+            Resource: '*'
+          - Effect: Allow
+            Action: s3:GetObject
+            Resource:
+            - !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'S3Repository',
+                  /*]], !Join ['', ['arn:aws-cn:s3:::', !Ref 'S3Repository', /*]]]
+          - Effect: Allow
+            Action:
+            - s3:ListBucket
+            - s3:GetBucketLocation
+            Resource:
+            - !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'S3Repository']],
+              !Join ['', ['arn:aws-cn:s3:::', !Ref 'S3Repository']]]
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+      - !Ref 'Role'
+  SharpieSSHSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing incoming on ssh port
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: '-1'
+        FromPort: '0'
+        ToPort: '0'
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+      VpcId: !Ref 'VpcID'
+  SharpieELBConnectionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing Sharpie client connection
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+      VpcId: !Ref 'VpcID'
+  SharpieConnectionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing Sharpie client connection
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+      VpcId: !Ref 'VpcID'
+  SharpieELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Subnets: !Ref 'PublicSubnets'
+      CrossZone: true
+      SecurityGroups:
+      - !Ref 'SharpieELBConnectionSecurityGroup'
+      Listeners:
+      - InstancePort: '80'
+        LoadBalancerPort: '80'
+        Protocol: HTTP
+      - InstancePort: '80'
+        LoadBalancerPort: '443'
+        Protocol: HTTPS
+        SSLCertificateId: !Ref 'SSLCertArn'
+      HealthCheck:
+        HealthyThreshold: '2'
+        Interval: '60'
+        Timeout: '8'
+        Target: HTTP:80/diagnostic/status/heartbeat
+        UnhealthyThreshold: '2'
+  SharpieASLaunchConf:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          files:
+            /etc/cfn/cfn-hup.conf:
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+                interval=1
+            /etc/rsyslog.d/10-docker.conf:
+              content: !Sub |
+                $template DockerLogs, "/var/log/sharpie/docker.log"
+                if $programname == 'docker' then -?DockerLogs
+                & stop
+            /etc/logrotate.d/sharpie:
+              content: !Sub |
+                "/var/log/sharpie/docker.log"  {
+                 rotate 14
+                 daily
+                 missingok
+                 notifempty
+                 sharedscripts
+                 copytruncate
+                 compress
+                }
+          packages:
+            yum:
+              docker: []
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                - /etc/cfn/cfn-hup.conf
+                - /etc/cfn/hooks.conf
+    Properties:
+      InstanceType: !Ref 'InstanceType'
+      ImageId: !Ref 'AMI'
+      SecurityGroups:
+      - !Ref 'SharpieSSHSecurityGroup'
+      - !Ref 'SharpieConnectionSecurityGroup'
+      KeyName: !Ref 'KeyName'
+      IamInstanceProfile: !Ref 'InstanceProfile'
+      UserData: !Sub |
+        #!/bin/bash -ex
+        exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+
+        function error_exit
+        {
+          opt/aws/bin/cfn-signal -e 1 -r $1 ${WaitHandle}
+          exit 1
+        }
+
+        function await_network {
+          while [ $(curl --connect-timeout 2 169.254.169.254 >/dev/null 2>&1; echo $?) -ne 0 ]; do
+            echo Waiting for networking and/or DNS
+            sleep 10
+          done
+        }
+        function configure_hosts {
+            recordName=${RecordName}.${AB}
+            instance_ip=$(curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
+            domain=$(awk '/^search/ { print $2 }' /etc/resolv.conf)
+            ipend=`echo $instance_ip | sed 's/\./\-/g'`
+            echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
+            hostname $recordName-$ipend
+        }
+        await_network
+        configure_hosts
+        # Instalization
+        /opt/aws/bin/cfn-init -s ${AWS::StackName} -r SharpieASLaunchConf  --region ${AWS::Region} --role ${Role}|| error_exit 'Failed to run cfn-init'
+
+        service docker start
+        echo; echo ---  downloading image tarballs
+        aws s3 cp s3://${S3Repository}/docker/sharpie/sharpie-${Build}.tar.gz /tmp/images/ --region ${S3Region} || error_exit 'faild to download sharpie'
+        aws s3 cp s3://${S3Repository}/docker/sharpie-nginx/sharpie-nginx-{Build}.tar.gz /tmp/images/ --region ${S3Region} || error_exit 'faild to download sharpie-nginx'
+        echo; echo ---  loading image tarballs
+        docker load < /tmp/images/sharpie-${Build}.tar.gz
+        docker load < /tmp/images/sharpie-nginx-${Build}.tar.gz
+        docker images
+
+        echo; echo --- Starting containers
+        mkdir -p /var/log/sharpie
+
+        docker run -d -h $(hostname) --name nginxback --log-driver syslog\
+            -e NGINX_IMAGE_FILTER_ENDPOINT=localhost:9999\
+            -e NGINX_IMAGE_FILTER_ORIGIN_HOST=localhost:9999 \
+            -e NGINX_S3_ENVIRONMENT=prod \
+            -e NGINX_NONSHA_FALLBACK_URL=images-origin.e2e.realestate.com.au \
+            -e NGINX_S3_UPSTREAM_P=${UpstreamPrimaryRegion}\
+            -e NGINX_S3_UPSTREAM_S=${UpstreamSecondaryRegion}\
+            -e NGINX_S3_UPSTREAM_HOST_P=${UpstreamPrimaryHost} \
+            -e NGINX_S3_UPSTREAM_HOST_S=${UpstreamSecondaryHost} \
+            -e NGINX_S3_UPSTREAM_BUCKET_P=${UpstreamPrimaryBucket} \
+            -e NGINX_S3_UPSTREAM_BUCKET_S=${UpstreamSecondaryBucket} \
+            -e NEW_RELIC_LICENSE_KEY=${NewRelicKey}\
+            -e NEW_RELIC_APP_NAME=sharpie-nginx-backend\
+            sharpie-nginx:latest
+
+        docker run -d -h $(hostname) --name sharpieback--log-driver syslog \
+            -e NEW_RELIC_NO_CONFIG_FILE=true \
+            -e NEW_RELIC_LICENSE_KEY=${NewRelicKey}\
+            -e NEW_RELIC_APP_NAME=sharpie\
+            -e NEW_RELIC_LOG=stdout\
+            -e LOG_LEVEL=info\
+            -e SHARP_CACHE_MEMORY=0\
+            -e SHARP_CACHE_ITEMS=0 \
+            --link nginxback:nginxback \
+            sharpie:latest \
+
+        docker run -d -h $(hostname) --name app --log-driver syslog \
+            -e PORT=8080 \
+            -e NGINX_IMAGE_FILTER_ENDPOINT=sharpieback:5555\
+            -e NGINX_IMAGE_FILTER_ORIGIN_HOST=nginxback:8080 \
+            -e NGINX_S3_ENVIRONMENT=prod \
+            -e NGINX_NONSHA_FALLBACK_URL=images-origin.e2e.realestate.com.au \
+            -e NGINX_S3_UPSTREAM_P=${UpstreamPrimaryRegion}\
+            -e NGINX_S3_UPSTREAM_S=${UpstreamSecondaryRegion}\
+            -e NGINX_S3_UPSTREAM_HOST_P=${UpstreamPrimaryHost} \
+            -e NGINX_S3_UPSTREAM_HOST_S=${UpstreamSecondaryHost} \
+            -e NGINX_S3_UPSTREAM_BUCKET_P=${UpstreamPrimaryBucket} \
+            -e NGINX_S3_UPSTREAM_BUCKET_S=${UpstreamSecondaryBucket} \
+            -e NEW_RELIC_LICENSE_KEY=${NewRelicKey}\
+            -e NEW_RELIC_APP_NAME=sharpie-nginx-frontend \
+            --link sharpieback:sharpieback \
+            -p 80:8080 \
+            sharpie-nginx:latest
+
+        docker ps
+
+        service rsyslog restart || error_exit 'faild to start rsyslog'
+        /etc/init.d/newrelic-sysmond restart || error_exit 'faild to start newrelic sysmon application'
+        echo; echo --- cleaning up
+        rm -rf /tmp/images
+        # Start up the cfn-hup daemon to listen for changes
+        /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup',
+        /opt/aws/bin/cfn-signal -e 0 -r "Sharpie instance Stack Complete." ${WaitHandle}
+        !Base64
+  SharpieScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      AutoScalingGroupName: !Ref 'SharpieASGroup'
+      Cooldown: '600'
+      ScalingAdjustment: '1'
+  SharpieScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      AutoScalingGroupName: !Ref 'SharpieASGroup'
+      Cooldown: '600'
+      ScalingAdjustment: '-1'
+  CPUAlarmHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      EvaluationPeriods: '2'
+      Statistic: Average
+      Threshold: '70'
+      AlarmDescription: CPU utilization of Sharpie is over 60%.
+      Period: '60'
+      AlarmActions:
+      - !Ref 'SharpieScaleUpPolicy'
+      - !Ref 'PagerDutyArn'
+      InsufficientDataActions:
+      - !Ref 'PagerDutyArn'
+      OKActions:
+      - !Ref 'PagerDutyArn'
+      Namespace: AWS/EC2
+      Dimensions:
+      - Name: AutoScalingGroupName
+        Value: !Ref 'SharpieASGroup'
+      ComparisonOperator: GreaterThanThreshold
+      MetricName: CPUUtilization
+  CPUAlarmNormal:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      EvaluationPeriods: '4'
+      Statistic: Average
+      Threshold: '30'
+      AlarmDescription: CPU utilization of Sharpie is lower than 40%.
+      Period: '300'
+      AlarmActions:
+      - !Ref 'SharpieScaleDownPolicy'
+      Namespace: AWS/EC2
+      Dimensions:
+      - Name: AutoScalingGroupName
+        Value: !Ref 'SharpieASGroup'
+      ComparisonOperator: LessThanThreshold
+      MetricName: CPUUtilization
+  SharpieASGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones: !Ref 'AvailabilityZones'
+      VPCZoneIdentifier: !Ref 'PrivateSubnets'
+      HealthCheckGracePeriod: 1000
+      HealthCheckType: ELB
+      LaunchConfigurationName: !Ref 'SharpieASLaunchConf'
+      MinSize: !Ref 'ASGMinSize'
+      MaxSize: !Ref 'ASGMaxSize'
+      LoadBalancerNames:
+      - !Ref 'SharpieELB'
+      Tags:
+      - Key: CloudFormationStack
+        Value: !Ref 'AWS::StackName'
+        PropagateAtLaunch: true
+      - Key: Name
+        Value: !Join [., [!Ref 'RecordName', !Ref 'AB', !Ref 'Build', !Ref 'HostedZoneName']]
+        PropagateAtLaunch: true
+  SharpieRecordSet:
+    Type: AWS::Route53::RecordSet
+    Condition: RegionCondition
+    Properties:
+      HostedZoneName: !Ref 'HostedZoneName'
+      Name: !Join [., [!Ref 'RecordName', !Ref 'AB', !Ref 'Build', !Ref 'HostedZoneName']]
+      Type: CNAME
+      TTL: 60
+      ResourceRecords:
+      - !GetAtt [SharpieELB, DNSName]
+  WaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  WaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn: SharpieASGroup
+    Properties:
+      Handle: !Ref 'WaitHandle'
+      Timeout: '1500'
+Outputs:
+  ELBEndpoint:
+    Description: Sharpie elb dns name.
+    Value: !GetAtt [SharpieELB, DNSName]
+  ApplicationEndpoint:
+    Description: Sharpie endpoint.
+    Value: !Join [., [!Ref 'RecordName', !Ref 'AB', !Ref 'Build', !Ref 'HostedZoneName']]
