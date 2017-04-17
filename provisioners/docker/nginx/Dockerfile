@@ -1,6 +1,6 @@
 FROM ubuntu:trusty
 
-MAINTAINER Devops <adyromantika.ahmad@iproperty.com>
+MAINTAINER Devops <devops@iproperty.com>
 
 RUN apt-get update
 RUN apt-get install vim net-tools wget telnet nmap elinks curl dnsutils  -y
