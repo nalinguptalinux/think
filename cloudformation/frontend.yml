@@ -83,9 +83,9 @@ Parameters:
     Description: NGIN ECR Repo
     Type: String
 
-  #PagerDutyArn:
-    #Description: Pager Duty ARN
-    #Type: String
+  PagerDutyArn:
+    Description: Pager Duty ARN
+    Type: String
 
   SrpPdpECRRepo:
     Description: SRP PDP ECR Repo
