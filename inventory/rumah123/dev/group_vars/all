@@ -26,7 +26,7 @@ private_subnet_supernet: 10.89.48.0/22
 ami: ami-dc9339bf
 bastion_public_ip: 52.221.139.174
 ssh_from_bastion_sg_id: sg-5483ea33
-ssl_cert_arn=arn:aws:acm:ap-southeast-1:538471682716:certificate/c8a01b44-8d7b-4226-ab82-04bd520461d8
+ssl_cert_arn: arn:aws:acm:ap-southeast-1:538471682716:certificate/c8a01b44-8d7b-4226-ab82-04bd520461d8
 
 web_service_count: 1
 hp_service_count: 1
