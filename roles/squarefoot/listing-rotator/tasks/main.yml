@@ -17,6 +17,7 @@
       PrivateSubnets: "{{private_subnets}}"
       VpcId: "{{aws_vpc_id}}"
       BuildNumber: "{{build_number}}"
+      PagerDutyArn: "{{high_pager_duty_arn}}"
 
     tags:
       project: "{{project}}"

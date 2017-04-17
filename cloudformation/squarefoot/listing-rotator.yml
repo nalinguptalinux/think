@@ -52,6 +52,10 @@ Parameters:
   BuildNumber:
     Type: Number
     Description: build number that used for deployment
+  
+  PagerDutyArn:
+    Type: String
+    Description: Pagerduty arn to send alarm to when listing rotator is not working as expected
 
 Mappings:
   AWSRegionArch2AMI:
@@ -108,6 +112,22 @@ Resources:
           Ref: RecordName
         PropagateAtLaunch: true
 
+  Alarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmDescription: Listing-rotator-status in invalid states for past 2 hours
+        MetricName: listing-rotator-status
+        Namespace: squarefoot-metrics
+        Statistic: Average
+        Period: '3600'
+        EvaluationPeriods: '2'
+        Threshold: '0'
+        ComparisonOperator: GreaterThanThreshold
+        InsufficientDataActions:
+        - Ref: PagerDutyArn
+        AlarmActions:
+        - Ref: PagerDutyArn
+        
   ASGLaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:
