@@ -261,11 +261,11 @@ Resources:
       Threshold: '80'
       AlarmActions:
       - Ref: ECSScaleUpPolicy
-      #- Ref: PagerDutyArn
-      #InsufficientDataActions:
-      #- Ref: PagerDutyArn
-      #OKActions:
-      #- Ref: PagerDutyArn
+      - Ref: PagerDutyArn
+      InsufficientDataActions:
+      - Ref: PagerDutyArn
+      OKActions:
+      - Ref: PagerDutyArn
       Dimensions:
       - Name: AutoScalingGroupName
         Value:
