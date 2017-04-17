@@ -59,7 +59,7 @@ Parameters:
 
   Stage:
     Type: String
-    Descrition: String value indicating deployment environments
+    Description: String value indicating deployment environments
 
 Mappings:
   AWSRegionArch2AMI:
