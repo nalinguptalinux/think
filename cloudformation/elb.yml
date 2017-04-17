@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: setup an static ELB
+Description: Setup an static ELB
 Parameters:
   LoadBalancerName:
     Description: Name of the load balancer
@@ -32,6 +32,15 @@ Parameters:
       closes the connection
     Type: String
     Default: '180'
+  BusinessUnit:
+    Type: String
+    Description: Two letters country code for billing purpose
+    AllowedValues:
+    - HK
+    - MY
+    - ID
+    - SG
+
 Resources:
   ELBConnectionSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -75,6 +84,10 @@ Resources:
         UnhealthyThreshold: '3'
         Interval: '30'
         Timeout: '5'
+      Tags:
+      - Value:
+          Ref: BusinessUnit
+        Key: "business unit"
 Outputs:
   ELBEndpoint:
     Description: ELB dns name.
