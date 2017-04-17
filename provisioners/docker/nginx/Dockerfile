@@ -3,7 +3,7 @@ FROM ubuntu:trusty
 MAINTAINER Devops <devops@iproperty.com>
 
 RUN apt-get update
-RUN apt-get install vim net-tools wget telnet nmap elinks curl dnsutils  -y
+RUN apt-get install wget curl  -y
 RUN apt-get install -y nginx
 
 COPY nginx.conf /etc/nginx/nginx.conf
