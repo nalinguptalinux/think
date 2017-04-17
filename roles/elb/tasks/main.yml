@@ -17,6 +17,7 @@
         Scheme: "{{scheme}}"
         CertificateARN: "{{ssl_cert_arn}}"
         IdleTimeout: "{{elb_idle_timeout}}"
+        BusinessUnit: "{{business_unit}}"
       tags:
         project: "{{project}}"
         application: "{{application}}"
