@@ -1,0 +1,39 @@
+---
+  - name: setup sharpie stack
+    cloudformation:
+      stack_name: "{{application}}-{{ab}}-{{version}}"
+      state: present
+      region: "{{aws_region}}"
+      disable_rollback: true
+      template: "cloudformation/squarefoot/sharpie.yml"
+      stack_policy: "policies/cloudformation/stack-policy.json"
+      template_parameters:
+        UpstreamPrimaryRegion: "{{upstream_p_region}}"
+        UpstreamSecondaryRegion: "{{upstream_s_region}}"
+        UpstreamPrimaryHost: "{{upstream_p_host}}"
+        UpstreamSecondaryHost: "{{upstream_s_host}}"
+        UpstreamPrimaryBucket: "{{upstream_p_bucket}}"
+        UpstreamSecondaryBucket: "{{upstream_s_bucket}}"
+        AMI: "{{ami}}"
+        HostedZoneName: "{{public_zone}}"
+        InstanceType: "{{instance_type}}"
+        KeyName: "{{key_name}}"
+        VpcID: "{{aws_vpc_id}}"
+        RecordName: "{{application}}"
+        AB: "{{ab}}"
+        Build: "{{version}}"
+        AvailabilityZones: "{{zones}}"
+        PublicSubnets: "{{public_subnets}}"
+        PrivateSubnets: "{{private_subnets}}"
+        ASGMaxSize: "{{as_max}}"
+        ASGMinSize: "{{as_min}}"
+        S3Repository: "{{resource_bucket_name}}"
+        S3Region: "{{aws_region}}"
+        NewRelicKey: "{{new_relic_license_key}}"
+        PagerDutyArn: "{{low_pager_duty_arn}}"
+        SSLCertArn: "{{ssl_cert_arn}}"
+      tags:
+        project: "{{project}}"
+        application: "{{application}}"
+        lob: "regional-web"
+        env: "{{env}}"
