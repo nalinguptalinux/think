@@ -63,6 +63,9 @@ Parameters:
   ZkHosts:
     Description: Zookeeper hosts
     Type: String
+  PagerDutyArn:
+    Description: pager duty arn.
+    Type: String
 
 Conditions:
   RegionCondition: !Not [!Equals [!Ref 'AWS::Region', cn-north-1]]
@@ -135,6 +138,26 @@ Resources:
       - InstancePort: '8983'
         LoadBalancerPort: !Ref 'AppPort'
         Protocol: HTTP
+  CPUAlarmHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      EvaluationPeriods: '2'
+      Statistic: Average
+      Threshold: '70'
+      AlarmDescription: CPU utilization of Solr is over 70%.
+      Period: '60'
+      AlarmActions:
+      - !Ref 'PagerDutyArn'
+      InsufficientDataActions:
+      - !Ref 'PagerDutyArn'
+      OKActions:
+      - !Ref 'PagerDutyArn'
+      Namespace: AWS/EC2
+      Dimensions:
+      - Name: AutoScalingGroupName
+        Value: !Ref 'SolrASGroup'
+      ComparisonOperator: GreaterThanThreshold
+      MetricName: CPUUtilization
   SolrASLaunchConf:
     Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:

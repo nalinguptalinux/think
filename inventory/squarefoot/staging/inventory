@@ -14,9 +14,9 @@ solr.staging.squarefoot-singapore.ipga.local
 
 [solr:vars]
 application=solr
-ab=a
+ab=b
 pkg=solr-6.0.0.8-1.noarch.rpm
-instance_type=t2.medium
+instance_type=m3.medium
 as_max=3
 as_min=3
 jvm_heap_size=3g

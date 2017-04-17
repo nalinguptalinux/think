@@ -26,6 +26,7 @@
         VpcNet: "{{vpc_cidr}}"
         ZkHosts: "{{solr_zk_hosts}}"
         NewRelicLicenseKey: "{{new_relic_license_key}}"
+        PagerDutyArn: "{{low_pager_duty_arn}}"
       tags:
         project: "{{project}}"
         application: "{{application}}"
