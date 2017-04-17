@@ -17,8 +17,7 @@ desired_asg_capacity=2
 hp_ecr_repo=hp:latest
 srp_pdp_ecr_repo=srp-pdp:latest
 nginx_ecr_repo=nginx:latest
-//acm cert awaiting approval
-ssl_certificate_arn=arn:aws:acm:ap-southeast-1:904385174501:certificate/26f11d44-85f0-44a7-bd52-e323b4edb0dc
+
 [redis]
 elasticache.staging.ipropertymy-singapore.ipga.local
 

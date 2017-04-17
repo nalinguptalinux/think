@@ -16,4 +16,3 @@ desired_asg_capacity=2
 hp_ecr_repo=hp:latest
 srp_pdp_ecr_repo=srp-pdp:latest
 nginx_ecr_repo=nginx:latest
-ssl_certificate_arn=arn:aws:acm:ap-southeast-1:407510221296:certificate/63cc332e-8c06-4ec6-b76c-adffd6df46a9

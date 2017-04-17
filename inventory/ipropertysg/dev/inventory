@@ -16,4 +16,3 @@ desired_asg_capacity=2
 hp_ecr_repo=hp:latest
 srp_pdp_ecr_repo=srp-pdp:latest
 nginx_ecr_repo=nginx:latest
-ssl_certificate_arn=TBA
