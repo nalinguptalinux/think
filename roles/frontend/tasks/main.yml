@@ -34,6 +34,9 @@
         VPC: "{{aws_vpc_id}}"
         VpcCidr: "{{vpc_cidr}}"
         VpcDns: "{{vpc_dns}}"
+        WebserviceCount: "{{web_service_count}}"
+        HpserviceCount: "{{hp_service_count}}"
+        SrpserviceCount: "{{srp_service_count}}"
 
       tags:
         project: "{{project}}"

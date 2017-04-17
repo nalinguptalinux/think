@@ -83,9 +83,9 @@ Parameters:
     Description: NGIN ECR Repo
     Type: String
 
-  PagerDutyArn:
-    Description: Pager Duty ARN
-    Type: String
+  #PagerDutyArn:
+    #Description: Pager Duty ARN
+    #Type: String
 
   SrpPdpECRRepo:
     Description: SRP PDP ECR Repo
@@ -132,6 +132,17 @@ Parameters:
     Description: 'Enter VPC DNS must be end with X.X.0.2'
     Type: String
 
+  WebserviceCount:
+    Description: 'Enter Webservice Conatiner Count : Must be equal to no. of instance in Autoscaling '
+    Type: String
+
+  HpserviceCount:
+    Description: 'Enter Hpservice Conatiner Count : Must be equal to no. of instance in Autoscaling '
+    Type: String
+
+  SrpserviceCount:
+    Description: 'Enter Srpservice Conatiner Count : Must be equal to no. of instance in Autoscaling '
+    Type: String
 
 Mappings:
 
@@ -172,7 +183,7 @@ Resources:
         Ref: SubnetID
       LaunchConfigurationName:
         Ref: ContainerInstances
-      AvailabilityZones: !Ref 'AvailabilityZones'
+      AvailabilityZones: [!Select [0, !GetAZs ''], !Select [1, !GetAZs '']]
       Cooldown: '40'
       HealthCheckGracePeriod: '60'
       HealthCheckType: EC2
@@ -250,11 +261,11 @@ Resources:
       Threshold: '80'
       AlarmActions:
       - Ref: ECSScaleUpPolicy
-      - Ref: PagerDutyArn
-      InsufficientDataActions:
-      - Ref: PagerDutyArn
-      OKActions:
-      - Ref: PagerDutyArn
+      #- Ref: PagerDutyArn
+      #InsufficientDataActions:
+      #- Ref: PagerDutyArn
+      #OKActions:
+      #- Ref: PagerDutyArn
       Dimensions:
       - Name: AutoScalingGroupName
         Value:
@@ -288,15 +299,6 @@ Resources:
           - Configure
 
         Configure:
-          commands:
-            01_add_instance_to_cluster:
-              command:
-                Fn::Join:
-                - ''
-                - - "#!/bin/bash\n"
-                  - echo ECS_CLUSTER=
-                  - Ref: ECSCluster
-                  - " >> /etc/ecs/ecs.config"
           files:
             "/etc/cfn/cfn-hup.conf":
               content:
@@ -308,15 +310,6 @@ Resources:
                   - region=
                   - Ref: AWS::Region
               mode: '000400'
-              owner: root
-              group: root
-            "/etc/ecs/ecs.config":
-              content:
-                Fn::Join:
-                - ''
-                - - ECS_CLUSTER=
-                  - Ref: ECSCluster
-              mode: '000755'
               owner: root
               group: root
             "/etc/cfn/hooks.d/cfn-auto-reloader.conf":
@@ -382,17 +375,22 @@ Resources:
           #!/bin/bash -ex
           ######--------------------------Install software----------------------######
           /usr/bin/yum update -y
-          /usr/bin/yum install -y sysstat nmap telnet curl wget vim elinks
+          /usr/bin/yum install -y sysstat nmap telnet curl wget vim elinks bind-utils
           /usr/bin/yum install -y aws-cfn-bootstrap
           /usr/bin/easy_install awscli
+
           ######-----------------------------Bootstrap--------------------------######
           /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --configsets InstallAndRun --resource ContainerInstances
+
+
           ######------------Install Sumo Logic Collector on EC2 Host------------######
           /usr/local/bin/aws s3 cp s3://${ResourceBucketName}/sumologic/${SumoLogicInstallerFileName} /tmp/${SumoLogicInstallerFileName} --region ${AWS::Region}
           /bin/chmod +x /tmp/${SumoLogicInstallerFileName}
           /tmp/${SumoLogicInstallerFileName}  -q -VskipRegistration=true -Vephemeral=true -Vsources=/opt/ipp/sumologic/sources.json -Vsumo.accessid=${SumoLogicAccessId} -Vsumo.accesskey=${SumoLogicAccessKey}
           /bin/rm -f /tmp/${SumoLogicInstallerFileName}
+
           ######-----------------Configure Hostname on EC2 Host-----------------######
+
           function configure_hosts {
             recordName=${RecordName}
             instance_ip=$(/usr/bin/curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
@@ -401,16 +399,28 @@ Resources:
             /bin/echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
             /bin/hostname $recordName-$ipend
           }
+          configure_hosts
+
           ######--------------Install NewRelic agent on EC2 Host----------------######
           /usr/local/bin/aws s3 cp s3://${ResourceBucketName}/newrelic/${NewRelicRPM} /tmp/${NewRelicRPM} --region ${AWS::Region}
           /bin/rpm -Uvhi /tmp/${NewRelicRPM}
           /usr/sbin/nrsysmond-config --set license_key=${NewRelicLicenseKey}
+          /bin/echo hostname=$(/bin/hostname ) >> /etc/newrelic/nrsysmond.cfg
           /etc/init.d/newrelic-sysmond start
           /sbin/chkconfig newrelic-sysmond on
+
+
+          #############    ------------   Testing of New relic agent info ---------  ##########
+
+          /bin/ps aux | grep newrelic
           /bin/rm -f /tmp/${NewRelicRPM}
+
+
           ######---------------------Final config steps-------------------------######
-          configure_hosts
+
           /bin/echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
+
+
           ######--------------------------Signal success------------------------######
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
 
@@ -528,7 +538,7 @@ Resources:
     Properties:
       Cluster:
         Ref: ECSCluster
-      DesiredCount: '2'
+      DesiredCount: !Ref WebserviceCount
       DeploymentConfiguration:
         MaximumPercent: '150'
         MinimumHealthyPercent: '50'
@@ -564,7 +574,7 @@ Resources:
     Properties:
       Cluster:
         Ref: ECSCluster
-      DesiredCount: '2'
+      DesiredCount: !Ref HpserviceCount
       DeploymentConfiguration:
         MaximumPercent: '150'
         MinimumHealthyPercent: '50'
@@ -768,7 +778,7 @@ Resources:
     Properties:
       Cluster:
         Ref: ECSCluster
-      DesiredCount: '2'
+      DesiredCount: !Ref SrpserviceCount
       DeploymentConfiguration:
         MaximumPercent: '150'
         MinimumHealthyPercent: '50'
