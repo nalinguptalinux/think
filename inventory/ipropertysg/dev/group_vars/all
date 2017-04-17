@@ -28,6 +28,10 @@ bastion_public_ip: 13.228.16.166
 ssh_from_bastion_sg_id: sg-66d0af01
 ssl_cert_arn: arn:aws:acm:ap-southeast-1:951363673468:certificate/39786fa9-2a5b-49f0-86fe-a0f7dc547bec
 
+web_service_count: 1
+hp_service_count: 1
+srp_service_count: 1
+
 resource_bucket_name: prod-sg-ipsg-infra-common
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
 sumo_logic_access_id: su37UzMYy9KsP0
