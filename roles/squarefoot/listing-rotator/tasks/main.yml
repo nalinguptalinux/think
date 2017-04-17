@@ -18,6 +18,7 @@
       VpcId: "{{aws_vpc_id}}"
       BuildNumber: "{{build_number}}"
       PagerDutyArn: "{{high_pager_duty_arn}}"
+      Stage: "{{stage}}"
 
     tags:
       project: "{{project}}"

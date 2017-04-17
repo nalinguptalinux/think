@@ -126,6 +126,7 @@ version=26-31-79
 [listing-rotator:vars]
 build_number=11
 instance_type=t2.small
+stage:staging
 
 [alb]
 127.0.0.1

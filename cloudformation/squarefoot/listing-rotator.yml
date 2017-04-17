@@ -57,6 +57,10 @@ Parameters:
     Type: String
     Description: Pagerduty arn to send alarm to when listing rotator is not working as expected
 
+  Stage:
+    Type: String
+    Descrition: String value indicating deployment environments
+
 Mappings:
   AWSRegionArch2AMI:
     ap-southeast-1:
@@ -223,7 +227,7 @@ Resources:
           eval $(aws ecr get-login --registry-ids $REG_ID --region ${AWS::Region})
 
           mkdir -p /var/log/rea
-          docker run -d -v /var/log/rea:/var/log/rea ${ECR}/listing-rotator:${BuildNumber}
+          docker run -d -e STAGE=${Stage} -v /var/log/rea:/var/log/rea ${ECR}/listing-rotator:${BuildNumber}
           ######--------------------------Signal success------------------------######
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AutoScalingGroup --region ${AWS::Region}
 
