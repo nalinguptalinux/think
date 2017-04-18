@@ -6,5 +6,4 @@
 .ssh/
 .DS_Store
 .vscode
-*.bak
 *.swp
