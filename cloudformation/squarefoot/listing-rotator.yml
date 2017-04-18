@@ -123,7 +123,7 @@ Resources:
         MetricName: listing-rotator-status
         Namespace: squarefoot-metrics
         Statistic: Average
-        Period: '3600'
+        Period: '900'
         EvaluationPeriods: '2'
         Threshold: '0'
         ComparisonOperator: GreaterThanThreshold
