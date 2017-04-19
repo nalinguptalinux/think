@@ -16,3 +16,16 @@ desired_asg_capacity=1
 hp_ecr_repo=hp:latest
 srp_pdp_ecr_repo=srp-pdp:latest
 nginx_ecr_repo=nginx:latest
+
+[elb]
+127.0.0.1
+
+[elb:vars]
+elb_stack_name=frontend-dev-elb
+application=hp-pdp-srp
+load_balancer_name=frontend-dev-elb
+app_port=80
+instance_port=80
+scheme=internet-facing
+subnets={{public_subnets}}
+elb_idle_timeout=180
