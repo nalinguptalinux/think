@@ -23,6 +23,7 @@
         NewRelicLicenseKey: "{{new_relic_license_key}}"
         NginxECRRepo: "{{nginx_ecr_repo}}"
         PagerDutyArn: "{{low_pager_duty_arn}}"
+        HPagerDutyArn: "{{high_pager_duty_arn}}"
         SrpPdpECRRepo: "{{srp_pdp_ecr_repo}}"
         RecordName: "{{application}}-{{ab}}-{{version}}"
         ResourceBucketName: "{{resource_bucket_name}}"

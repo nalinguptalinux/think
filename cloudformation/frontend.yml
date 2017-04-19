@@ -87,6 +87,10 @@ Parameters:
     Description: Pager Duty ARN
     Type: String
 
+  HPagerDutyArn:
+    Description: Pager Duty ARN
+    Type: String
+
   SrpPdpECRRepo:
     Description: SRP PDP ECR Repo
     Type: String
@@ -253,11 +257,11 @@ Resources:
       Threshold: '80'
       AlarmActions:
       - Ref: ECSScaleUpPolicy
-      - Ref: PagerDutyArn
+      - Ref: HPagerDutyArn
       InsufficientDataActions:
-      - Ref: PagerDutyArn
+      - Ref: HPagerDutyArn
       OKActions:
-      - Ref: PagerDutyArn
+      - Ref: HPagerDutyArn
       Dimensions:
       - Name: AutoScalingGroupName
         Value:
@@ -276,6 +280,11 @@ Resources:
       Threshold: '20'
       AlarmActions:
       - Ref: ECSScaleDownPolicy
+      - Ref: PagerDutyArn
+      InsufficientDataActions:
+      - Ref: PagerDutyArn
+      OKActions:
+      - Ref: PagerDutyArn
       Dimensions:
       - Name: AutoScalingGroupName
         Value:
