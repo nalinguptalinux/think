@@ -209,6 +209,10 @@ Resources:
           Ref: AWS::StackName
         Key: CF-Name
         PropagateAtLaunch: true
+      - Value:
+          Ref: AWS::StackName
+        Key: Name
+        PropagateAtLaunch: true
     CreationPolicy:
       ResourceSignal:
         Timeout: PT4M
