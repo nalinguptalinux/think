@@ -71,12 +71,12 @@
     - "{{ elb_output.InstanceStates }}"
 
 - name: Attach elb to new ASG
-  command: aws autoscaling attach-load-balancers --load-balancer-names {{ elb }} --auto-scaling-group-name {{ new_asg_name }} --region {{aws_region}}
+  command: aws autoscaling attach-load-balancers --load-balancer-names {{ elb_name }} --auto-scaling-group-name {{ new_asg_name }} --region {{aws_region}}
 
 - pause: minutes=1
 
 - name: Get instances health result from ELB
-  command: aws elb describe-instance-health --load-balancer-name {{ elb }} --region {{aws_region}}
+  command: aws elb describe-instance-health --load-balancer-name {{ elb_name }} --region {{aws_region}}
   register: elb_instance_health_result
 
 - name: Read instance health result from ELB
@@ -92,11 +92,11 @@
   ignore_errors: true
 
 - name: roll_back
-  command: aws autoscaling detach-load-balancers --load-balancer-names {{ elb }} --auto-scaling-group-name {{ new_asg_name }} --region {{aws_region}}
+  command: aws autoscaling detach-load-balancers --load-balancer-names {{ elb_name }} --auto-scaling-group-name {{ new_asg_name }} --region {{aws_region}}
   when: elb_check_result | failed
 
 - name: Detach ELB from old ASG
-  command: aws autoscaling detach-load-balancers --load-balancer-names {{ elb }} --auto-scaling-group-name {{ old_asg_name }} --region {{aws_region}}
+  command: aws autoscaling detach-load-balancers --load-balancer-names {{ elb_name }} --auto-scaling-group-name {{ old_asg_name }} --region {{aws_region}}
   when: elb_check_result | success
 
 - pause: minutes=1
