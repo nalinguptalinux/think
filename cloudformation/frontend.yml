@@ -206,20 +206,8 @@ Resources:
         Ref: DesiredCapacity
       Tags:
       - Value:
-          Ref: BusinessUnit
-        Key: "business unit"
-        PropagateAtLaunch: true
-      - Value:
-          Ref: BillingTag
-        Key: Billing
-        PropagateAtLaunch: true
-      - Value:
           Ref: AWS::StackName
         Key: CF-Name
-        PropagateAtLaunch: true
-      - Value:
-          Ref: AWS::StackName
-        Key: Name
         PropagateAtLaunch: true
     CreationPolicy:
       ResourceSignal:
@@ -440,12 +428,6 @@ Resources:
       CrossZone: true
       Tags:
       - Value:
-          Ref: BusinessUnit
-        Key: "business unit"
-      - Value:
-          Ref: BillingTag
-        Key: Billing
-      - Value:
           Ref: AWS::StackName
         Key: CF-Name
       SecurityGroups:
@@ -500,12 +482,6 @@ Resources:
         Enabled: true
         Timeout: 30
       Tags:
-      - Value:
-          Ref: BusinessUnit
-        Key: "business unit"
-      - Value:
-          Ref: BillingTag
-        Key: Billing
       - Value:
           Ref: AWS::StackName
         Key: CF-Name
@@ -738,12 +714,6 @@ Resources:
         Timeout: 30
       CrossZone: true
       Tags:
-      - Value:
-          Ref: BusinessUnit
-        Key: "business unit"
-      - Value:
-          Ref: BillingTag
-        Key: Billing
       - Value:
           Ref: AWS::StackName
         Key: CF-Name
