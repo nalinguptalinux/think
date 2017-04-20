@@ -55,3 +55,19 @@ ruby_package=ruby-2.1.5.tar.gz
 rubygems_rpm=rubygem-bundle-1.2.1-3.x86_64.rpm
 base_ami=ami-dc9339bf
 
+[frontend]
+frontend.staging.rumah123-singapore.ipga.local
+
+[frontend:vars]
+dns_hostname=web
+application=frontend
+ab=a
+ecs_instance_type=m3.medium
+build=latest
+min_asg_size=2
+max_asg_size=4
+desired_asg_capacity=2
+hp_ecr_repo=hp:latest
+srp_pdp_ecr_repo=srp-pdp:latest
+nginx_ecr_repo=nginx:latest
+
