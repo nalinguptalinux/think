@@ -5,15 +5,6 @@ Description: >
     This template will install the development stack
 
 Parameters:
-  AvailabilityZones:
-    Description: The availability zones in the VPC
-    Type: CommaDelimitedList
-
-  BillingTag:
-    Type: String
-    Description: Tag for billing purpose
-    Default: Regional-web-tag
-
   BusinessUnit:
     Type: String
     Description: Two letters country code for billing purpose
@@ -219,12 +210,12 @@ Resources:
         PropagateAtLaunch: true
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT4M
+        Timeout: PT5M
     UpdatePolicy:
       AutoScalingRollingUpdate:
         MinInstancesInService: '1'
         MaxBatchSize: '1'
-        PauseTime: PT10M
+        PauseTime: PT15M
         WaitOnResourceSignals: 'true'
 
   ECSScaleUpPolicy:
