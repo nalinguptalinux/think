@@ -12,7 +12,7 @@ vpc_dns: 10.89.0.2
 zones: ap-southeast-1a,ap-southeast-1b
 
 nat_subnets: subnet-42371526,subnet-f07e2986
-private_subnets: ssubnet-6e36140a,subnet-967e29e0
+private_subnets: subnet-6e36140a,subnet-967e29e0
 public_subnets: subnet-863715e2,subnet-e87d2a9e
 
 nat_subnet_cidr_blocks: 10.89.0.0/23,10.89.2.0/23
