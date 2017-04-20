@@ -1,4 +1,45 @@
-aws_region: ap-southeast-1
 project: rumah123
-env: production-singapore
 business_unit: ID
+env: rumah123-prod
+private_zone: prod.rumah123-sg.ipga.local
+public_zone: sg.rumah123.com
+aws_region: ap-southeast-1
+key_name: awscloud-rumah123-production-singapore
+aws_vpc_id: vpc-54c2a530
+vpc_cidr: 10.89.0.0/20
+dns_servers: 169.254.169.253,10.89.0.2
+vpc_dns: 10.89.0.2
+zones: ap-southeast-1a,ap-southeast-1b
+
+nat_subnets: subnet-42371526,subnet-f07e2986
+private_subnets: ssubnet-6e36140a,subnet-967e29e0
+public_subnets: subnet-863715e2,subnet-e87d2a9e
+
+nat_subnet_cidr_blocks: 10.89.0.0/23,10.89.2.0/23
+public_subnet_cidr_blocks: 10.89.4.0/23,10.89.6.0/23
+private_subnet_cidr_blocks: 10.89.8.0/23,10.89.10.0/23
+
+nat_subnet_supernet: 10.89.0.0/22
+public_subnet_supernet: 10.89.4.0/22
+private_subnet_supernet: 10.89.8.0/22
+
+deployment_ecr: 737535160577.dkr.ecr.ap-southeast-1.amazonaws.com
+web_service_count: 2
+hp_service_count: 2
+srp_service_count: 2
+
+low_pager_duty_arn: arn:aws:sns:ap-southeast-1:737535160577:Low-Priority-Rumah-SG-PagerDuty
+high_pager_duty_arn: arn:aws:sns:ap-southeast-1:737535160577:High-Priority-Rumah-SG-PagerDuty
+ssl_cert_arn: arn:aws:acm:ap-southeast-1:737535160577:certificate/5ddef10b-f995-4082-81c8-533c4c4dee66
+
+ami: ami-dc9339bf
+bastion_public_ip: 13.228.19.118
+ssh_from_bastion_sg_id: sg-055c2462
+
+resource_bucket_name: prod-sg-rmid-infra-common
+sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
+sumo_logic_access_id: su37UzMYy9KsP0
+sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf
+new_relic_rpm: newrelic-sysmond-2.3.0.132-1.x86_64.rpm
+new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df
+
