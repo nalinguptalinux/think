@@ -241,7 +241,7 @@ Resources:
     Properties:
       AlarmDescription: Scale-up if CPU > 80% for 10 minutes
       MetricName: CPUUtilization
-      Namespace: AWS/EC2
+      Namespace: AWS/ECS
       Statistic: Average
       Period: '300'
       EvaluationPeriods: '2'
@@ -254,9 +254,9 @@ Resources:
       OKActions:
       - Ref: HPagerDutyArn
       Dimensions:
-      - Name: AutoScalingGroupName
+      - Name: ClusterName
         Value:
-          Ref: ECSAutoScalingGroup
+          Ref: 'ECSCluster'
       ComparisonOperator: GreaterThanThreshold
 
   ECSLow:
@@ -264,11 +264,11 @@ Resources:
     Properties:
       AlarmDescription: Scale-down if CPU < 40% for 10 minutes
       MetricName: CPUUtilization
-      Namespace: AWS/EC2
+      Namespace: AWS/ECS
       Statistic: Average
       Period: '300'
       EvaluationPeriods: '2'
-      Threshold: '20'
+      Threshold: '10'
       AlarmActions:
       - Ref: ECSScaleDownPolicy
       - Ref: PagerDutyArn
@@ -277,9 +277,55 @@ Resources:
       OKActions:
       - Ref: PagerDutyArn
       Dimensions:
-      - Name: AutoScalingGroupName
+      - Name: ClusterName
         Value:
-          Ref: ECSAutoScalingGroup
+          Ref: 'ECSCluster'
+      ComparisonOperator: LessThanThreshold
+
+  ECSMemHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Scale-up if Mem > 80% for 10 minutes
+      MetricName: MemoryUtilization
+      Namespace: AWS/ECS
+      Statistic: Average
+      Period: '300'
+      EvaluationPeriods: '2'
+      Threshold: '80'
+      AlarmActions:
+      - Ref: ECSScaleUpPolicy
+      - Ref: HPagerDutyArn
+      InsufficientDataActions:
+      - Ref: HPagerDutyArn
+      OKActions:
+      - Ref: HPagerDutyArn
+      Dimensions:
+      - Name: ClusterName
+        Value:
+          Ref: 'ECSCluster'
+      ComparisonOperator: GreaterThanThreshold
+
+  ECSMemLow:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Scale-down if CPU < 40% for 10 minutes
+      MetricName: MemoryUtilization
+      Namespace: AWS/ECS
+      Statistic: Average
+      Period: '300'
+      EvaluationPeriods: '2'
+      Threshold: '10'
+      AlarmActions:
+      - Ref: ECSScaleDownPolicy
+      - Ref: PagerDutyArn
+      InsufficientDataActions:
+      - Ref: PagerDutyArn
+      OKActions:
+      - Ref: PagerDutyArn
+      Dimensions:
+      - Name: ClusterName
+        Value:
+          Ref: 'ECSCluster'
       ComparisonOperator: LessThanThreshold
 
   ContainerInstances:
