@@ -2,7 +2,7 @@ project: ipropertysg
 business_unit: SG
 env: ipropertysg-development
 private_zone: development.ipropertysg-singapore.ipga.local
-public_zone: dev.sg.ipropertysg.ippstatic.com
+public_zone: dev.sg.iproperty.com.sg
 aws_region: ap-southeast-1
 key_name: awscloud-ipropertysg-development-singapore
 aws_vpc_id: vpc-78bbdf1c
