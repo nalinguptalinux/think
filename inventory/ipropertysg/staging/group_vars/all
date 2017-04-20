@@ -1,0 +1,46 @@
+project: ipropertysg
+business_unit: SG
+env: ipropertysg-staging
+private_zone: staging.ipropertysg-singapore.ipga.local
+public_zone: stg.sg.iproperty.com.sg
+aws_region: ap-southeast-1
+key_name: awscloud-ipropertysg-staging-singapore
+aws_vpc_id: vpc-061b7c62
+vpc_cidr: 10.90.144.0/20
+dns_servers: 169.254.169.253,10.90.144.2
+vpc_dns: 10.90.144.2
+zones: ap-southeast-1a,ap-southeast-1b
+
+nat_subnets:  subnet-e7c0e383,subnet-57affb21
+private_subnets:  subnet-c3c7e4a7,subnet-94acf8e2
+public_subnets:  subnet-1ec5e67a,subnet-06affb70
+
+nat_subnet_cidr_blocks: 10.90.144.0/23,10.90.146.0/23
+public_subnet_cidr_blocks: 10.90.148.0/23,10.90.150.0/23
+private_subnet_cidr_blocks: 10.90.152.0/23,10.90.154.0/23
+
+nat_subnet_supernet: 10.90.144.0/22
+public_subnet_supernet: 10.90.148.0/22
+private_subnet_supernet: 10.90.152.0/22
+
+ami: ami-dc9339bf
+bastion_public_ip: 52.74.126.248
+ssh_from_bastion_sg_id: sg-01295066
+
+low_pager_duty_arn: arn:aws:sns:ap-southeast-1:037018312713:Low-Priority-ipropertySG-Stg-PagerDuty
+high_pager_duty_arn: arn:aws:sns:ap-southeast-1:037018312713:High-Priority-ipropertySG-Stg-PagerDuty
+ssl_cert_arn: arn:aws:acm:ap-southeast-1:037018312713:certificate/d682cdb2-0d39-4e81-b80c-e10dd68ce37e
+
+web_service_count: 2
+hp_service_count: 2
+srp_service_count: 2
+
+resource_bucket_name: prod-sg-ipsg-infra-common
+sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
+sumo_logic_access_id: su37UzMYy9KsP0
+sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf
+new_relic_rpm: newrelic-sysmond-2.3.0.132-1.x86_64.rpm
+new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df
+
+deployment_ecr: 864072874528.dkr.ecr.ap-southeast-1.amazonaws.com
+build_ecr: 951363673468.dkr.ecr.ap-southeast-1.amazonaws.com

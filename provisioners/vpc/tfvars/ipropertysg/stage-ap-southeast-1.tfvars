@@ -22,7 +22,7 @@ ami = "ami-dc9339bf"
 
 // Outputs:
 
-// aws_vpc_id = vpc-061b7c62
+// aws_vpc_id = c
 // bastion_public_ip = 52.74.126.248
 // nat_subnets = subnet-e7c0e383,subnet-57affb21
 // private_subnets = subnet-c3c7e4a7,subnet-94acf8e2
