@@ -1,4 +1,46 @@
-aws_region: ap-southeast-1
 project: ipropertysg
-env: production-singapore
 business_unit: SG
+env: ipropertysg-prod
+private_zone: prod.ipropertysg-singapore.ipga.local
+public_zone: sg.iproperty.com.sg
+aws_region: ap-southeast-1
+key_name: awscloud-ipropertysg-prod-singapore
+aws_vpc_id: vpc-3a6f085e
+vpc_cidr: 10.90.160.0/22
+dns_servers: 169.254.169.253,10.90.160.2
+vpc_dns: 10.90.160.2
+zones: ap-southeast-1a,ap-southeast-1b
+
+nat_subnets:  subnet-cdd682bb,subnet-caceedae
+private_subnets:  subnet-a0d084d6,subnet-bec8ebda
+public_subnets:  subnet-b6d783c0,subnet-fccfec98
+
+nat_subnet_cidr_blocks: 10.90.160.0/23,10.90.162.0/23
+public_subnet_cidr_blocks: 10.90.164.0/23,10.90.166.0/23
+private_subnet_cidr_blocks: 10.90.168.0/23,10.90.170.0/23
+
+nat_subnet_supernet: 10.90.160.0/22
+public_subnet_supernet: 10.90.164.0/22
+private_subnet_supernet: 10.90.168.0/22
+
+ami: ami-dc9339bf
+bastion_public_ip: 52.221.175.96
+ssh_from_bastion_sg_id: sg-0e1d6469
+
+low_pager_duty_arn: arn:aws:sns:ap-southeast-1:864072874528:Low-Priority-ipropertySG-Prod-SG-PagerDuty
+high_pager_duty_arn: arn:aws:sns:ap-southeast-1:864072874528:High-Priority-ipropertySG-Prod-SG-PagerDuty
+ssl_cert_arn:  arn:aws:acm:ap-southeast-1:864072874528:certificate/f9ae23db-952a-49a8-b9d8-fae93e6e6125
+
+web_service_count: 2
+hp_service_count: 2
+srp_service_count: 2
+
+resource_bucket_name: prod-sg-ipsg-infra-common
+sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
+sumo_logic_access_id: su37UzMYy9KsP0
+sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf
+new_relic_rpm: newrelic-sysmond-2.3.0.132-1.x86_64.rpm
+new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df
+
+deployment_ecr: 864072874528.dkr.ecr.ap-southeast-1.amazonaws.com
+build_ecr: 951363673468.dkr.ecr.ap-southeast-1.amazonaws.com
