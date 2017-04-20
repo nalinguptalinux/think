@@ -2,3 +2,40 @@ aws_region: ap-northeast-1
 project: ipropertysg
 env: production-tokyo
 business_unit: SG
+private_zone: prod.ipropertysg-tokyo.ipga.local
+public_zone: tk.iproperty.com.sg
+aws_region: ap-northeast-1
+
+vpc_cidr = 10.90.176.0/20
+dopt = 169.254.169.253,10.90.176.2
+zones = ap-northeast-1a,ap-northeast-1c
+nat_subnet_cidr_blocks = 10.90.176.0/23,10.90.178.0/23
+public_subnet_cidr_blocks = 10.90.180.0/23,10.90.182.0/23
+private_subnet_cidr_blocks = 10.90.184.0/23,10.90.186.0/23
+
+nat_subnet_supernet = 10.90.176.0/22
+public_subnet_supernet = 10.90.180.0/22
+private_subnet_supernet = 10.90.184.0/22
+
+
+aws_vpc_id = vpc-8dba28e9
+bastion_public_ip = 52.199.194.43
+nat_subnets = subnet-ebce949d,subnet-baf094e2
+private_subnets = subnet-b4d78dc2,subnet-11fc9849
+public_subnets = subnet-9dca90eb,subnet-23f0947b
+ssh_from_bastion_sg_id = sg-cf5350a8
+
+
+web_service_count: 2
+hp_service_count: 2
+srp_service_count: 2
+
+resource_bucket_name: prod-sg-ipsg-infra-common
+sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
+sumo_logic_access_id: su37UzMYy9KsP0
+sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf
+new_relic_rpm: newrelic-sysmond-2.3.0.132-1.x86_64.rpm
+new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df
+
+deployment_ecr: 864072874528.dkr.ecr.ap-southeast-1.amazonaws.com
+build_ecr: 951363673468.dkr.ecr.ap-southeast-1.amazonaws.com
