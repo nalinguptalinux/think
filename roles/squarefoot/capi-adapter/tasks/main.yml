@@ -11,7 +11,8 @@
       BillingTag: "{{project}}"
       BusinessUnit: "{{business_unit}}"
       DesiredCapacity: "{{desired_asg_capacity}}"
-      ImageRegistry: "{{deployment_ecr}}/{{adapter_name}}"
+      AdapterName: "{{adapter_name}}"
+      ECR: "{{deployment_ecr}}"
       InstanceType: "{{instance_type}}"
       KeyPair: "{{key_name}}"
       MaxSizeASG: "{{max_size_asg}}"
@@ -24,6 +25,8 @@
       VpcId: "{{aws_vpc_id}}"
       BuildNumber: "{{build_number}}"
       AZs: "{{zones}}"
+      SumoLogicAccessId: "{{sumo_logic_access_id}}"
+      SumoLogicAccessKey: "{{sumo_logic_access_key}}"
 
     tags:
       project: "{{project}}"

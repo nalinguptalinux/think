@@ -19,9 +19,9 @@ Parameters:
     Type: Number
     Default: '1'
     Description: Number of Desired Size AS instance
-  ImageRegistry:
+  AdapterName:
     Type: String
-    Description: ECR of image used
+    Description: name of adapter
   InstanceType:
     Description: EC2 instance type.
     Type: String
@@ -69,6 +69,15 @@ Parameters:
   AZs:
     Type: CommaDelimitedList
     Description: availability zones
+  ECR:
+    Type: String
+    Description: ECR where images stored
+  SumoLogicAccessId:
+    Description: Sumo Logic access id
+    Type: String
+  SumoLogicAccessKey:
+    Description: Sumo Logic access key
+    Type: String
 
 
 Mappings:
@@ -89,6 +98,10 @@ Resources:
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
+      Volumes:
+        - Host:
+            SourcePath: /var/run/docker.sock
+          Name: docker_sock
       ContainerDefinitions:
         - Name: !Ref 'RecordName'
           Cpu: '512'
@@ -98,7 +111,22 @@ Resources:
             - HostPort: !Ref 'HostPort'
               Protocol: tcp
               ContainerPort: !Ref 'ContainerPort'
-          Image: !Join ['', [!Ref 'ImageRegistry', ':', !Ref 'BuildNumber']]
+          Image: !Join [':', [!Join ['/', [!Ref 'ECR', !Ref 'AdapterName']], !Ref 'BuildNumber']]
+        - Name: SumoLogicCollector
+          Cpu: '256'
+          Essential: 'true'
+          Memory: '512'
+          MountPoints:
+            - ContainerPath: /var/run/docker.sock
+              SourceVolume: docker_sock
+          Environment:
+            - Name: SUMO_ACCESS_ID
+              Value:
+                Ref: SumoLogicAccessId
+            - Name: SUMO_ACCESS_KEY
+              Value:
+                Ref: SumoLogicAccessKey
+          Image: !Join ['/', [!Ref 'ECR', 'sumologic/collector:latest']]
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -221,7 +249,7 @@ Resources:
           }
           ######---------------------Final config steps-------------------------######
           configure_hosts
-          REG_ID=$(echo ${ImageRegistry} | cut -f1 -d.)
+          REG_ID=$(echo ${ECR} | cut -f1 -d.)
           eval $(/usr/local/bin/aws ecr get-login --registry-ids $REG_ID --region ${AWS::Region})
           ######--------------------------Signal success------------------------######
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AutoScalingGroup --region ${AWS::Region}
