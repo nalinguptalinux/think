@@ -37,4 +37,4 @@
   command: aws cloudformation delete-stack --stack-name {{item}} --region {{aws_region}}
   with_items:
     - "{{target_stacks}}"
-  when: target_stacks | length > 0 and item != stack_name
+  when: target_stacks | length > 0 and item != stack_name and item != elb_name
