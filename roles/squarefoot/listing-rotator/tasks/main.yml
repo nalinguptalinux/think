@@ -19,6 +19,7 @@
       BuildNumber: "{{build_number}}"
       PagerDutyArn: "{{high_pager_duty_arn}}"
       Stage: "{{stage}}"
+      AvailableZones: "{{zones}}"
 
     tags:
       project: "{{project}}"

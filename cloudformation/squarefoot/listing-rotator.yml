@@ -45,6 +45,10 @@ Parameters:
     Type: CommaDelimitedList
     Description: private subnets
 
+  AvailableZones:
+    Type: CommaDelimitedList
+    Description: available zones
+
   VpcId:
     Type: AWS::EC2::VPC::Id
     Description: VPC id that used for deployment
@@ -90,8 +94,7 @@ Resources:
       LaunchConfigurationName:
         Ref: ASGLaunchConfiguration
       AvailabilityZones:
-      - ap-southeast-1a
-      - ap-southeast-1b
+        Ref: AvailableZones
       Cooldown: '40'
       HealthCheckGracePeriod: '60'
       HealthCheckType: EC2
