@@ -161,3 +161,11 @@ upstream_p_host=s3-ap-southeast-1.amazonaws.com
 upstream_s_host=s3-ap-northeast-1.amazonaws.com
 upstream_p_bucket=prod-sg-sfhk-images
 upstream_s_bucket=prod-tk-sfhk-images
+
+[listing-rotator]
+127.0.0.1
+
+[listing-rotator:vars]
+build_number=11
+instance_type=t2.small
+stage=production-sg
