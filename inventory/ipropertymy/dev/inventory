@@ -16,6 +16,7 @@ desired_asg_capacity=1
 hp_ecr_repo=hp:latest
 srp_pdp_ecr_repo=srp-pdp:latest
 nginx_ecr_repo=nginx:latest
+elb_name=frontend-dev-elb
 
 [elb]
 127.0.0.1
