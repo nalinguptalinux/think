@@ -15,9 +15,9 @@
   set_fact:
     instance_result_json: "{{ instance_result.stdout| from_json }}"
 
-- name: Get current stack name from the instance describe output
+- name: Get stack name from the instance describe output
   set_fact:
-    current_stack_name: "{{ instance_result_json.Reservations[0].Instances[0].Tags | selectattr('Key', 'equalto', 'CF-Name') | map(attribute = 'Value') | join('')}}"
+    stack_name: "{{ instance_result_json.Reservations[0].Instances[0].Tags | selectattr('Key', 'equalto', 'CF-Name') | map(attribute = 'Value') | join('')}}"
 
 - name: Get all stacks
   command: aws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE --region {{aws_region}}
@@ -29,12 +29,12 @@
 
 - name: Filter the target stacks
   vars:
-    elb_pattern: "{{elb_name}}"
+    pattern: "{{ application }}-dev"
   set_fact:
-    target_stacks: "{{all_stacks_json.StackSummaries | selectattr('StackName', 'match', elb_pattern) | map(attribute='StackName') | list }}"
+    target_stacks: "{{all_stacks_json.StackSummaries | selectattr('StackName', 'match', pattern) | map(attribute='StackName') | list }}"
 
-#- name: Delete the filtered stacks
-#  command: aws cloudformation delete-stack --stack-name {{item}} --region {{aws_region}}
-#  with_items:
-#    - "{{target_stacks}}"
-#  when: target_stacks | length > 0 and item != current_stack_name
+- name: Delete the filtered stacks
+  command: aws cloudformation delete-stack --stack-name {{item}} --region {{aws_region}}
+  with_items:
+    - "{{target_stacks}}"
+  when: target_stacks | length > 0 and item != stack_name
