@@ -60,7 +60,7 @@
 - name: Attach fixed target group to new AutoScalingGroup
   command: aws autoscaling attach-load-balancer-target-groups --auto-scaling-group-name {{ new_asg_name }} --target-group-arns {{ target_group_arn }} --region {{ aws_region }}
 
-- pause: minutes=1
+- pause: minutes=2
 
 - name: Describe health of target group
   command: aws elbv2 describe-target-health --target-group-arn {{ target_group_arn }} --region {{ aws_region }}
@@ -82,9 +82,14 @@
   command: aws autoscaling detach-load-balancer-target-groups --auto-scaling-group-name {{ new_asg_name }} --target-group-arns {{ target_group_arn }} --region {{ aws_region }}
   when: target_group_check_result | failed
 
+- name: Fail the switch task if switch failed
+  fail: msg="switch failed"
+  when: target_group_check_result | failed
+
 - name: Detach target group from old ASG
   command: aws autoscaling detach-load-balancer-target-groups --auto-scaling-group-name {{ old_asg_name }} --target-group-arns {{ target_group_arn }} --region {{ aws_region }}
   when: target_group_check_result | success
 
 #waiting for the draining finished
 - pause: minutes=5
+  when: target_group_check_result | success
