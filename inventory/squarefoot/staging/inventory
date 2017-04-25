@@ -119,6 +119,7 @@ hp_ecr_repo=hp:latest
 srp_pdp_ecr_repo=srp-pdp:latest
 nginx_ecr_repo=nginx:latest
 version=26-31-79
+elb_name=frontend-live-elb
 
 [listing-rotator]
 127.0.0.1
