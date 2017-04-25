@@ -26,7 +26,7 @@
         RecordName: "{{application}}-{{ab}}-{{version}}"
         ResourceBucketName: "{{resource_bucket_name}}"
         SSLCertificateARN: "{{ssl_cert_arn}}"
-        SubnetID: "{{public_subnets}}"
+        SubnetID: "{{private_subnets}}"
         SumoLogicInstallerFileName: "{{sumo_logic_installer}}"
         SumoLogicAccessId: "{{sumo_logic_access_id}}"
         SumoLogicAccessKey: "{{sumo_logic_access_key}}"
