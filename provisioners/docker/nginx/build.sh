@@ -18,4 +18,4 @@ done
 
 # Add build number to the list file
 /bin/sed -i "1s;builds=;builds=${BUILD_NUMBER},;" ${WORKSPACE}/../${JOB_BASE_NAME}-build-numbers.txt
-/bin/echo "last=${BUILD_NUMBER}" > ${WORKSPACE}../${JOB_BASE_NAME}-last-build.txt
+/bin/echo "last=${BUILD_NUMBER}" > ${WORKSPACE}/../${JOB_BASE_NAME}-last-build.txt
