@@ -30,6 +30,10 @@ low_pager_duty_arn: arn:aws:sns:ap-southeast-1:678965432744:Low-Priority-Squaref
 high_pager_duty_arn: arn:aws:sns:ap-southeast-1:678965432744:High-Priority-Squarefoot-Prod-Sg-PagerDuty
 ssl_cert_arn: arn:aws:acm:ap-southeast-1:678965432744:certificate/e92b6f1b-cefe-45f7-ba71-e34acd7e866a
 
+web_service_count: 2
+hp_service_count: 2
+srp_service_count: 2
+
 resource_bucket_name: prod-sg-sfhk-infra-common
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
 sumo_logic_access_id: su37UzMYy9KsP0
