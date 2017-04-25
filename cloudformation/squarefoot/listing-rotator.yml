@@ -226,8 +226,9 @@ Resources:
 
           service docker restart || error_exit "Failed to start docker service"
 
-          REG_ID=$(echo ${ECR} | cut -f1 -d.)
-          eval $(aws ecr get-login --registry-ids $REG_ID --region ${AWS::Region})
+          REGISTRY_ID=$(echo ${ECR} | cut -f1 -d.)
+          REGION=$(echo ${ECR} | cut -f4 -d.)
+          eval $(aws ecr get-login --registry-ids $REGISTRY_ID --region $REGION)
 
           mkdir -p /var/log/rea
           docker run -d -e STAGE=${Stage} -v /var/log/rea:/var/log/rea ${ECR}/listing-rotator:${BuildNumber}
