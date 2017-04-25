@@ -22,7 +22,7 @@ solr.production.squarefoot-singapore.ipga.local
 application=solr
 ab=b
 pkg=solr-6.0.0.8-1.noarch.rpm
-instance_type=m3.medium
+instance_type=m4.large
 as_max=3
 as_min=3
 jvm_heap_size=3g
