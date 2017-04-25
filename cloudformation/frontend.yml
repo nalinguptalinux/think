@@ -262,19 +262,14 @@ Resources:
   ECSLow:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: Scale-down if CPU < 40% for 10 minutes
+      AlarmDescription: Scale-down if CPU < 10% for 10 minutes
       MetricName: CPUUtilization
       Namespace: AWS/ECS
       Statistic: Average
       Period: '300'
       EvaluationPeriods: '2'
       Threshold: '10'
-      AlarmActions:
-      - Ref: ECSScaleDownPolicy
-      - Ref: PagerDutyArn
       InsufficientDataActions:
-      - Ref: PagerDutyArn
-      OKActions:
       - Ref: PagerDutyArn
       Dimensions:
       - Name: ClusterName
@@ -315,12 +310,7 @@ Resources:
       Period: '300'
       EvaluationPeriods: '2'
       Threshold: '10'
-      AlarmActions:
-      - Ref: ECSScaleDownPolicy
-      - Ref: PagerDutyArn
       InsufficientDataActions:
-      - Ref: PagerDutyArn
-      OKActions:
       - Ref: PagerDutyArn
       Dimensions:
       - Name: ClusterName
