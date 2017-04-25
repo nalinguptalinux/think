@@ -29,7 +29,7 @@
 
 - name: Filter the target stacks
   vars:
-    pattern: "{{ application }}-dev"
+    pattern: "{{ application }}"
   set_fact:
     target_stacks: "{{all_stacks_json.StackSummaries | selectattr('StackName', 'match', pattern) | map(attribute='StackName') | list }}"
 
