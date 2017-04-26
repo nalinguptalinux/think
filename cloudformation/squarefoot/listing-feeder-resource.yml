@@ -14,9 +14,6 @@ Parameters:
       Description: Number of days before an object is expired in ListingFeedJsonBucket
       Type: Number
       Default: '180'
-    ListingUpdateQueueName:
-      Description: Name of the SQS Queue for listing update messages
-      Type: String
     BillingTag:
       Description: Billing tag for LOB
       Type: String
@@ -27,6 +24,7 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref 'LambdaDeploymentBucketName'
+      DeletionPolicy: 'Retain'
       Tags:
       - Value:
           Ref: BillingTag
@@ -43,14 +41,6 @@ Resources:
       - Value:
           Ref: BillingTag
         Key: Billing
-  ListingUpdateQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: !Ref 'ListingUpdateQueueName'
-      VisibilityTimeout: 300
-      DelaySeconds: 0
-      MessageRetentionPeriod: 1209600
-      ReceiveMessageWaitTimeSeconds: 2
   ListingFeederLambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -70,11 +60,5 @@ Outputs:
   ListingFeederLambdaSecurityGroupId:
     Description: Listing feeder lambda security group Id
     Value: !GetAtt [ListingFeederLambdaSecurityGroup, GroupId]
-  ListingUpdateQueueName:
-    Description: URL of the SQS Queue for listing update messages
-    Value: !GetAtt [ListingUpdateQueue, QueueName]
-
-
-          
       
       
