@@ -99,8 +99,8 @@ Resources:
       SecurityGroupIngress:
         CidrIp: !Ref 'VpcNet'
         IpProtocol: tcp
-        FromPort: '80'
-        ToPort: '80'
+        FromPort: '8000'
+        ToPort: '8000'
       VpcId: !Ref 'VpcID'
   CronSSHSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -125,7 +125,7 @@ Resources:
       SecurityGroups:
       - !Ref 'CronSecurityGroup'
       Listeners:
-      - InstancePort: '80'
+      - InstancePort: '8000'
         LoadBalancerPort: !Ref 'AppPort'
         Protocol: HTTP
   CPUAlarmHigh:
@@ -174,7 +174,7 @@ Resources:
                 respawn
                 script
                    echo $$ > /opt/crontab-ui.pid
-                   PORT=80 /usr/bin/crontab-ui
+                   PORT=8000 /usr/bin/crontab-ui
                 end script
           services:
             sysvinit:
@@ -229,7 +229,7 @@ Resources:
 
 
           curl --silent --location https://rpm.nodesource.com/setup_6.x | bash - || error_exit 'failed to install npm'
-          yum install nodejs || error_exit 'failed to install npm'
+          yum install -y nodejs || error_exit 'failed to install npm'
           npm install -g crontab-ui || error_exit 'failed to install crontab-ui'
           /sbin/initctl start crontab-ui  || error_exit 'failed to start crontab-ui'
           /etc/init.d/newrelic-sysmond restart

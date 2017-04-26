@@ -14,7 +14,7 @@
         KeyName: "{{key_name}}"
         VpcID: "{{aws_vpc_id}}"
         RecordName: "{{application}}"
-        AppPort: '80'
+        AppPort: '8000'
         AB: "{{ab}}"
         AvailabilityZones: "{{zones}}"
         PrivateSubnets: "{{private_subnets}}"
