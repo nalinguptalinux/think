@@ -2,7 +2,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description: >
-    This template will install the development stack
+    This template will install the frontend stack
 
 Parameters:
   BusinessUnit:
