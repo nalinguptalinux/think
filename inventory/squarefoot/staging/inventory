@@ -67,7 +67,7 @@ listing_feeder_json_bucket_expire_days=180
 [capi-adapter]
 adapter.dev.squarefoot.ipp.com
 [capi-adapter:vars]
-build_number=57
+build_number=65
 adapter_name=capi-adapter-suggestion
 instance_type=t2.medium
 max_size_asg=4
