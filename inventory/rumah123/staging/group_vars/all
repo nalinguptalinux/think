@@ -34,7 +34,7 @@ srp_service_count: 2
 
 low_pager_duty_arn: arn:aws:sns:ap-southeast-1:546096582539:Low-Priority-Rumah-Stg-PagerDuty
 high_pager_duty_arn: arn:aws:sns:ap-southeast-1:546096582539:High-Priority-Rumah-Stg-PagerDuty
-ssl_cert_arn: arn:aws:acm:ap-southeast-1:546096582539:certificate/5645283a-f99a-4f32-955d-d6942ca3b548
+ssl_cert_arn: arn:aws:acm:ap-southeast-1:546096582539:certificate/eff0315a-65b4-4655-8945-64981bf7c421
 
 resource_bucket_name: prod-sg-rmid-infra-common
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
