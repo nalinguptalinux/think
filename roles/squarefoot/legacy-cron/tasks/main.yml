@@ -1,11 +1,11 @@
 ---
-  - name: setup solr stack
+  - name: setup cron jobs stack
     cloudformation:
       stack_name: "{{application}}-{{ab}}-{{version}}"
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
-      template: "cloudformation/squarefoot/solr.yml"
+      template: "cloudformation/squarefoot/legacy-cron.yml"
       stack_policy: "policies/cloudformation/stack-policy.json"
       template_parameters:
         AMI: "{{ami}}"
@@ -13,18 +13,15 @@
         InstanceType: "{{instance_type}}"
         KeyName: "{{key_name}}"
         VpcID: "{{aws_vpc_id}}"
-        Pkg: "{{pkg}}"
         RecordName: "{{application}}"
-        AppPort: '8983'
+        AppPort: '80'
         AB: "{{ab}}"
-        AvailabilityZones: "{{solr_az}}"
-        PrivateSubnets: "{{solr_subnet}}"
+        AvailabilityZones: "{{zones}}"
+        PrivateSubnets: "{{private_subnets}}"
         ASGMaxSize: "{{as_max}}"
         ASGMinSize: "{{as_min}}"
-        ResourceBucketName: "{{resource_bucket_name}}"
-        JVMHeapSize: "{{jvm_heap_size}}"
+        BackupBucketName: "{{resource_bucket_name}}"
         VpcNet: "{{vpc_cidr}}"
-        ZkHosts: "{{solr_zk_hosts}}"
         NewRelicLicenseKey: "{{new_relic_license_key}}"
         PagerDutyArn: "{{low_pager_duty_arn}}"
       tags:

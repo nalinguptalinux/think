@@ -1,0 +1,282 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Cron Stack
+Parameters:
+  BackupBucketName:
+    Description: Name of the S3 backup bucket
+    Type: String
+  AvailabilityZones:
+    Description: The availability zones in the VPC
+    Type: CommaDelimitedList
+  AppPort:
+    Description: Application Http port to listen on
+    Type: String
+  PrivateSubnets:
+    Description: The private subnets in the VPC
+    Type: CommaDelimitedList
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access
+    Type: String
+  AB:
+    Description: The name of the stack to deploy
+    Type: String
+    AllowedValues:
+    - a
+    - b
+  HostedZoneName:
+    Description: The Route53 Zone in which to create records
+    Type: String
+  RecordName:
+    Description: The name of the DNS record to create.
+    Type: String
+  AMI:
+    Description: The AMI id of the Platform image.
+    Type: String
+    MinLength: '12'
+    MaxLength: '12'
+    AllowedPattern: ami-[a-f0-9]{8}
+  InstanceType:
+    Description: The Instance type which used to build stack.
+    Type: String
+  VpcID:
+    Description: The private Subnet ID in VPC that has connection to Equinix.
+    Type: String
+    AllowedPattern: vpc-[a-f0-9]{8}
+  ASGMaxSize:
+    Description: AutoScaling max size
+    Type: Number
+  ASGMinSize:
+    Description: AutoScaling min size
+    Type: Number
+  VpcNet:
+    Description: VPC CidrIp
+    Type: String
+  NewRelicLicenseKey:
+    Description: New Relic License Key
+    Type: String
+  PagerDutyArn:
+    Description: pager duty arn.
+    Type: String
+
+Conditions:
+  RegionCondition: !Not [!Equals [!Ref 'AWS::Region', cn-north-1]]
+Resources:
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal: !If [RegionCondition, {Service: [ec2.amazonaws.com]}, {Service: [
+                ec2.amazonaws.com.cn]}]
+          Action:
+          - sts:AssumeRole
+      Policies:
+      - PolicyName: permit-s3-and-cfn
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: cloudformation:DescribeStackResource
+            Resource: '*'
+          - Effect: Allow
+            Action: s3:GetObject
+            Resource: !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'BackupBucketName',
+                  /*]], !Join ['', ['arn:aws-cn:s3:::', !Ref 'BackupBucketName', /*]]]
+          - Effect: Allow
+            Action: s3:ListBucket
+            Resource: !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'BackupBucketName']],
+              !Join ['', ['arn:aws-cn:s3:::', !Ref 'BackupBucketName']]]
+  Profile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+      - !Ref 'Role'
+  CronSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing Cron client connection
+      SecurityGroupIngress:
+        CidrIp: !Ref 'VpcNet'
+        IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+      VpcId: !Ref 'VpcID'
+  CronSSHSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing incoming on ssh port
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: '-1'
+        FromPort: '0'
+        ToPort: '0'
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+      VpcId: !Ref 'VpcID'
+  CronELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Subnets: !Ref 'PrivateSubnets'
+      Scheme: internal
+      CrossZone: true
+      SecurityGroups:
+      - !Ref 'CronSecurityGroup'
+      Listeners:
+      - InstancePort: '80'
+        LoadBalancerPort: !Ref 'AppPort'
+        Protocol: HTTP
+  CPUAlarmHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      EvaluationPeriods: '2'
+      Statistic: Average
+      Threshold: '70'
+      AlarmDescription: CPU utilization of Cron is over 70%.
+      Period: '60'
+      AlarmActions:
+      - !Ref 'PagerDutyArn'
+      InsufficientDataActions:
+      - !Ref 'PagerDutyArn'
+      OKActions:
+      - !Ref 'PagerDutyArn'
+      Namespace: AWS/EC2
+      Dimensions:
+      - Name: AutoScalingGroupName
+        Value: !Ref 'CronASGroup'
+      ComparisonOperator: GreaterThanThreshold
+      MetricName: CPUUtilization
+  CronASLaunchConf:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          files:
+            /etc/cfn/cfn-hup.conf:
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+                interval=1
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.CronASLaunchConf.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init -s ${AWS::StackName}  -r CronASLaunchConf  --role ${Role} --region #{AWS::Region} runas=root
+            /etc/init/crontab-ui.conf:
+              content: !Sub |
+                start on (net-device-up)
+                stop on runlevel [!2345]
+
+                respawn
+                script
+                   echo $$ > /opt/crontab-ui.pid
+                   PORT=80 /usr/bin/crontab-ui
+                end script
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                - /etc/cfn/cfn-hup.conf
+                - /etc/cfn/hooks.conf
+    Properties:
+      InstanceType: !Ref 'InstanceType'
+      ImageId: !Ref 'AMI'
+      SecurityGroups:
+      - !Ref 'CronSecurityGroup'
+      - !Ref 'CronSSHSecurityGroup'
+      KeyName: !Ref 'KeyName'
+      IamInstanceProfile: !Ref 'Profile'
+      BlockDeviceMappings:
+      - DeviceName: /dev/xvda
+        Ebs:
+          VolumeSize: '120'
+          VolumeType: gp2
+          DeleteOnTermination: 'true'
+      UserData:
+        "Fn::Base64": !Sub |
+          #!/bin/bash -ex
+          exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+          resize2fs /dev/sda1
+          function error_exit
+          {
+            /opt/aws/bin/cfn-signal -e 1 -r $1 ${WaitHandle}
+            exit 1
+          }
+          function await_network {
+            while [ $(curl --connect-timeout 2 169.254.169.254 >/dev/null 2>&1; echo $?) -ne 0 ]; do
+              echo Waiting for networking and/or DNS
+              sleep 10
+            done
+          }
+          function configure_hosts {
+            recordName=${RecordName}.${AB}
+            instance_ip=$(curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
+            domain=$(awk '/^search/ { print $2 }' /etc/resolv.conf)
+            ipend=`echo $instance_ip | sed 's/\./\-/g'`
+            echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
+            hostname $recordName-$ipend
+          }
+          await_network
+          configure_hosts
+
+          /opt/aws/bin/cfn-init -s ${AWS::StackName} -r CronASLaunchConf  --region ${AWS::Region} || error_exit 'Failed to run cfn-init'
+
+
+          curl --silent --location https://rpm.nodesource.com/setup_6.x | bash - || error_exit 'failed to install npm'
+          yum install nodejs || error_exit 'failed to install npm'
+          npm install -g crontab-ui || error_exit 'failed to install crontab-ui'
+          /sbin/initctl start crontab-ui  || error_exit 'failed to start crontab-ui'
+          /etc/init.d/newrelic-sysmond restart
+
+          # Start up the cfn-hup daemon to listen for changes
+          /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
+          /opt/aws/bin/cfn-signal -e 0 -r "CronInstance instance Stack Complete."  '${WaitHandle}'
+  CronASGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones: !Ref 'AvailabilityZones'
+      VPCZoneIdentifier: !Ref 'PrivateSubnets'
+      LaunchConfigurationName: !Ref 'CronASLaunchConf'
+      MinSize: !Ref 'ASGMinSize'
+      MaxSize: !Ref 'ASGMaxSize'
+      LoadBalancerNames:
+      - !Ref 'CronELB'
+      Tags:
+      - Key: CloudFormationStack
+        Value: !Ref 'AWS::StackName'
+        PropagateAtLaunch: true
+      - Key: Name
+        Value: !Join [., [!Ref 'RecordName', !Ref 'AB', !Ref 'HostedZoneName']]
+        PropagateAtLaunch: true
+  CronRecordSet:
+    Type: AWS::Route53::RecordSet
+    Condition: RegionCondition
+    Properties:
+      HostedZoneName:  !Join ['', [!Ref 'HostedZoneName', '.']]
+      Comment: DNS name for Cron
+      Name: !Join ['', [!Ref 'RecordName', ., !Ref 'AB', ., !Ref 'HostedZoneName', .]]
+      Type: CNAME
+      TTL: 60
+      ResourceRecords:
+      - !GetAtt [CronELB, DNSName]
+  WaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  WaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn: CronASGroup
+    Properties:
+      Handle: !Ref 'WaitHandle'
+      Timeout: '1000'
+Outputs:
+  ELBEndpoint:
+    Description: Cron elb dns name.
+    Value: !GetAtt [CronELB, DNSName]
+  ServiceEndpoint:
+    Description: Cron endpoint.
+    Value: !Join [., [!Ref 'RecordName', !Ref 'AB', !Ref 'HostedZoneName']]

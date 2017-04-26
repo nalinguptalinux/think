@@ -1,0 +1,7 @@
+---
+
+- hosts: legacy-cron
+  connection: local
+  gather_facts: False
+  roles:
+    - squarefoot/legacy-cron

@@ -70,6 +70,17 @@ db_port=3306
 public_access=true
 ab=b
 
+[legacy-cron]
+legacy-cron.production.squarefoot-singapore.ipga.local
+
+[legacy-cron:vars]
+application=legacy-cron
+ab=b
+instance_type=t2.micro
+as_max=1
+as_min=1
+version=1
+
 [switch-stack]
 127.0.0.1
 
