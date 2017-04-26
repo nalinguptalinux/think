@@ -28,8 +28,7 @@ bastion_public_ip: 52.221.139.174
 ssh_from_bastion_sg_id: sg-5483ea33
 low_pager_duty_arn: arn:aws:sns:ap-southeast-1:538471682716:Low-Priority-Rumah123-Dev-PagerDuty
 high_pager_duty_arn: arn:aws:sns:ap-southeast-1:538471682716:High-Priority-Rumah123-Dev-PagerDuty
-#ssl_cert_arn: arn:aws:acm:ap-southeast-1:538471682716:certificate/c8a01b44-8d7b-4226-ab82-04bd520461d8
-ssl_cert_arn: arn:aws:acm:ap-southeast-1:538471682716:certificate/4e052fbe-12bf-467e-9a6f-21f6b844387a
+ssl_cert_arn: arn:aws:acm:ap-southeast-1:538471682716:certificate/0a4f6730-5a79-4784-8835-10fd7c53d14a
 
 web_service_count: 1
 hp_service_count: 1
