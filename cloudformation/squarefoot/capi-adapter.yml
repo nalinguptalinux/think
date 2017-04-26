@@ -78,6 +78,9 @@ Parameters:
   SumoLogicAccessKey:
     Description: Sumo Logic access key
     Type: String
+  PagerDuty:
+    Description: Pager Duty ARN
+    Type: String
 
 
 Mappings:
@@ -137,8 +140,8 @@ Resources:
         Ref: ECSLaunchConfig
       AvailabilityZones:
         Ref: AZs
-      Cooldown: '40'
-      HealthCheckGracePeriod: '60'
+      Cooldown: 180
+      HealthCheckGracePeriod: 60
       HealthCheckType: EC2
       MinSize: !Ref MinSizeASG
       MaxSize:  !Ref MaxSizeASG
@@ -254,54 +257,55 @@ Resources:
           ######--------------------------Signal success------------------------######
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AutoScalingGroup --region ${AWS::Region}
 
-  ECSScaleUpPolicy:
+  EC2ScaleUpPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
       AdjustmentType: ChangeInCapacity
       AutoScalingGroupName:
         Ref: AutoScalingGroup
-      Cooldown: '300'
-      ScalingAdjustment: '1'
+      Cooldown: 300
+      ScalingAdjustment: 1
 
-  ECSScaleDownPolicy:
+  EC2ScaleDownPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
       AdjustmentType: ChangeInCapacity
       AutoScalingGroupName:
         Ref: AutoScalingGroup
-      Cooldown: '300'
-      ScalingAdjustment: "-1"
+      Cooldown: 300
+      ScalingAdjustment: -1
 
-  ECSHigh:
+  EC2CPUHigh:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: Scale-up if CPU > 80% for 10 minutes
+      AlarmDescription: Scale-up if CPU > 60% for 10 minutes
       MetricName: CPUUtilization
       Namespace: AWS/EC2
       Statistic: Average
-      Period: '300'
-      EvaluationPeriods: '2'
-      Threshold: '80'
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 60
       AlarmActions:
-      - Ref: ECSScaleUpPolicy
+      - Ref: EC2ScaleUpPolicy
+      - Ref: PagerDuty
       Dimensions:
       - Name: AutoScalingGroupName
         Value:
           Ref: AutoScalingGroup
       ComparisonOperator: GreaterThanThreshold
 
-  ECSLow:
+  EC2CPULow:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmDescription: Scale-down if CPU < 40% for 10 minutes
       MetricName: CPUUtilization
       Namespace: AWS/EC2
       Statistic: Average
-      Period: '300'
-      EvaluationPeriods: '2'
-      Threshold: '20'
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 40
       AlarmActions:
-      - Ref: ECSScaleDownPolicy
+      - Ref: EC2ScaleDownPolicy
       Dimensions:
       - Name: AutoScalingGroupName
         Value:
@@ -453,7 +457,9 @@ Resources:
       Threshold: 60
       AlarmDescription: Alarm if CPU utilization if great than 60
       Period: 300
-      AlarmActions: [!Ref 'ServiceScalingUpPolicy']
+      AlarmActions:
+        - Ref: ServiceScalingUpPolicy
+        - Ref: PagerDuty
       Namespace: AWS/ECS
       Dimensions:
       - Name: ClusterName
@@ -484,7 +490,8 @@ Resources:
       Threshold: 40
       AlarmDescription: Alarm if CPU utilization is less than to 40
       Period: 300
-      AlarmActions: [!Ref 'ServiceScalingDownPolicy']
+      AlarmActions:
+        - Ref: ServiceScalingDownPolicy
       Namespace: AWS/ECS
       Dimensions:
       - Name: ClusterName

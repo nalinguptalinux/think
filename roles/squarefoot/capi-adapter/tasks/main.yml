@@ -27,6 +27,7 @@
       AZs: "{{zones}}"
       SumoLogicAccessId: "{{sumo_logic_access_id}}"
       SumoLogicAccessKey: "{{sumo_logic_access_key}}"
+      PagerDuty: "{{high_pager_duty_arn}}"
 
     tags:
       project: "{{project}}"
