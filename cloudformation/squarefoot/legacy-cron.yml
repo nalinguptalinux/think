@@ -128,6 +128,12 @@ Resources:
       - InstancePort: '8000'
         LoadBalancerPort: !Ref 'AppPort'
         Protocol: HTTP
+      HealthCheck:
+        Target: "HTTP:8000/"
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '3'
+        Interval: '30'
+        Timeout: '5'
   CPUAlarmHigh:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -174,7 +180,7 @@ Resources:
                 respawn
                 script
                    echo $$ > /opt/crontab-ui.pid
-                   PORT=8000 /usr/bin/crontab-ui
+                   HOST=0.0.0.0 PORT=8000 /usr/bin/crontab-ui
                 end script
           services:
             sysvinit:
