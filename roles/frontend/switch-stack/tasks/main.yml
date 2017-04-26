@@ -7,17 +7,30 @@
   set_fact:
     fixed_elb_json: "{{fixed_elb_output.stdout | from_json }}"
 
+- name: Set fact if load balancer has instances attached
+  set_fact:
+    load_balancer_has_existing_instances: True
+  when: fixed_elb_json.LoadBalancerDescriptions[0].Instances | length > 0
+
+- name: Set fact if load balancer has NO instances attached
+  set_fact:
+    load_balancer_has_existing_instances: False
+  when: fixed_elb_json.LoadBalancerDescriptions[0].Instances | length == 0
+
 - name: Describe the instance attached to the fixed elb
   command: aws ec2 describe-instances --instance-ids {{ fixed_elb_json.LoadBalancerDescriptions[0].Instances[0].InstanceId }} --region {{aws_region}}
   register: instance_result
+  when: load_balancer_has_existing_instances == True
 
 - name: Parse the instance describe result to json
   set_fact:
     instance_result_json: "{{ instance_result.stdout| from_json }}"
+  when: load_balancer_has_existing_instances == True
 
 - name: Get old stack name from the instance describe output
   set_fact:
     old_stack_name: "{{ instance_result_json.Reservations[0].Instances[0].Tags | selectattr('Key', 'equalto', 'CF-Name') | map(attribute = 'Value') | join('')}}"
+  when: load_balancer_has_existing_instances == True
 
 - name: Get describe result from new stack
   command: aws cloudformation describe-stack-resources --stack-name {{ new_stack_name }} --region {{aws_region}}
@@ -37,15 +50,17 @@
 - name: Get describe result from old stack
   command: aws cloudformation describe-stack-resources --stack-name {{ old_stack_name }} --region {{aws_region}}
   register: old_stack_result
+  when: load_balancer_has_existing_instances == True
 
 - name: Parse old stack result to json format
   set_fact:
     old_stack_output: "{{old_stack_result.stdout | from_json}}"
+  when: load_balancer_has_existing_instances == True
 
 - name: Get the old ASG name
   set_fact:
     old_asg_name: "{{ item.PhysicalResourceId }}"
-  when: item.ResourceType == "AWS::AutoScaling::AutoScalingGroup"
+  when: load_balancer_has_existing_instances == True and item.ResourceType == "AWS::AutoScaling::AutoScalingGroup"
   with_items:
     - "{{ old_stack_output.StackResources }}"
 
@@ -97,6 +112,6 @@
 
 - name: Detach ELB from old ASG
   command: aws autoscaling detach-load-balancers --load-balancer-names {{ elb_name }} --auto-scaling-group-name {{ old_asg_name }} --region {{aws_region}}
-  when: elb_check_result | success
+  when: load_balancer_has_existing_instances == True and elb_check_result | success and old_asg_name != new_asg_name
 
 - pause: minutes=1
