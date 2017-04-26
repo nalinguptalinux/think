@@ -159,3 +159,12 @@ upstream_s_bucket=prod-sg-sfhk-images
 build_number=11
 instance_type=t2.small
 stage=production-tk
+
+[listing-feeder-resource]
+localhost
+
+[listing-feeder-resource:vars]
+application=listing-feeder
+lambda_deployment_bucket_name=lambda-deployment-bucket-tokyo
+listing_feeder_json_bucket=listing-updates-tokyo
+listing_feeder_json_bucket_expire_days=180

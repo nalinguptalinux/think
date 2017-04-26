@@ -1,7 +1,7 @@
 ---
   - name: setup resources required by listing feeder lambda functions
     cloudformation:
-      stack_name: "squarefoot-listing-feeder-resource-stack"
+      stack_name: "listing-feeder-resource-stack-{{env}}"
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
@@ -13,7 +13,6 @@
         LambdaDeploymentBucketName: "{{lambda_deployment_bucket_name}}"
         ListingFeederJsonBucketName: "{{listing_feeder_json_bucket}}"
         ListingFeederJsonBucketExpireDays: "{{listing_feeder_json_bucket_expire_days}}"
-        ListingUpdateQueueName: "{{listing_update_queue_name}}"
       tags:
         project: "{{project}}"
         application: "{{application}}"

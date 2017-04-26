@@ -175,7 +175,6 @@ localhost
 
 [listing-feeder-resource:vars]
 application=listing-feeder
-lambda_deployment_bucket_name=hk-lambda-deployment-bucket
-listing_feeder_json_bucket=hk-listing-updates
+lambda_deployment_bucket_name=lambda-deployment-bucket-singapore
+listing_feeder_json_bucket=listing-updates-singapore
 listing_feeder_json_bucket_expire_days=180
-listing_update_queue_name=squarefoot-updated-listings
