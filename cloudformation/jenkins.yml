@@ -135,6 +135,7 @@ Resources:
             - route53:ListHostedZones
             - route53:GetChange
             - s3:*
+            - sts:AssumeRole
             Resource: "*"
 
   EC2Instance:
