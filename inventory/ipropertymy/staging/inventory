@@ -99,3 +99,16 @@ container_port=3000
 elb_protocol=HTTP
 health_check_path=http:3000/diagnostic/status/heartbeat
 desired_asg_capacity=1
+
+[elb]
+127.0.0.1
+
+[elb:vars]
+elb_stack_name=frontend-live-elb
+application=hp-pdp-srp
+load_balancer_name=frontend-live-elb
+app_port=80
+instance_port=80
+scheme=internet-facing
+subnets={{public_subnets}}
+elb_idle_timeout=180
