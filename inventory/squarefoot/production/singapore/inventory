@@ -91,8 +91,8 @@ elb=capi-adapter-listing
 [capi-adapter]
 adapter.dev.squarefoot.ipp.com
 [capi-adapter:vars]
-build_number=15
-adapter_name=capi-squarefoot-listing
+build_number=82
+adapter_name=capi-adapter-listing
 instance_type=t2.medium
 max_size_asg=4
 min_size_asg=1

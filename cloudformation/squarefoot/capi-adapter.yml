@@ -107,9 +107,9 @@ Resources:
           Name: docker_sock
       ContainerDefinitions:
         - Name: !Ref 'RecordName'
-          Cpu: '512'
+          Cpu: '768'
           Essential: 'true'
-          Memory: '512'
+          Memory: '2048'
           PortMappings:
             - HostPort: !Ref 'HostPort'
               Protocol: tcp
@@ -398,57 +398,6 @@ Resources:
       TaskDefinition:
         Ref: TaskDefinition
 
-  ECSAutoscalingRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-        - Effect: Allow
-          Principal:
-            Service: [application-autoscaling.amazonaws.com]
-          Action: ['sts:AssumeRole']
-      Path: /
-      Policies:
-      - PolicyName: service-autoscaling
-        PolicyDocument:
-          Statement:
-          - Effect: Allow
-            Action:
-            - application-autoscaling:*
-            - cloudwatch:DescribeAlarms
-            - cloudwatch:PutMetricAlarm
-            - ecs:DescribeServices
-            - ecs:UpdateService
-            Resource: '*'
-
-  ServiceScalingTarget:
-    Type: AWS::ApplicationAutoScaling::ScalableTarget
-    DependsOn: ECSService
-    Properties:
-      MaxCapacity: 8
-      MinCapacity: 1
-      ResourceId: !Join ['', [service/, !Ref 'ECSCluster', /, !GetAtt [ECSService, Name]]]
-      RoleARN: !GetAtt [ECSAutoscalingRole, Arn]
-      ScalableDimension: ecs:service:DesiredCount
-      ServiceNamespace: ecs
-
-  ServiceScalingUpPolicy:
-    Type: AWS::ApplicationAutoScaling::ScalingPolicy
-    Properties:
-      PolicyName: ScaleUpPolicy
-      PolicyType: StepScaling
-      ScalingTargetId: !Ref 'ServiceScalingTarget'
-      StepScalingPolicyConfiguration:
-        AdjustmentType: ChangeInCapacity
-        Cooldown: 300
-        MetricAggregationType: Average
-        StepAdjustments:
-        - MetricIntervalLowerBound: 0
-          MetricIntervalUpperBound: 20
-          ScalingAdjustment: 1
-        - MetricIntervalLowerBound: 20
-          ScalingAdjustment: 2
-
   ECSCPUHighAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -458,7 +407,7 @@ Resources:
       AlarmDescription: Alarm if CPU utilization if great than 60
       Period: 300
       AlarmActions:
-        - Ref: ServiceScalingUpPolicy
+        - Ref: EC2ScaleUpPolicy
         - Ref: PagerDuty
       Namespace: AWS/ECS
       Dimensions:
@@ -467,20 +416,6 @@ Resources:
           Ref: ECSCluster
       ComparisonOperator: GreaterThanThreshold
       MetricName: CPUUtilization
-
-  ServiceScalingDownPolicy:
-    Type: AWS::ApplicationAutoScaling::ScalingPolicy
-    Properties:
-      PolicyName: ScaleDownPolicy
-      PolicyType: StepScaling
-      ScalingTargetId: !Ref 'ServiceScalingTarget'
-      StepScalingPolicyConfiguration:
-        AdjustmentType: ChangeInCapacity
-        Cooldown: 300
-        MetricAggregationType: Average
-        StepAdjustments:
-        - MetricIntervalUpperBound: 0
-          ScalingAdjustment: -1
 
   ECSCPULowAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -491,7 +426,7 @@ Resources:
       AlarmDescription: Alarm if CPU utilization is less than to 40
       Period: 300
       AlarmActions:
-        - Ref: ServiceScalingDownPolicy
+        - Ref: EC2ScaleDownPolicy
       Namespace: AWS/ECS
       Dimensions:
       - Name: ClusterName
