@@ -26,6 +26,7 @@ private_subnet_supernet: 10.90.32.0/22
 ami: ami-9a44f9f9
 bastion_public_ip: 52.221.151.29
 ssh_from_bastion_sg_id: sg-04acc463
+high_pager_duty_arn: arn:aws:sns:ap-southeast-1:904385174501:High-Priority-Iproperty-MY-Staging-PagerDuty
 low_pager_duty_arn: arn:aws:sns:ap-southeast-1:904385174501:Low-Priority-Iproperty-MY-Staging-PagerDuty
 ssl_cert_arn: arn:aws:acm:ap-southeast-1:904385174501:certificate/29fef856-e894-4079-ad23-7eeef9742f8f
 
