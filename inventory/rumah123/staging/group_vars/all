@@ -27,7 +27,7 @@ ami: ami-dc9339bf
 bastion_public_ip: 52.221.177.53
 ssh_from_bastion_sg_id: sg-a96d16ce
 
-deployment_ecr: 546096582539.dkr.ecr.ap-southeast-1.amazonaws.com
+deployment_ecr: 737535160577.dkr.ecr.ap-southeast-1.amazonaws.com
 web_service_count: 2
 hp_service_count: 2
 srp_service_count: 2

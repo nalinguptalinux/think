@@ -23,7 +23,7 @@ nat_subnet_supernet: 10.89.16.0/22
 public_subnet_supernet: 10.89.20.0/22
 private_subnet_supernet: 10.90.24.0/22
 
-deployment_ecr: 737535160577.dkr.ecr.ap-southeast-1.amazonaws.com
+deployment_ecr: 737535160577.dkr.ecr.ap-northeast-1.amazonaws.com
 web_service_count: 2
 hp_service_count: 2
 srp_service_count: 2
