@@ -361,10 +361,10 @@ Resources:
                   "sources": [
                     {
                       "sourceType": "LocalFile",
-                      "name": "docker-host-local",
+                      "name": "frontend-Docker-local",
                       "pathExpression": "/var/lib/docker/containers/*/*.log",
-                      "category": "docker/local/json",
-                      "hostName": "dockerHost",
+                      "category": "frontend-Docker/Ecs/Container/logs",
+                      "hostName": " ${Env}-${AWS::StackName}",
                       "useAutolineMatching": false,
                       "multilineProcessingEnabled": false,
                       "timeZone": "UTC",
@@ -401,23 +401,15 @@ Resources:
       UserData:
         "Fn::Base64": !Sub |
           #!/bin/bash -ex
-          ######--------------------------Install software----------------------######
+          /bin/echo -e '######--------------------------Install software----------------------###### \n'
           /usr/bin/yum update -y
-          /usr/bin/yum install -y sysstat nmap telnet curl wget vim elinks bind-utils
-          /usr/bin/yum install -y aws-cfn-bootstrap
+          /usr/bin/yum install -y sysstat nmap telnet curl wget vim elinks bind-utils jq
+          /usr/bin/yum install -y aws-cfn-bootstrap awslogs
           /usr/bin/easy_install awscli
 
-          ######-----------------------------Bootstrap--------------------------######
           /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --configsets InstallAndRun --resource ContainerInstances
 
-
-          ######------------Install Sumo Logic Collector on EC2 Host------------######
-          /usr/local/bin/aws s3 cp s3://${ResourceBucketName}/sumologic/${SumoLogicInstallerFileName} /tmp/${SumoLogicInstallerFileName} --region ${AWS::Region}
-          /bin/chmod +x /tmp/${SumoLogicInstallerFileName}
-          /tmp/${SumoLogicInstallerFileName}  -q -VskipRegistration=true -Vephemeral=true -Vsources=/opt/ipp/sumologic/sources.json -Vsumo.accessid=${SumoLogicAccessId} -Vsumo.accesskey=${SumoLogicAccessKey}
-          /bin/rm -f /tmp/${SumoLogicInstallerFileName}
-
-          ######-----------------Configure Hostname on EC2 Host-----------------######
+          /bin/echo -e '######-----------------Configure Hostname on EC2 Host-----------------###### \n'
 
           function configure_hosts {
             recordName=${RecordName}
@@ -429,27 +421,33 @@ Resources:
           }
           configure_hosts
 
-          ######--------------Install NewRelic agent on EC2 Host----------------######
-          /usr/local/bin/aws s3 cp s3://${ResourceBucketName}/newrelic/${NewRelicRPM} /tmp/${NewRelicRPM} --region ${AWS::Region}
-          /bin/rpm -Uvhi /tmp/${NewRelicRPM}
+          /bin/echo -e '######------------Install Sumo Logic Collector on EC2 Host------------###### \n'
+          /usr/bin/aws s3 cp s3://${ResourceBucketName}/sumologic/${SumoLogicInstallerFileName} /tmp/${SumoLogicInstallerFileName} --region ${AWS::Region}
+          /bin/chmod +x /tmp/${SumoLogicInstallerFileName}
+          /tmp/${SumoLogicInstallerFileName}  -q -VskipRegistration=true -Vephemeral=true -Vsources=/opt/ipp/sumologic/sources.json -Vsumo.accessid=${SumoLogicAccessId} -Vsumo.accesskey=${SumoLogicAccessKey}
+          /bin/rm -f /tmp/${SumoLogicInstallerFileName}
+          /opt/SumoCollector/collector start
+
+          /bin/echo -e ' ######--------------Install NewRelic agent on EC2 Host----------------###### \n'
+          /usr/bin/aws s3 cp s3://${ResourceBucketName}/newrelic/${NewRelicRPM} /tmp/${NewRelicRPM} --region ${AWS::Region}
+          /bin/rpm -vhi /tmp/${NewRelicRPM}
           /usr/sbin/nrsysmond-config --set license_key=${NewRelicLicenseKey}
           /bin/echo hostname=$(/bin/hostname ) >> /etc/newrelic/nrsysmond.cfg
+
           /etc/init.d/newrelic-sysmond start
-          /sbin/chkconfig newrelic-sysmond on
 
+          /bin/echo -e ' ######---------------------Final config steps-------------------------###### \n'
+          /bin/echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
 
-          #############    ------------   Testing of New relic agent info ---------  ##########
-
+          /bin/echo -e ' #############    ------------   Testing of New relic / Sumologic agent info ---------  ########## \n'
           /bin/ps aux | grep newrelic
           /bin/rm -f /tmp/${NewRelicRPM}
 
-
-          ######---------------------Final config steps-------------------------######
-
-          /bin/echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
+          /bin/echo -e '######-------------------------- Service autostart-------------------####### \n'
+          /sbin/chkconfig newrelic-sysmond on
 
 
-          ######--------------------------Signal success------------------------######
+          /bin/echo -e '######--------------------------Signal success------------------------###### \n '
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
 
   EcsHpELB:
