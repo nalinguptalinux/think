@@ -36,6 +36,7 @@
         WebserviceCount: "{{web_service_count}}"
         HpserviceCount: "{{hp_service_count}}"
         SrpserviceCount: "{{srp_service_count}}"
+        Env: "{{env}}"
 
       tags:
         project: "{{project}}"
