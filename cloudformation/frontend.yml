@@ -274,7 +274,12 @@ Resources:
       EvaluationPeriods: '2'
       Threshold: '10'
       InsufficientDataActions:
+      - Ref: ECSScaleDownPolicy
       - Ref: PagerDutyArn
+      OKActions:
+      - Ref: ECSScaleDownPolicy
+      AlarmActions:
+      - Ref: ECSScaleDownPolicy
       Dimensions:
       - Name: ClusterName
         Value:
@@ -315,7 +320,12 @@ Resources:
       EvaluationPeriods: '2'
       Threshold: '10'
       InsufficientDataActions:
+      - Ref: ECSScaleDownPolicy
       - Ref: PagerDutyArn
+      OKActions:
+      - Ref: ECSScaleDownPolicy
+      AlarmActions:
+      - Ref: ECSScaleDownPolicy
       Dimensions:
       - Name: ClusterName
         Value:
@@ -327,37 +337,26 @@ Resources:
     Metadata:
       AWS::CloudFormation::Init:
         configSets:
-          InstallAndRun:
-          - Configure
-
+          InstallAndRun: [Configure]
         Configure:
           files:
             "/etc/cfn/cfn-hup.conf":
-              content:
-                Fn::Join:
-                - ''
-                - - "[main]\n"
-                  - stack=
-                  - Ref: AWS::StackId
-                  - region=
-                  - Ref: AWS::Region
-              mode: '000400'
-              owner: root
-              group: root
+              content: !Sub |
+                [main]
+                stack= ${AWS::StackId}
+                region=${AWS::Region}
+              mode: "000400"
+              owner: "root"
+              group: "root"
             "/etc/cfn/hooks.d/cfn-auto-reloader.conf":
-              content:
-                Fn::Join:
-                - ''
-                - - "[cfn-auto-reloader-hook]\n"
-                  - 'triggers=post.update'
-                  - 'path=Resources.ContainerInstances.Metadata.AWS::CloudFormation::Init'
-                  - 'action=/opt/aws/bin/cfn-init -v '
-                  - "         --stack "
-                  - Ref: AWS::StackName
-                  - "         --resource ContainerInstances "
-                  - "         --region "
-                  - Ref: AWS::Region
-                  - 'runas=root'
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.WebServerHost.Metadata.AWS::CloudFormation::Init
+                /opt/aws/bin/cfn-init -v --stack ${AWS::StackId} --resource ContainerInstances --configsets full_install --region ${AWS::Region}
+              mode: "000400"
+              owner: "root"
+              group: "root"
             "/opt/ipp/sumologic/sources.json":
               content: !Sub |
                 {
@@ -383,9 +382,7 @@ Resources:
               cfn-hup:
                 enabled: 'true'
                 ensureRunning: 'true'
-                files:
-                - "/etc/cfn/cfn-hup.conf"
-                - "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
+                files: ["/etc/cfn/cfn-hup.conf" , "/etc/cfn/hooks.d/cfn-auto-reloader.conf"]
     Properties:
       KeyName:
         Ref: KeyNamessh
