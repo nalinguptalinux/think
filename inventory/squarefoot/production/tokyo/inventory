@@ -73,7 +73,7 @@ adapter.dev.squarefoot.ipp.com
 build_number=15
 adapter_name=capi-squarefoot-listing
 instance_type=t2.medium
-max_size_asg=4
+max_size_asg=8
 min_size_asg=1
 elb_port=80
 host_port=3000

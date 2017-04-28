@@ -1,5 +1,7 @@
 ---
 - name: create capi adapter
+  vars:
+    region: "{{aws_region}}"
   cloudformation:
     stack_name: "{{adapter_name}}-{{build_number}}"
     state: present
@@ -28,6 +30,7 @@
       SumoLogicAccessId: "{{sumo_logic_access_id}}"
       SumoLogicAccessKey: "{{sumo_logic_access_key}}"
       PagerDuty: "{{high_pager_duty_arn}}"
+      AMI: "{{ecs_amis[region]}}"
 
     tags:
       project: "{{project}}"

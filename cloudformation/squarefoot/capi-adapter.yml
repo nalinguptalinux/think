@@ -81,16 +81,9 @@ Parameters:
   PagerDuty:
     Description: Pager Duty ARN
     Type: String
-
-
-Mappings:
-  AWSRegionArch2AMI:
-    ap-southeast-1:
-      HVM64: ami-a88530cb
-    ap-northeast-1:
-      HVM64: ami-c393d6a4
-    ap-southeast-2:
-      HVM64: ami-8af8ffe9
+  AMI:
+    Description: image id
+    Type: String
 
 Resources:
   ECSCluster:
@@ -220,10 +213,7 @@ Resources:
       KeyName:
         Ref: KeyPair
       ImageId:
-        Fn::FindInMap:
-        - AWSRegionArch2AMI
-        - Ref: AWS::Region
-        - HVM64
+        Ref: AMI
       InstanceType:
         Ref: InstanceType
       InstanceMonitoring: true

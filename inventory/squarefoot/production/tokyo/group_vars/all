@@ -48,3 +48,8 @@ target_group_arns:
   capi-adapter-suggestion-live: arn:aws:elasticloadbalancing:ap-northeast-1:678965432744:targetgroup/suggestion-target-group-live/0eb2406647a7c50e
   capi-adapter-listing-beta: arn:aws:elasticloadbalancing:ap-northeast-1:678965432744:targetgroup/listing-target-group-beta/1b3ec4b1ab46a02b
   capi-adapter-suggestion-beta: arn:aws:elasticloadbalancing:ap-northeast-1:678965432744:targetgroup/suggestion-target-group-beta/93713d930ae25542
+
+ecs_amis:
+  ap-southeast-1: ami-b4ae1dd7
+  ap-northeast-1: ami-f63f6f91
+  ap-southeast-2: ami-fbe9eb98

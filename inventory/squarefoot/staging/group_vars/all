@@ -46,3 +46,8 @@ target_group_arns:
   capi-adapter-suggestion-live: arn:aws:elasticloadbalancing:ap-southeast-1:866270780045:targetgroup/suggestion-target-group-live/f8d87ce69cb9cb9c
 
 deployment_ecr: 678965432744.dkr.ecr.ap-southeast-1.amazonaws.com
+
+ecs_amis:
+  ap-southeast-1: ami-b4ae1dd7
+  ap-northeast-1: ami-f63f6f91
+  ap-southeast-2: ami-fbe9eb98
