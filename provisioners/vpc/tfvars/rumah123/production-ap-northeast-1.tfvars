@@ -13,7 +13,7 @@ private_subnet_cidr_blocks = ["10.89.24.0/23","10.89.26.0/23"]
 
 nat_subnet_supernet = "10.89.16.0/22"
 public_subnet_supernet = "10.89.20.0/22"
-private_subnet_supernet = "10.90.24.0/22"
+private_subnet_supernet = "10.89.24.0/22"
 profile_custom_profile = "rumah123prod-tk"
 
 #Bastion Vars
