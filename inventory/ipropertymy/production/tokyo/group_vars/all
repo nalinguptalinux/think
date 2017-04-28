@@ -31,7 +31,7 @@ srp_service_count: 2
 low_pager_duty_arn: arn:aws:sns:ap-northeast-1:676958722968:Low-Priority-Iproperty-TK-My-PagerDuty
 high_pager_duty_arn: arn:aws:sns:ap-northeast-1:676958722968:High-Priority-Iproperty-My-TK-PagerDuty
 
-ssl_cert_arn: arn:aws:acm:ap-northeast-1:676958722968:certificate/1ec015b6-135b-4d18-ace8-42756ae93041
+ssl_cert_arn: arn:aws:acm:ap-southeast-1:676958722968:certificate/2714d7bb-8946-47b1-bfda-e2b944141cf2
 
 ami: ami-56d4ad31
 bastion_public_ip: 52.69.136.81
