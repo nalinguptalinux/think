@@ -2,7 +2,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description: >
-    This template will install the frontend stack
+    Install the frontend stack for all environments
 
 Parameters:
   BusinessUnit:
@@ -124,23 +124,23 @@ Parameters:
     Type: String
 
   VpcDns:
-    Description: 'Enter VPC DNS must be end with X.X.0.2'
+    Description: Enter VPC DNS must be end with X.X.0.2
     Type: String
 
   WebserviceCount:
-    Description: 'Enter Webservice Conatiner Count : Must be equal to no. of instance in Autoscaling '
+    Description: Enter Webservice Container Count : Must be equal to no. of instance in AutoScaling
     Type: String
 
   HpserviceCount:
-    Description: 'Enter Hpservice Conatiner Count : Must be equal to no. of instance in Autoscaling '
+    Description: Enter Hpservice Container Count : Must be equal to no. of instance in AutoScaling
     Type: String
 
   SrpserviceCount:
-    Description: 'Enter Srpservice Conatiner Count : Must be equal to no. of instance in Autoscaling '
+    Description: Enter Srpservice Container Count : Must be equal to no. of instance in AutoScaling
     Type: String
 
   Env:
-    Description: 'Enter Srpservice Conatiner Count : Must be equal to no. of instance in Autoscaling '
+    Description: Environment name
     Type: String
 
 Mappings:
@@ -499,37 +499,6 @@ Resources:
         - Ref: VpcDns
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'NginxECRRepo']]
 
-  ECSWebELB:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
-    Properties:
-      Subnets:
-        Ref: SubnetID
-      CrossZone: 'true'
-      Listeners:
-      - LoadBalancerPort: '80'
-        InstancePort: '80'
-        Protocol: HTTP
-      - LoadBalancerPort: '443'
-        InstancePort: '80'
-        Protocol: HTTPS
-        SSLCertificateId: !Ref 'SSLCertificateARN'
-      HealthCheck:
-        Target: TCP:80
-        HealthyThreshold: '3'
-        UnhealthyThreshold: '3'
-        Interval: '30'
-        Timeout: '5'
-      Scheme: internet-facing
-      ConnectionDrainingPolicy:
-        Enabled: true
-        Timeout: 30
-      Tags:
-      - Value:
-          Ref: AWS::StackName
-        Key: CF-Name
-      SecurityGroups:
-      - Ref: ILBWebSecurityGroup
-
   ILBWebSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -560,13 +529,6 @@ Resources:
       DeploymentConfiguration:
         MaximumPercent: '150'
         MinimumHealthyPercent: '50'
-      LoadBalancers:
-      - ContainerName: ECS-Web-TASK
-        ContainerPort: '80'
-        LoadBalancerName:
-          Ref: ECSWebELB
-      Role:
-        Ref: ECSServiceRole
       TaskDefinition:
         Ref: WebTaskDefinition
 
@@ -804,22 +766,7 @@ Resources:
       TaskDefinition:
         Ref: SRPTaskDefinition
 
-  FrontendRecordSet:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneName:  !Join ['', [!Ref 'HostedZoneName', '.']]
-      Comment: DNS for frontend
-      Name: !Join ['', [!Ref 'RecordName', ., !Ref 'HostedZoneName', .]]
-      Type: CNAME
-      TTL: 60
-      ResourceRecords:
-      - !GetAtt [ECSWebELB, DNSName]
-
 Outputs:
-
-  WebElasticLoadBalancer:
-    Value: !GetAtt ECSWebELB.DNSName
-    Description: Web ELB
 
   HpElasticLoadBalancer:
     Value: !GetAtt EcsHpELB.DNSName
