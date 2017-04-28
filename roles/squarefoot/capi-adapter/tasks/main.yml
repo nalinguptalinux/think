@@ -31,6 +31,9 @@
       SumoLogicAccessKey: "{{sumo_logic_access_key}}"
       PagerDuty: "{{high_pager_duty_arn}}"
       AMI: "{{ecs_amis[region]}}"
+      InfraCommonBucket: "{{resource_bucket_name}}"
+      NewRelicRPM: "{{new_relic_rpm}}"
+      NewRelicLicenseKey: "{{new_relic_license_key}}"
 
     tags:
       project: "{{project}}"

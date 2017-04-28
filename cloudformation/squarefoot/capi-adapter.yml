@@ -84,6 +84,15 @@ Parameters:
   AMI:
     Description: image id
     Type: String
+  InfraCommonBucket:
+    Description: Infrastructure commaon package bucket
+    Type: String
+  NewRelicRPM:
+    Description: new relic package
+    Type: String
+  NewRelicLicenseKey:
+    Description: new relic license
+    Type: String
 
 Resources:
   ECSCluster:
@@ -229,6 +238,7 @@ Resources:
           /usr/bin/yum install -y sysstat nmap telnet curl wget
           /usr/bin/yum install -y aws-cfn-bootstrap
           /usr/bin/easy_install awscli
+          export PATH=$PATH:/usr/local/bin/
           ######-----------------------------Bootstrap--------------------------######
           /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --configsets InstallAndRun --resource ECSLaunchConfig
           ######-----------------Configure Hostname on EC2 Host-----------------######
@@ -240,8 +250,17 @@ Resources:
             /bin/echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
             /bin/hostname $recordName-$ipend
           }
-          ######---------------------Final config steps-------------------------######
+
           configure_hosts
+
+          ######---------------------config new relic---------------------------######
+          aws s3 cp s3://${InfraCommonBucket}/newrelic/${NewRelicRPM} /tmp/${NewRelicRPM} --region ${AWS::Region}
+          rpm -vhi /tmp/${NewRelicRPM}
+          /usr/sbin/nrsysmond-config --set license_key=${NewRelicLicenseKey}
+          echo hostname=$(hostname) >> /etc/newrelic/nrsysmond.cfg
+
+          /etc/init.d/newrelic-sysmond start
+          ######---------------------Final config steps-------------------------######
           REG_ID=$(echo ${ECR} | cut -f1 -d.)
           eval $(/usr/local/bin/aws ecr get-login --registry-ids $REG_ID --region ${AWS::Region})
           ######--------------------------Signal success------------------------######
