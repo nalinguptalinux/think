@@ -128,15 +128,15 @@ Parameters:
     Type: String
 
   WebserviceCount:
-    Description: Enter Webservice Container Count : Must be equal to no. of instance in AutoScaling
+    Description: Enter Webservice Container Count - Must be equal to no. of instance in AutoScaling
     Type: String
 
   HpserviceCount:
-    Description: Enter Hpservice Container Count : Must be equal to no. of instance in AutoScaling
+    Description: Enter Hpservice Container Count - Must be equal to no. of instance in AutoScaling
     Type: String
 
   SrpserviceCount:
-    Description: Enter Srpservice Container Count : Must be equal to no. of instance in AutoScaling
+    Description: Enter Srpservice Container Count - Must be equal to no. of instance in AutoScaling
     Type: String
 
   Env:
