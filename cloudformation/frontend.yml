@@ -483,7 +483,6 @@ Resources:
         - !GetAtt EcsHpELB.DNSName
         - !GetAtt ECSSrpPdpELB.DNSName
         - Ref: VpcDns
-        - Ref: AWS::StackName
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'NginxECRRepo']]
 
   ILBWebSecurityGroup:
