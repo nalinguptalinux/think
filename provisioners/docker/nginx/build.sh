@@ -1,7 +1,7 @@
 #!/bin/env bash
 
 cd provisioners/docker/nginx
-docker build -t nginx .
+docker build --no-cache=true -t nginx .
 
 for repository_uri in ${ECR_REPO_URIS};
 do
