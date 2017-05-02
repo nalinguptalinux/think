@@ -143,6 +143,10 @@ Parameters:
     Description: Environment name
     Type: String
 
+  Version:
+    Description: Version string to display in header
+    Type: String
+
 Mappings:
 
   AWSRegionArch2AMI:
@@ -483,6 +487,7 @@ Resources:
         - !GetAtt EcsHpELB.DNSName
         - !GetAtt ECSSrpPdpELB.DNSName
         - Ref: VpcDns
+        - Ref: Version
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'NginxECRRepo']]
 
   ILBWebSecurityGroup:
