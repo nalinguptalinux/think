@@ -93,6 +93,9 @@ Parameters:
   NewRelicLicenseKey:
     Description: new relic license
     Type: String
+  DeploymentEnv:
+    Description: deployment environment
+    Type: String
 
 Resources:
   ECSCluster:
@@ -116,6 +119,10 @@ Resources:
             - HostPort: !Ref 'HostPort'
               Protocol: tcp
               ContainerPort: !Ref 'ContainerPort'
+          Environment:
+            - Name: DEPLOYMENT_ENV
+              Value:
+                Ref: DeploymentEnv
           Image: !Join [':', [!Join ['/', [!Ref 'ECR', !Ref 'AdapterName']], !Ref 'BuildNumber']]
         - Name: SumoLogicCollector
           Cpu: '256'

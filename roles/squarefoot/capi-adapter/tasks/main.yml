@@ -34,6 +34,7 @@
       InfraCommonBucket: "{{resource_bucket_name}}"
       NewRelicRPM: "{{new_relic_rpm}}"
       NewRelicLicenseKey: "{{new_relic_license_key}}"
+      DeploymentEnv: "{{deployment_env}}"
 
     tags:
       project: "{{project}}"

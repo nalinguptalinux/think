@@ -1,7 +1,8 @@
 aws_region: ap-southeast-1
 project: squarefoot
 business_unit: HK
-env: squarefoot-staging
+env: staging
+deployment_env: staging-singapore
 private_zone: staging.squarefoot-singapore.ipga.local
 public_zone: stg.sg.squarefoot.com.hk
 key_name: awscloud-squarefoot-staging-singapore
