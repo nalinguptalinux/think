@@ -240,7 +240,9 @@ Resources:
           /sbin/initctl start crontab-ui  || error_exit 'failed to start crontab-ui'
           /etc/init.d/newrelic-sysmond restart
 
-          aws s3 cp --recursive s3://prod-sg-sfhk-backups/legacy-cron-scripts /opt/legacy-cron-scripts --region ${AWS::Region}
+          aws s3 cp --recursive s3://prod-sg-sfhk-backups/legacy-cron-scripts /opt/legacy-cron-scripts --region ${AWS::Region} || error_exit 'unable to download legacy cron scripts from s3'
+          chmod -R 755 /opt/legacy-cron-scripts
+          /opt/legacy-cron-scripts/setup_cron.sh
 
           # Start up the cfn-hup daemon to listen for changes
           /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
