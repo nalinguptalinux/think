@@ -235,7 +235,7 @@ Resources:
 
 
           curl --silent --location https://rpm.nodesource.com/setup_6.x | bash - || error_exit 'failed to install npm'
-          yum install -y nodejs || error_exit 'failed to install npm'
+          yum install -y nodejs mysql || error_exit 'failed to install npm or mysql'
           npm install -g crontab-ui || error_exit 'failed to install crontab-ui'
           /sbin/initctl start crontab-ui  || error_exit 'failed to start crontab-ui'
           /etc/init.d/newrelic-sysmond restart
