@@ -240,6 +240,8 @@ Resources:
           /sbin/initctl start crontab-ui  || error_exit 'failed to start crontab-ui'
           /etc/init.d/newrelic-sysmond restart
 
+          aws s3 cp --recursive s3://prod-sg-sfhk-backups/legacy-cron-scripts /opt/legacy-cron-scripts --region ${AWS::Region}
+
           # Start up the cfn-hup daemon to listen for changes
           /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
           /opt/aws/bin/cfn-signal -e 0 -r "CronInstance instance Stack Complete."  '${WaitHandle}'

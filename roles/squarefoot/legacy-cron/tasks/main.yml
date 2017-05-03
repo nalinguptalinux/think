@@ -20,7 +20,7 @@
         PrivateSubnets: "{{private_subnets}}"
         ASGMaxSize: "{{as_max}}"
         ASGMinSize: "{{as_min}}"
-        BackupBucketName: "{{resource_bucket_name}}"
+        BackupBucketName: "{{backup_bucket_name}}"
         VpcNet: "{{vpc_cidr}}"
         NewRelicLicenseKey: "{{new_relic_license_key}}"
         PagerDutyArn: "{{low_pager_duty_arn}}"
