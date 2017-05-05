@@ -35,8 +35,6 @@ Parameters:
     Description: EC2 instance type.
     Type: String
     AllowedValues:
-    - t2.micro
-    - t2.small
     - t2.medium
     - m3.medium
     - m3.large
@@ -101,7 +99,7 @@ Parameters:
   SubnetID:
     Description: Public subnets
     Type: CommaDelimitedList
-    Default: subnet-49c6b43f,subnet-9c9bd5f8
+    Default: 'subnet-49c6b43f,subnet-9c9bd5f8'
 
   SumoLogicInstallerFileName:
     Description: The installation file for Sumo Logic Collector
@@ -148,7 +146,6 @@ Parameters:
     Type: String
 
 Mappings:
-
   AWSRegionArch2AMI:
     ap-southeast-1:
       HVM64: ami-b4ae1dd7
@@ -158,7 +155,6 @@ Mappings:
       HVM64: ami-f63f6f91
 
 Resources:
-
   ECSCluster:
     Type: AWS::ECS::Cluster
 
@@ -225,116 +221,6 @@ Resources:
         MaxBatchSize: '1'
         PauseTime: PT15M
         WaitOnResourceSignals: 'true'
-
-  ECSScaleUpPolicy:
-    Type: AWS::AutoScaling::ScalingPolicy
-    Properties:
-      AdjustmentType: ChangeInCapacity
-      AutoScalingGroupName:
-        Ref: ECSAutoScalingGroup
-      Cooldown: '60'
-      ScalingAdjustment: '1'
-
-  ECSScaleDownPolicy:
-    Type: AWS::AutoScaling::ScalingPolicy
-    Properties:
-      AdjustmentType: ChangeInCapacity
-      AutoScalingGroupName:
-        Ref: ECSAutoScalingGroup
-      Cooldown: '60'
-      ScalingAdjustment: "-1"
-
-  ECSHigh:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmDescription: Scale-up if CPU > 80% for 10 minutes
-      MetricName: CPUUtilization
-      Namespace: AWS/ECS
-      Statistic: Average
-      Period: '300'
-      EvaluationPeriods: '2'
-      Threshold: '80'
-      AlarmActions:
-      - Ref: ECSScaleUpPolicy
-      - Ref: HPagerDutyArn
-      InsufficientDataActions:
-      - Ref: HPagerDutyArn
-      OKActions:
-      - Ref: HPagerDutyArn
-      Dimensions:
-      - Name: ClusterName
-        Value:
-          Ref: 'ECSCluster'
-      ComparisonOperator: GreaterThanThreshold
-
-  ECSLow:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmDescription: Scale-down if CPU < 10% for 10 minutes
-      MetricName: CPUUtilization
-      Namespace: AWS/ECS
-      Statistic: Average
-      Period: '300'
-      EvaluationPeriods: '2'
-      Threshold: '10'
-      InsufficientDataActions:
-      - Ref: ECSScaleDownPolicy
-      - Ref: PagerDutyArn
-      OKActions:
-      - Ref: ECSScaleDownPolicy
-      AlarmActions:
-      - Ref: ECSScaleDownPolicy
-      Dimensions:
-      - Name: ClusterName
-        Value:
-          Ref: 'ECSCluster'
-      ComparisonOperator: LessThanThreshold
-
-  ECSMemHigh:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmDescription: Scale-up if Mem > 80% for 10 minutes
-      MetricName: MemoryUtilization
-      Namespace: AWS/ECS
-      Statistic: Average
-      Period: '300'
-      EvaluationPeriods: '2'
-      Threshold: '80'
-      AlarmActions:
-      - Ref: ECSScaleUpPolicy
-      - Ref: HPagerDutyArn
-      InsufficientDataActions:
-      - Ref: HPagerDutyArn
-      OKActions:
-      - Ref: HPagerDutyArn
-      Dimensions:
-      - Name: ClusterName
-        Value:
-          Ref: 'ECSCluster'
-      ComparisonOperator: GreaterThanThreshold
-
-  ECSMemLow:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmDescription: Scale-down if CPU < 40% for 10 minutes
-      MetricName: MemoryUtilization
-      Namespace: AWS/ECS
-      Statistic: Average
-      Period: '300'
-      EvaluationPeriods: '2'
-      Threshold: '10'
-      InsufficientDataActions:
-      - Ref: ECSScaleDownPolicy
-      - Ref: PagerDutyArn
-      OKActions:
-      - Ref: ECSScaleDownPolicy
-      AlarmActions:
-      - Ref: ECSScaleDownPolicy
-      Dimensions:
-      - Name: ClusterName
-        Value:
-          Ref: 'ECSCluster'
-      ComparisonOperator: LessThanThreshold
 
   ContainerInstances:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -508,20 +394,289 @@ Resources:
         IpProtocol: tcp
         ToPort: 22
       VpcId: !Ref 'VPC'
+      Tags:
+      - Value: 'ILBWebSecurityGroup'
+        Key: Name
 
   Webservice:
     Type: AWS::ECS::Service
-    DependsOn:
-    - ECSAutoScalingGroup
+    DependsOn: 'ECSAutoScalingGroup'
     Properties:
-      Cluster:
-        Ref: ECSCluster
-      DesiredCount: !Ref WebserviceCount
+      Cluster:  !Ref 'ECSCluster'
+      DesiredCount: !Ref 'WebserviceCount'
+      TaskDefinition: !Ref 'WebTaskDefinition'
       DeploymentConfiguration:
-        MaximumPercent: '150'
+        MaximumPercent: '200'
         MinimumHealthyPercent: '50'
-      TaskDefinition:
-        Ref: WebTaskDefinition
+
+  ServiceScalingTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    DependsOn: 'AutoscalingRole'
+    Properties:
+      MaxCapacity: !Ref 'MaxSize'
+      MinCapacity: !Ref 'MinSizeAS'
+      ResourceId: !Sub
+      - 'service/${Cluster}/${Service}'
+      - Cluster: !Ref 'ECSCluster'
+        Service: !GetAtt 'Webservice.Name'
+      RoleARN: !GetAtt 'AutoscalingRole.Arn'
+      ScalableDimension: 'ecs:service:DesiredCount'
+      ServiceNamespace: ecs
+
+  ServiceScalingUpPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    DependsOn: 'ServiceScalingTarget'
+    Properties:
+      PolicyName: !Sub '${AWS::StackName}-scale-up'
+      PolicyType: StepScaling
+      ScalingTargetId: !Ref 'ServiceScalingTarget'
+      StepScalingPolicyConfiguration:
+        AdjustmentType: PercentChangeInCapacity
+        Cooldown: 300
+        MinAdjustmentMagnitude: 1
+        StepAdjustments:
+        - MetricIntervalLowerBound: 0
+          ScalingAdjustment: 25
+
+  ServiceScalingDownPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    DependsOn: 'ServiceScalingTarget'
+    Properties:
+      PolicyName: !Sub '${AWS::StackName}-scale-down'
+      PolicyType: StepScaling
+      ScalingTargetId: !Ref 'ServiceScalingTarget'
+      StepScalingPolicyConfiguration:
+        AdjustmentType: PercentChangeInCapacity
+        Cooldown: 300
+        MinAdjustmentMagnitude: 1
+        StepAdjustments:
+        - MetricIntervalLowerBound: 0
+          ScalingAdjustment: -25
+
+  ECSWebHigh:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn: 'Webservice'
+    Properties:
+      AlarmDescription: 'Scale-up if CPU > 60% for 5 minutes'
+      MetricName: 'MemoryUtilization'
+      Namespace: 'AWS/ECS'
+      Statistic: Average
+      Period: '300'
+      EvaluationPeriods: '1'
+      Threshold: '60'
+      AlarmActions:
+      - Ref: ServiceScalingUpPolicy
+      Dimensions:
+      - Name: ClusterName
+        Value: !Ref 'ECSCluster'
+      - Name: ServiceName
+        Value: !GetAtt 'Webservice.Name'
+      ComparisonOperator: GreaterThanThreshold
+
+  ECSWebMemLow:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn: 'Webservice'
+    Properties:
+      AlarmDescription: 'Scale-down if CPU < 5% for 10 minutes'
+      MetricName: 'MemoryUtilization'
+      Namespace: 'AWS/ECS'
+      Statistic: Average
+      Period: '300'
+      EvaluationPeriods: '1'
+      Threshold: '5'
+      AlarmActions:
+      - Ref: ServiceScalingDownPolicy
+      Dimensions:
+      - Name: ClusterName
+        Value: !Ref 'ECSCluster'
+      - Name: ServiceName
+        Value: !GetAtt 'Webservice.Name'
+      ComparisonOperator: LessThanThreshold
+
+  AutoscalingRole:
+    DependsOn: 'ECSAutoScalingGroup'
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [application-autoscaling.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+      - PolicyName: service-autoscaling
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: ['application-autoscaling:*', 'cloudwatch:DescribeAlarms', 'cloudwatch:PutMetricAlarm',
+              'ecs:DescribeServices', 'ecs:UpdateService']
+            Resource: '*'
+
+  SrpServiceScalingTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    DependsOn: 'AutoscalingRole'
+    Properties:
+      MaxCapacity: !Ref 'MaxSize'
+      MinCapacity: !Ref 'MinSizeAS'
+      ResourceId: !Sub
+      - 'service/${Cluster}/${Service}'
+      - Cluster: !Ref 'ECSCluster'
+        Service: !GetAtt 'SRPService.Name'
+      RoleARN: !GetAtt 'AutoscalingRole.Arn'
+      ScalableDimension: 'ecs:service:DesiredCount'
+      ServiceNamespace: ecs
+
+  SrpServiceScalingUpPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub '${AWS::StackName}-scale-up'
+      PolicyType: StepScaling
+      ScalingTargetId: !Ref 'SrpServiceScalingTarget'
+      StepScalingPolicyConfiguration:
+        AdjustmentType: PercentChangeInCapacity
+        Cooldown: 300
+        MinAdjustmentMagnitude: 1
+        StepAdjustments:
+        - MetricIntervalLowerBound: 0
+          ScalingAdjustment: 25
+
+  SrpServiceScalingDownPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub '${AWS::StackName}-scale-down'
+      PolicyType: StepScaling
+      ScalingTargetId: !Ref 'SrpServiceScalingTarget'
+      StepScalingPolicyConfiguration:
+        AdjustmentType: PercentChangeInCapacity
+        Cooldown: 300
+        MinAdjustmentMagnitude: 1
+        StepAdjustments:
+        - MetricIntervalLowerBound: 0
+          ScalingAdjustment: -25
+
+  ECSSprHigh:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn: 'SRPService'
+    Properties:
+      AlarmDescription: 'Scale-up if CPU > 60% for 5 minutes'
+      MetricName: 'MemoryUtilization'
+      Namespace: 'AWS/ECS'
+      Statistic: Average
+      Period: '300'
+      EvaluationPeriods: '1'
+      Threshold: '60'
+      AlarmActions:
+      - Ref: 'SrpServiceScalingUpPolicy'
+      Dimensions:
+      - Name: ClusterName
+        Value: !Ref 'ECSCluster'
+      - Name: ServiceName
+        Value: !GetAtt 'SRPService.Name'
+      ComparisonOperator: GreaterThanThreshold
+
+  ECSSrpMemLow:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn: 'SRPService'
+    Properties:
+      AlarmDescription: 'Scale-down if CPU < 5% for 10 minutes'
+      MetricName: 'MemoryUtilization'
+      Namespace: 'AWS/ECS'
+      Statistic: Average
+      Period: '300'
+      EvaluationPeriods: '1'
+      Threshold: '5'
+      AlarmActions:
+      - Ref: 'SrpServiceScalingDownPolicy'
+      Dimensions:
+      - Name: ClusterName
+        Value: !Ref 'ECSCluster'
+      - Name: ServiceName
+        Value: !GetAtt 'SRPService.Name'
+      ComparisonOperator: LessThanThreshold
+
+
+  HpServiceScalingTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    DependsOn: 'AutoscalingRole'
+    Properties:
+      MaxCapacity: !Ref 'MaxSize'
+      MinCapacity: !Ref 'MinSizeAS'
+      ResourceId: !Sub
+      - 'service/${Cluster}/${Service}'
+      - Cluster: !Ref 'ECSCluster'
+        Service: !GetAtt 'HPService.Name'
+      RoleARN: !GetAtt 'AutoscalingRole.Arn'
+      ScalableDimension: 'ecs:service:DesiredCount'
+      ServiceNamespace: ecs
+
+  HpServiceScalingUpPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub '${AWS::StackName}-scale-up'
+      PolicyType: StepScaling
+      ScalingTargetId: !Ref 'HpServiceScalingTarget'
+      StepScalingPolicyConfiguration:
+        AdjustmentType: PercentChangeInCapacity
+        Cooldown: 300
+        MinAdjustmentMagnitude: 1
+        StepAdjustments:
+        - MetricIntervalLowerBound: 0
+          ScalingAdjustment: 25
+
+  HpServiceScalingDownPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub '${AWS::StackName}-scale-down'
+      PolicyType: StepScaling
+      ScalingTargetId: !Ref 'HpServiceScalingTarget'
+      StepScalingPolicyConfiguration:
+        AdjustmentType: PercentChangeInCapacity
+        Cooldown: 300
+        MinAdjustmentMagnitude: 1
+        StepAdjustments:
+        - MetricIntervalLowerBound: 0
+          ScalingAdjustment: -25
+
+  ECSHpHigh:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn: 'HPService'
+    Properties:
+      AlarmDescription: 'Scale-up if CPU > 60% for 5 minutes'
+      MetricName: 'MemoryUtilization'
+      Namespace: 'AWS/ECS'
+      Statistic: Average
+      Period: '300'
+      EvaluationPeriods: '1'
+      Threshold: '60'
+      AlarmActions:
+      - Ref: 'HpServiceScalingUpPolicy'
+      Dimensions:
+      - Name: ClusterName
+        Value: !Ref 'ECSCluster'
+      - Name: ServiceName
+        Value: !GetAtt 'HPService.Name'
+      ComparisonOperator: GreaterThanThreshold
+
+  ECSHPMemLow:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn: 'HPService'
+    Properties:
+      AlarmDescription: 'Scale-down if CPU < 5% for 10 minutes'
+      MetricName: 'MemoryUtilization'
+      Namespace: 'AWS/ECS'
+      Statistic: Average
+      Period: '300'
+      EvaluationPeriods: '1'
+      Threshold: '5'
+      AlarmActions:
+      - Ref: 'HpServiceScalingDownPolicy'
+      Dimensions:
+      - Name: ClusterName
+        Value: !Ref 'ECSCluster'
+      - Name: ServiceName
+        Value: !GetAtt 'HPService.Name'
+      ComparisonOperator: LessThanThreshold
 
   ILBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -537,6 +692,9 @@ Resources:
         IpProtocol: tcp
         ToPort: 80
       VpcId: !Ref 'VPC'
+      Tags:
+      - Value: 'ILBSecurityGroup'
+        Key: Name
 
   HPService:
     Type: AWS::ECS::Service
@@ -572,7 +730,7 @@ Resources:
           - sts:AssumeRole
       Path: "/"
       Policies:
-      - PolicyName: ecs-service
+      - PolicyName: ecs-service-Policy
         PolicyDocument:
           Statement:
           - Effect: Allow
@@ -608,7 +766,7 @@ Resources:
           - sts:AssumeRole
       Path: "/"
       Policies:
-      - PolicyName: ecs-service
+      - PolicyName: ecs-service-instance-policy
         PolicyDocument:
           Statement:
           - Effect: Allow
@@ -676,6 +834,9 @@ Resources:
         FromPort: "-1"
         ToPort: "-1"
         CidrIp: !Ref 'VpcCidr'
+      Tags:
+      - Value: 'ECSSecurityGroup'
+        Key: Name
 
   SRPTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -735,6 +896,9 @@ Resources:
         IpProtocol: tcp
         ToPort: 80
       VpcId: !Ref 'VPC'
+      Tags:
+      - Value: 'ILBhpSecurityGroup'
+        Key: Name
 
   SRPService:
     Type: AWS::ECS::Service
@@ -758,7 +922,6 @@ Resources:
         Ref: SRPTaskDefinition
 
 Outputs:
-
   HpElasticLoadBalancer:
     Value: !GetAtt EcsHpELB.DNSName
     Description: HP ELB
