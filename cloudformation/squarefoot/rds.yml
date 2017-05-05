@@ -47,6 +47,9 @@ Parameters:
     Type: Number
     MinValue: '5'
     MaxValue: '100'
+  HostedZoneName:
+    Description: Hosted Zone Name
+    Type: String
   PubliclyAccessible:
     Description: Can the database be accesed publicly
     Type: String
@@ -87,6 +90,23 @@ Resources:
         ToPort: !Ref 'Port'
         IpProtocol: tcp
       VpcId: !Ref 'VpcId'
+  RDSRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Join ['', [!Ref 'HostedZoneName', '.']]
+      Name: !Join ['', [!Ref 'DBInstanceIdentifier', '.', !Ref 'HostedZoneName', '.']]
+      Type: CNAME
+      TTL: 60
+      ResourceRecords:
+      - !GetAtt [RDSDB, Endpoint.Address]
+  RDSDBParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: Mysql RDS Parameter Group
+      Family: MySQL5.5
+      Parameters:
+        wait_timeout: 300
+        max_allowed_packet: 32000000
   RDSDB:
     Type: AWS::RDS::DBInstance
     Properties:
@@ -100,6 +120,7 @@ Resources:
       MasterUsername: !Ref 'DBUsername'
       MasterUserPassword: !Ref 'DBPassword'
       DBSubnetGroupName: !Ref 'RDSDBSubnetGroup'
+      DBParameterGroupName: !Ref 'RDSDBParameterGroup'
       BackupRetentionPeriod: !Ref 'BackupRetentionPeriod'
       PubliclyAccessible: !Ref 'PubliclyAccessible'
       MultiAZ: 'true'
