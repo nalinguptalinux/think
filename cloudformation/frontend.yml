@@ -317,6 +317,7 @@ Resources:
           /bin/echo -e ' ######--------------Install NewRelic agent on EC2 Host----------------###### \n'
           /usr/bin/aws s3 cp s3://${ResourceBucketName}/newrelic/${NewRelicRPM} /tmp/${NewRelicRPM} --region ${AWS::Region}
           /bin/rpm -vhi /tmp/${NewRelicRPM}
+          /usr/sbin/usermod  -a -G docker newrelic          
           /usr/sbin/nrsysmond-config --set license_key=${NewRelicLicenseKey}
           /bin/echo hostname=$(/bin/hostname ) >> /etc/newrelic/nrsysmond.cfg
           /etc/init.d/newrelic-sysmond start
