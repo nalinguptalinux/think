@@ -473,6 +473,7 @@ Resources:
       Period: 300
       AlarmActions:
         - Ref: ServiceScalingUpPolicy
+        - Ref: EC2ScaleUpPolicy
         - Ref: PagerDuty
       Namespace: AWS/ECS
       Dimensions:
