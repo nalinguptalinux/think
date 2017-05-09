@@ -81,6 +81,17 @@ as_max=1
 as_min=1
 version=1
 
+[legacy-frontend]
+legacy-frontend.production.squarefoot-singapore.ipga.local
+
+[legacy-frontend:vars]
+application=legacy-frontend
+ab=b
+instance_type=m4.large
+as_max=1
+as_min=1
+version=1
+
 [switch-stack]
 127.0.0.1
 

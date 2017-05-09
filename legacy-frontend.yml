@@ -1,0 +1,7 @@
+---
+
+- hosts: legacy-frontend
+  connection: local
+  gather_facts: False
+  roles:
+    - squarefoot/legacy-frontend

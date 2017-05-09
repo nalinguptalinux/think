@@ -1,0 +1,31 @@
+---
+  - name: setup legacy frontend stack
+    cloudformation:
+      stack_name: "{{application}}-{{ab}}-{{version}}"
+      state: present
+      region: "{{aws_region}}"
+      disable_rollback: true
+      template: "cloudformation/squarefoot/legacy-frontend.yml"
+      stack_policy: "policies/cloudformation/stack-policy.json"
+      template_parameters:
+        AMI: "{{ami}}"
+        HostedZoneName: "{{private_zone}}"
+        InstanceType: "{{instance_type}}"
+        KeyName: "{{key_name}}"
+        VpcID: "{{aws_vpc_id}}"
+        RecordName: "{{application}}"
+        AppPort: '8000'
+        AB: "{{ab}}"
+        AvailabilityZones: "{{zones}}"
+        PrivateSubnets: "{{private_subnets}}"
+        ASGMaxSize: "{{as_max}}"
+        ASGMinSize: "{{as_min}}"
+        BackupBucketName: "{{backup_bucket_name}}"
+        VpcNet: "{{vpc_cidr}}"
+        NewRelicLicenseKey: "{{new_relic_license_key}}"
+        PagerDutyArn: "{{low_pager_duty_arn}}"
+      tags:
+        project: "{{project}}"
+        application: "{{application}}"
+        lob: "regional-web"
+        env: "{{env}}"
