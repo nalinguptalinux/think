@@ -232,8 +232,7 @@ Resources:
           /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
           /opt/aws/bin/cfn-signal -e 0 -r "WebInstance instance Stack Complete."  '${WaitHandle}'
 
-          aws s3 cp s3://prod-sg-sfhk-backups/legacy-web.tar.gz  /tmp/legacy-web.tar.gz --region ${AWS::Region} || error_exit 'unable to download legacy web from s3'
-          tar zxvf /tmp/legacy-web.tar.gz -C /var/www/html || error_exit 'unable to decompress legacy web'
+          aws s3 sync s3://prod-sg-sfhk-backups/legacy-web  /var/www/html --region ${AWS::Region} || error_exit 'unable to download legacy web from s3'
   WebASGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
