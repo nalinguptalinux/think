@@ -113,7 +113,7 @@ host_port=3000
 container_port=3000
 elb_protocol=HTTP
 health_check_path=http:3000/diagnostic/status/heartbeat
-desired_asg_capacity=1
+desired_asg_capacity=2
 
 [cleanup-stack]
 127.0.0.1
