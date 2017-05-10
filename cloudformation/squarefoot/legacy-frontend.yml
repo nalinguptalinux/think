@@ -10,6 +10,9 @@ Parameters:
   AppPort:
     Description: Application Http port to listen on
     Type: String
+  PublicSubnets:
+    Description: The public subnets in the VPC
+    Type: CommaDelimitedList
   PrivateSubnets:
     Description: The private subnets in the VPC
     Type: CommaDelimitedList
@@ -99,8 +102,8 @@ Resources:
       SecurityGroupIngress:
         CidrIp: !Ref 'VpcNet'
         IpProtocol: tcp
-        FromPort: '8000'
-        ToPort: '8000'
+        FromPort: '80'
+        ToPort: '80'
       VpcId: !Ref 'VpcID'
   WebSSHSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -119,17 +122,17 @@ Resources:
   WebELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
-      Subnets: !Ref 'PrivateSubnets'
+      Subnets: !Ref 'PublicSubnets'
       Scheme: internal
       CrossZone: true
       SecurityGroups:
       - !Ref 'WebSecurityGroup'
       Listeners:
-      - InstancePort: '8000'
+      - InstancePort: '80'
         LoadBalancerPort: !Ref 'AppPort'
         Protocol: HTTP
       HealthCheck:
-        Target: "HTTP:8000/"
+        Target: "HTTP:80/"
         HealthyThreshold: '3'
         UnhealthyThreshold: '3'
         Interval: '30'

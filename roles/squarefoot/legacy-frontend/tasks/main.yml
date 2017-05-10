@@ -8,8 +8,8 @@
       template: "cloudformation/squarefoot/legacy-frontend.yml"
       stack_policy: "policies/cloudformation/stack-policy.json"
       template_parameters:
-        AMI: "{{ami}}"
-        HostedZoneName: "{{private_zone}}"
+        AMI: "{{legacy_ami}}"
+        HostedZoneName: "{{public_zone}}"
         InstanceType: "{{instance_type}}"
         KeyName: "{{key_name}}"
         VpcID: "{{aws_vpc_id}}"
@@ -17,6 +17,7 @@
         AppPort: '8000'
         AB: "{{ab}}"
         AvailabilityZones: "{{zones}}"
+        PublicSubnets: "{{public_subnets}}"
         PrivateSubnets: "{{private_subnets}}"
         ASGMaxSize: "{{as_max}}"
         ASGMinSize: "{{as_min}}"

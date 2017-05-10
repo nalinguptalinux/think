@@ -91,6 +91,7 @@ instance_type=m4.large
 as_max=1
 as_min=1
 version=1
+legacy_ami=ami-1f17927c
 
 [switch-stack]
 127.0.0.1
