@@ -22,9 +22,9 @@ Conditions:
 Resources:
   LambdaDeploymentBucket:
     Type: AWS::S3::Bucket
+    DeletionPolicy: 'Retain'
     Properties:
       BucketName: !Ref 'LambdaDeploymentBucketName'
-      DeletionPolicy: 'Retain'
       Tags:
       - Value:
           Ref: BillingTag
