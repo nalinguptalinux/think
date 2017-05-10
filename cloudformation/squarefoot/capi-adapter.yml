@@ -25,13 +25,6 @@ Parameters:
   InstanceType:
     Description: EC2 instance type.
     Type: String
-    AllowedValues:
-    - t2.small
-    - t2.medium
-    - m3.medium
-    - m3.large
-    - m4.large
-    - m4.2xlarge
   KeyPair:
     Type: AWS::EC2::KeyPair::KeyName
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance

@@ -72,9 +72,9 @@ adapter.dev.squarefoot.ipp.com
 [capi-adapter:vars]
 build_number=15
 adapter_name=capi-squarefoot-listing
-instance_type=t2.medium
+instance_type=c4.large
 max_size_asg=8
-min_size_asg=1
+min_size_asg=2
 elb_port=80
 host_port=3000
 container_port=3000
