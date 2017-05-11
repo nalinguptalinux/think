@@ -1,7 +1,7 @@
 ---
   - name: setup legacy frontend stack
     cloudformation:
-      stack_name: "{{application}}-{{version}}-{{ab}}"
+      stack_name: "{{application}}-{{ab}}-{{version}}"
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
@@ -13,8 +13,8 @@
         InstanceType: "{{instance_type}}"
         KeyName: "{{key_name}}"
         VpcID: "{{aws_vpc_id}}"
-        RecordName: "{{application}}-{{version}}"
-        AppPort: '8000'
+        RecordName: "{{application}}-{{ab}}-{{version}}"
+        AppPort: '80'
         AB: "{{ab}}"
         AvailabilityZones: "{{zones}}"
         PublicSubnets: "{{public_subnets}}"

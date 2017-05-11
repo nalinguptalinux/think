@@ -44,5 +44,16 @@ yum localinstall -y php-5.1.6-45.el5_11.x86_64.rpm php-devel-5.1.6-45.el5_11.x86
 yum localinstall -y libc-client-2004g-2.2.1.x86_64.rpm
 yum localinstall -y php-pear-1.4.9-8.el5.noarch.rpm php-imap-5.1.6-45.el5_11.x86_64.rpm php-xml-5.1.6-45.el5_11.x86_64.rpm php-gd-5.1.6-45.el5_11.x86_64.rpm php-mbstring-5.1.6-45.el5_11.x86_64.rpm php-mysql-5.1.6-45.el5_11.x86_64.rpm
 
-#yum install -y mod_perl mod_ssl
 
+aws s3 sync s3://prod-sg-sfhk-backups/legacy-httpd-conf legacy-httpd-conf --region ap-southeast-1
+cp legacy-httpd-conf/modules/mod_mem_cache.so /etc/httpd/modules/mod_mem_cache.so
+yum install -y mod_perl mod_ssl
+
+pecl install json
+
+#enable php json extension: https://redacacia.me/2011/07/29/fixing-fatal-error-call-to-undefined-function-json_decode/
+#
+#Open your php.ini file  (ex. nano /etc/php.ini)
+#Find in php.ini a section called Dynamic Extensions
+#Add a line: extension = json.so
+#Save php.ini and restart Apache (ex. service httpd restart)

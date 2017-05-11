@@ -19,12 +19,6 @@ Parameters:
   KeyName:
     Description: Name of an existing EC2 KeyPair to enable SSH access
     Type: String
-  AB:
-    Description: The name of the stack to deploy
-    Type: String
-    AllowedValues:
-    - a
-    - b
   HostedZoneName:
     Description: The Route53 Zone in which to create records
     Type: String
@@ -123,7 +117,7 @@ Resources:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
       Subnets: !Ref 'PublicSubnets'
-      Scheme: internal
+      Scheme: internet-facing
       CrossZone: true
       SecurityGroups:
       - !Ref 'WebSecurityGroup'
@@ -214,7 +208,7 @@ Resources:
             done
           }
           function configure_hosts {
-            recordName=${RecordName}.${AB}
+            recordName=${RecordName}
             instance_ip=$(curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
             domain=$(awk '/^search/ { print $2 }' /etc/resolv.conf)
             ipend=`echo $instance_ip | sed 's/\./\-/g'`
@@ -251,7 +245,7 @@ Resources:
         Value: !Ref 'AWS::StackName'
         PropagateAtLaunch: true
       - Key: Name
-        Value: !Join [., [!Ref 'RecordName', !Ref 'AB', !Ref 'HostedZoneName']]
+        Value: !Join ['', [!Ref 'RecordName', ., !Ref 'HostedZoneName', .]]
         PropagateAtLaunch: true
   WebRecordSet:
     Type: AWS::Route53::RecordSet
@@ -259,7 +253,7 @@ Resources:
     Properties:
       HostedZoneName:  !Join ['', [!Ref 'HostedZoneName', '.']]
       Comment: DNS name for Web
-      Name: !Join ['', [!Ref 'RecordName', ., !Ref 'AB', ., !Ref 'HostedZoneName', .]]
+      Name: !Join ['', [!Ref 'RecordName', ., !Ref 'HostedZoneName', .]]
       Type: CNAME
       TTL: 60
       ResourceRecords:
@@ -278,4 +272,4 @@ Outputs:
     Value: !GetAtt [WebELB, DNSName]
   ServiceEndpoint:
     Description: Web endpoint.
-    Value: !Join [., [!Ref 'RecordName', !Ref 'AB', !Ref 'HostedZoneName']]
+    Value: !Join ['', [!Ref 'RecordName', ., !Ref 'HostedZoneName', .]]
