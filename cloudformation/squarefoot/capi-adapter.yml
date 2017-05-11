@@ -435,8 +435,8 @@ Resources:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     DependsOn: ECSService
     Properties:
-      MaxCapacity: 8
-      MinCapacity: 1
+      MaxCapacity: !Ref 'MaxSizeASG'
+      MinCapacity: !Ref 'MinSizeASG'
       ResourceId: !Join ['', [service/, !Ref 'ECSCluster', /, !GetAtt [ECSService, Name]]]
       RoleARN: !GetAtt [ECSAutoscalingRole, Arn]
       ScalableDimension: ecs:service:DesiredCount
