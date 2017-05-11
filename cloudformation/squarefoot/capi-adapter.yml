@@ -105,9 +105,9 @@ Resources:
           Name: docker_sock
       ContainerDefinitions:
         - Name: !Ref 'RecordName'
-          Cpu: 768
+          Cpu: 1536
           Essential: 'true'
-          Memory: 1024
+          Memory: 2048
           PortMappings:
             - HostPort: !Ref 'HostPort'
               Protocol: tcp
