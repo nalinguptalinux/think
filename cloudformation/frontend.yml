@@ -145,6 +145,10 @@ Parameters:
     Description: Version string to display in header
     Type: String
 
+  InstProfile:
+    Description: 'Instance Profile Detail'
+    Type: String
+
 Mappings:
   AWSRegionArch2AMI:
     ap-southeast-1:
@@ -164,8 +168,8 @@ Resources:
       ContainerDefinitions:
       - Name: ECS-HP-TASK
         Cpu: '256'
-        Essential: 'true'
         Memory: '1024'
+        Essential: true
         PortMappings:
         - HostPort: '3000'
           Protocol: tcp
@@ -285,8 +289,7 @@ Resources:
         Ref: Instancestype
       InstanceMonitoring: true
       AssociatePublicIpAddress: 'true'
-      IamInstanceProfile:
-        Ref: EC2InstanceProfile
+      IamInstanceProfile: !Ref 'InstProfile'
       SecurityGroups:
       - Ref: ECSSecurityGroup
       UserData:
@@ -317,7 +320,7 @@ Resources:
           /bin/echo -e ' ######--------------Install NewRelic agent on EC2 Host----------------###### \n'
           /usr/bin/aws s3 cp s3://${ResourceBucketName}/newrelic/${NewRelicRPM} /tmp/${NewRelicRPM} --region ${AWS::Region}
           /bin/rpm -vhi /tmp/${NewRelicRPM}
-          /usr/sbin/usermod  -a -G docker newrelic          
+          /usr/sbin/usermod  -a -G docker newrelic
           /usr/sbin/nrsysmond-config --set license_key=${NewRelicLicenseKey}
           /bin/echo hostname=$(/bin/hostname ) >> /etc/newrelic/nrsysmond.cfg
           /etc/init.d/newrelic-sysmond start
@@ -333,6 +336,7 @@ Resources:
 
   EcsHpELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
+    DependsOn: 'ECSAutoScalingGroup'
     Properties:
       Subnets:
         Ref: SubnetID
@@ -364,8 +368,8 @@ Resources:
       ContainerDefinitions:
       - Name: ECS-Web-TASK
         Cpu: '512'
-        Essential: 'true'
         Memory: '512'
+        Essential: true
         PortMappings:
         - HostPort: '80'
           Protocol: tcp
@@ -496,23 +500,33 @@ Resources:
 
   AutoscalingRole:
     DependsOn: 'ECSAutoScalingGroup'
-    Type: AWS::IAM::Role
+    Type: 'AWS::IAM::Role'
     Properties:
+      ManagedPolicyArns:
+      - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceAutoscaleRole'
+      - 'arn:aws:iam::aws:policy/AutoScalingFullAccess'
       AssumeRolePolicyDocument:
+        Version: '2012-10-17'
         Statement:
         - Effect: Allow
           Principal:
-            Service: [application-autoscaling.amazonaws.com]
-          Action: ['sts:AssumeRole']
-      Path: /
-      Policies:
-      - PolicyName: service-autoscaling
-        PolicyDocument:
-          Statement:
-          - Effect: Allow
-            Action: ['application-autoscaling:*', 'cloudwatch:DescribeAlarms', 'cloudwatch:PutMetricAlarm',
-              'ecs:DescribeServices', 'ecs:UpdateService']
-            Resource: '*'
+            Service: 'application-autoscaling.amazonaws.com'
+          Action: 'sts:AssumeRole'
+
+  ECSServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      ManagedPolicyArns:
+      - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: 'ecs.amazonaws.com'
+          Action: 'sts:AssumeRole'
+
+
 
   SrpServiceScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
@@ -699,8 +713,7 @@ Resources:
 
   HPService:
     Type: AWS::ECS::Service
-    DependsOn:
-    - ECSAutoScalingGroup
+    DependsOn: 'ECSAutoScalingGroup'
     Properties:
       Cluster:
         Ref: ECSCluster
@@ -713,97 +726,9 @@ Resources:
         ContainerPort: '3000'
         LoadBalancerName:
           Ref: EcsHpELB
-      Role:
-        Ref: ECSServiceRole
+      Role: !Ref 'ECSServiceRole'
       TaskDefinition:
         Ref: HPtaskdefinition
-
-  ECSServiceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - ecs.amazonaws.com
-          Action:
-          - sts:AssumeRole
-      Path: "/"
-      Policies:
-      - PolicyName: ecs-service-Policy
-        PolicyDocument:
-          Statement:
-          - Effect: Allow
-            Action:
-            - elasticloadbalancing:Describe*
-            - elasticloadbalancing:DeregisterInstancesFromLoadBalancer
-            - elasticloadbalancing:RegisterInstancesWithLoadBalancer
-            - ec2:Describe*
-            - ecr:Get*
-            - ecr:BatchGetImage
-            - ecr:BatchCheckLayerAvailability
-            - ecr:PutImage
-            - ecr:InitiateLayerUpload
-            - ecr:UploadLayerPart
-            - ecr:CompleteLayerUpload
-            - ecr:ListImages
-            - ecr:Describe*
-            - elasticloadbalancing:DeregisterTargets
-            - elasticloadbalancing:RegisterTargets
-            - ec2:AuthorizeSecurityGroupIngress
-            Resource: "*"
-
-  EC2Role:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - ec2.amazonaws.com
-          Action:
-          - sts:AssumeRole
-      Path: "/"
-      Policies:
-      - PolicyName: ecs-service-instance-policy
-        PolicyDocument:
-          Statement:
-          - Effect: Allow
-            Action:
-            - ecs:CreateCluster
-            - ecs:DeregisterContainerInstance
-            - ecs:DiscoverPollEndpoint
-            - ecs:Poll
-            - ecs:RegisterContainerInstance
-            - ecs:StartTelemetrySession
-            - ecs:Submit*
-            - ec2:Describe*
-            - ecr:Get*
-            - ecr:BatchGetImage
-            - ecr:BatchCheckLayerAvailability
-            - ecr:PutImage
-            - ecr:InitiateLayerUpload
-            - ecr:UploadLayerPart
-            - ecr:CompleteLayerUpload
-            - ecr:ListImages
-            - ecr:Describe*
-            - logs:CreateLogStream
-            - logs:PutLogEvents
-            Resource: "*"
-          - Effect: Allow
-            Action:
-            - s3:Get*
-            - s3:List*
-            Resource: "*"
-
-  EC2InstanceProfile:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Path: "/"
-      Roles:
-      - Ref: EC2Role
 
   ECSSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -840,13 +765,13 @@ Resources:
         Key: Name
 
   SRPTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
+    Type: 'AWS::ECS::TaskDefinition'
     Properties:
       ContainerDefinitions:
       - Name: ECS-SRP-TASK
         Cpu: '256'
-        Essential: 'true'
         Memory: '1024'
+        Essential: true
         PortMappings:
         - HostPort: '4000'
           Protocol: tcp
@@ -857,7 +782,8 @@ Resources:
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'SrpPdpECRRepo']]
 
   ECSSrpPdpELB:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
+    DependsOn: 'ECSAutoScalingGroup'
     Properties:
       Subnets:
         Ref: SubnetID

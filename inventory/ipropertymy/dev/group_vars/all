@@ -30,6 +30,7 @@ low_pager_duty_arn: arn:aws:sns:ap-southeast-1:407510221296:Low-Priority-iproper
 high_pager_duty_arn: arn:aws:sns:ap-southeast-1:407510221296:High-Priority-ipropertymy-Dev-PagerDuty
 ssl_cert_arn: arn:aws:acm:ap-southeast-1:407510221296:certificate/1485e7cd-d18c-470c-9732-04566e74350b
 
+
 web_service_count: 1
 hp_service_count: 1
 srp_service_count: 1
@@ -40,6 +41,7 @@ sumo_logic_access_id: su37UzMYy9KsP0
 sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf
 new_relic_rpm: newrelic-sysmond-2.3.0.132-1.x86_64.rpm
 new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df
+instance_profile_role: EC2-Role-Instance-Profile
 
 deployment_ecr: 676958722968.dkr.ecr.ap-southeast-1.amazonaws.com
 build_ecr: 407510221296.dkr.ecr.ap-southeast-1.amazonaws.com

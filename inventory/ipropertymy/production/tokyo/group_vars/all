@@ -32,6 +32,7 @@ low_pager_duty_arn: arn:aws:sns:ap-northeast-1:676958722968:Low-Priority-Iproper
 high_pager_duty_arn: arn:aws:sns:ap-northeast-1:676958722968:High-Priority-Iproperty-My-TK-PagerDuty
 
 ssl_cert_arn: arn:aws:acm:ap-southeast-1:676958722968:certificate/2714d7bb-8946-47b1-bfda-e2b944141cf2
+instance_profile_role: EC2-Role-Instance-Profile
 
 ami: ami-56d4ad31
 bastion_public_ip: 52.69.136.81

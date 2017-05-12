@@ -38,6 +38,7 @@
         SrpserviceCount: "{{srp_service_count}}"
         Env: "{{env}}"
         Version: "{{version}}"
+        InstProfile: "{{instance_profile_role}}"
 
       tags:
         project: "{{project}}"

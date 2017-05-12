@@ -31,6 +31,7 @@ srp_service_count: 2
 low_pager_duty_arn: arn:aws:sns:ap-southeast-1:676958722968:Low-Priority-Iproperty-My-PagerDuty
 high_pager_duty_arn: arn:aws:sns:ap-southeast-1:676958722968:High-Priority-Iproperty-My-PagerDuty
 ssl_cert_arn: arn:aws:acm:ap-southeast-1:676958722968:certificate/2714d7bb-8946-47b1-bfda-e2b944141cf2
+instance_profile_role: EC2-Role-Instance-Profile
 
 ami: ami-9a44f9f9
 bastion_public_ip: 52.221.175.36
