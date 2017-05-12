@@ -146,7 +146,7 @@ Parameters:
     Type: String
 
   InstProfile:
-    Description: 'Instance Profile Detail'
+    Description: Instance Profile Detail
     Type: String
 
 Mappings:
