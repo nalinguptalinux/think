@@ -87,11 +87,11 @@ legacy-frontend.production.squarefoot-singapore.ipga.local
 [legacy-frontend:vars]
 application=legacy-frontend
 ab=b
-instance_type=m4.large
+instance_type=c4.4xlarge
 as_max=1
 as_min=1
-version=1
-legacy_ami=ami-1f17927c
+version=lnx
+legacy_ami=ami-a9cf4bca
 
 [switch-stack]
 127.0.0.1

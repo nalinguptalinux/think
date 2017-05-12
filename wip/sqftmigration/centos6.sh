@@ -3,7 +3,7 @@
 #install python 2.7 on centos 6.7
 
 sudo yum groupinstall -y "Development tools"
-sudo yum install -y epel-release zlib-devel  bzip2-devel openssl-devel ncurses-devel sqlite-devel wget
+sudo yum install -y mysql epel-release zlib-devel  bzip2-devel openssl-devel ncurses-devel sqlite-devel wget
 
 make altinstall
 cd /usr/src

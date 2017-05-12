@@ -225,11 +225,14 @@ Resources:
           /etc/init.d/newrelic-sysmond restart
           mkdir -p /var/www/html
 
+          aws s3 sync s3://prod-sg-sfhk-backups/legacy-web  /var/www/html --region ${AWS::Region} || error_exit 'unable to download legacy web from s3'
+          find ./ -type f -exec sed -i -e  's/573266-db2.squarefoot.com.hk/rds.production.squarefoot-singapore.ipga.local/g' {} \;
+
+          service httpd start
+
           # Start up the cfn-hup daemon to listen for changes
           /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
           /opt/aws/bin/cfn-signal -e 0 -r "WebInstance instance Stack Complete."  '${WaitHandle}'
-
-          aws s3 sync s3://prod-sg-sfhk-backups/legacy-web  /var/www/html --region ${AWS::Region} || error_exit 'unable to download legacy web from s3'
   WebASGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:

@@ -11,6 +11,8 @@
 
 cd /var/www/html
 sed -i 's/573266-db2.squarefoot.com.hk/rds.production.squarefoot-singapore.ipga.local/g' *
+find ./ -type f -exec sed -i -e  's/573266-db2.squarefoot.com.hk/rds.production.squarefoot-singapore.ipga.local/g' {} \;
+
 grep -rnw '/etc/httpd' -e '573266-db2.squarefoot.com.hk'
 
 
