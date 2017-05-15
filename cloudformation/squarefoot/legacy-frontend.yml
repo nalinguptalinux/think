@@ -169,6 +169,26 @@ Resources:
                 triggers=post.update
                 path=Resources.WebASLaunchConf.Metadata.AWS::CloudFormation::Init
                 action=/opt/aws/bin/cfn-init -s ${AWS::StackName}  -r WebASLaunchConf  --role ${Role} --region #{AWS::Region} runas=root
+            /etc/logrotate.d/httpd:
+              content: !Sub |
+                /var/log/httpd/*log {
+                    missingok
+                    notifempty
+                    sharedscripts
+                    postrotate
+                        /sbin/service httpd reload > /dev/null 2>/dev/null || true
+                    endscript
+                }
+            /etc/logrotate.d/s3_img_upload_csv:
+              content: !Sub |
+                /var/www/html/admin/app/tmp/s3_img_upload_csv/*log {
+                    missingok
+                    notifempty
+                    sharedscripts
+                    postrotate
+                        /sbin/service httpd reload > /dev/null 2>/dev/null || true
+                    endscript
+                }
           services:
             sysvinit:
               cfn-hup:
