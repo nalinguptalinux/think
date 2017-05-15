@@ -268,7 +268,7 @@ Resources:
     DependsOn: WebASGroup
     Properties:
       Handle: !Ref 'WaitHandle'
-      Timeout: '1000'
+      Timeout: '2700'
 Outputs:
   ELBEndpoint:
     Description: Web elb dns name.
