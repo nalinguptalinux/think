@@ -15,7 +15,6 @@
         VpcID: "{{aws_vpc_id}}"
         RecordName: "{{application}}-{{ab}}-{{version}}"
         AppPort: '80'
-        AB: "{{ab}}"
         AvailabilityZones: "{{zones}}"
         PublicSubnets: "{{public_subnets}}"
         PrivateSubnets: "{{private_subnets}}"
