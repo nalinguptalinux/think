@@ -132,7 +132,7 @@ Resources:
         Protocol: HTTPS
         SSLCertificateId: !Ref 'SSLCertArn'
       HealthCheck:
-        Target: "HTTP:80/"
+        Target: "HTTP:80/unprotected/status.php"
         HealthyThreshold: '3'
         UnhealthyThreshold: '3'
         Interval: '30'
