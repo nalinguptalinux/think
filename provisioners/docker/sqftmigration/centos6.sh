@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 #install python 2.7 on centos 6.7
+#todo: use centos5 docker container for ensure packages are compatible
 
 sudo yum groupinstall -y "Development tools"
 sudo yum install -y mysql epel-release zlib-devel  bzip2-devel openssl-devel ncurses-devel sqlite-devel wget
@@ -57,3 +58,5 @@ pecl install json
 #Find in php.ini a section called Dynamic Extensions
 #Add a line: extension = json.so
 #Save php.ini and restart Apache (ex. service httpd restart)
+
+#find ./ -type f -exec sed -i -e  's/573266-db2.squarefoot.com.hk/rds.production.squarefoot-singapore.ipga.local/g' {} \;
