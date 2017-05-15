@@ -251,8 +251,8 @@ Resources:
           /etc/init.d/newrelic-sysmond restart
           mkdir -p /var/www/html
 
-          aws s3 sync s3://prod-sg-sfhk-backups/legacy-web  /var/www/html --region ${AWS::Region} || error_exit 'unable to download legacy web from s3'
-          find ./ -type f -exec sed -i -e  's/573266-db2.squarefoot.com.hk/rds.production.squarefoot-singapore.ipga.local/g' {} \;
+          #aws s3 sync s3://prod-sg-sfhk-backups/legacy-web  /var/www/html --region ${AWS::Region} || error_exit 'unable to download legacy web from s3'
+          #find ./ -type f -exec sed -i -e  's/573266-db2.squarefoot.com.hk/rds.production.squarefoot-singapore.ipga.local/g' {} \;
           chown -R ec2-user:ec2-user /var/www/html/xml /var/www/html/corn
           service httpd start
 
