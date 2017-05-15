@@ -91,7 +91,7 @@ instance_type=c4.4xlarge
 as_max=1
 as_min=1
 version=lnx
-legacy_ami=ami-a9cf4bca
+legacy_ami=ami-fdf6729e
 
 [switch-stack]
 127.0.0.1

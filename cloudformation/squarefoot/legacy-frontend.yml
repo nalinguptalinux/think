@@ -53,7 +53,9 @@ Parameters:
   PagerDutyArn:
     Description: pager duty arn.
     Type: String
-
+  SSLCertArn:
+    Description: ssl cert arn
+    Type: String
 Conditions:
   RegionCondition: !Not [!Equals [!Ref 'AWS::Region', cn-north-1]]
 Resources:
@@ -125,6 +127,10 @@ Resources:
       - InstancePort: '80'
         LoadBalancerPort: !Ref 'AppPort'
         Protocol: HTTP
+      - InstancePort: '80'
+        LoadBalancerPort: '443'
+        Protocol: HTTPS
+        SSLCertificateId: !Ref 'SSLCertArn'
       HealthCheck:
         Target: "HTTP:80/"
         HealthyThreshold: '3'

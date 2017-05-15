@@ -25,6 +25,7 @@
         VpcNet: "{{vpc_cidr}}"
         NewRelicLicenseKey: "{{new_relic_license_key}}"
         PagerDutyArn: "{{low_pager_duty_arn}}"
+        SSLCertArn: "{{ssl_cert_arn}}"
       tags:
         project: "{{project}}"
         application: "{{application}}"
