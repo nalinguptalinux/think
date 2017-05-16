@@ -15,6 +15,10 @@
         SubnetId: "{{public_subnets.split(',')[0]}}"
         VPC: "{{aws_vpc_id}}"
         VpcCidr: "{{vpc_cidr}}"
+        NewRelicRPM: "{{new_relic_rpm}}"
+        NewRelicLicenseKey: "{{new_relic_license_key}}"
+        ResourceBucketName: "{{resource_bucket_name}}"
+
       tags:
         project: "{{project}}"
         lob: "regional-web"

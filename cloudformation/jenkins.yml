@@ -64,6 +64,18 @@ Parameters:
     Description: Prefix for Jenkins' DNS record (<prefix>.<zone>}
     Type: String
 
+  NewRelicLicenseKey:
+    Description: New Relic License Key
+    Type: String
+
+  NewRelicRPM:
+    Description: New Relic RPM
+    Type: String
+
+  ResourceBucketName:
+    Description: Name of the S3 bucket to retrieve the downloaded scripts or installation files
+    Type: String
+
 Mappings:
 
   RegionMap:
