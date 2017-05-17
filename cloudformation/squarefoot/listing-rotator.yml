@@ -144,6 +144,23 @@ Resources:
           - Configure
         Configure:
           files:
+            "/etc/logrotate.d/listing-rorator":
+              content:
+                Fn::Join:
+                - ''
+                - - /var/log/rea/listing-rotator/stdout.log /var/log/rea/listing-rotator/stderr.log {
+                  -    rotate 5
+                  -    size=100M
+                  -    daily
+                  -    missingok
+                  -    notifempty
+                  -    sharedscripts
+                  -    copytruncate
+                  -    compress
+                  - "}"
+              mode: '000400'
+              owner: root
+              group: root
             "/etc/cfn/cfn-hup.conf":
               content:
                 Fn::Join:
