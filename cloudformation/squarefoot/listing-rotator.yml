@@ -134,6 +134,8 @@ Resources:
         - Ref: PagerDutyArn
         AlarmActions:
         - Ref: PagerDutyArn
+        OKActions:
+        - Ref: PagerDutyArn
         
   ASGLaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
