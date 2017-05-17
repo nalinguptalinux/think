@@ -147,7 +147,7 @@ Resources:
             "/etc/logrotate.d/listing-rorator":
               content:
                 Fn::Join:
-                - '\n'
+                - "\n"
                 - - /var/log/rea/listing-rotator/stdout.log /var/log/rea/listing-rotator/stderr.log {
                   -    rotate 5
                   -    size=100M
