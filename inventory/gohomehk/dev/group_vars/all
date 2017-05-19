@@ -1,0 +1,52 @@
+aws_region: ap-southeast-1
+project: gohomehk
+business_unit: HK
+env: development
+deployment_env: development
+private_zone: development.squarefoot-singapore.ipga.local
+public_zone: dev.sg.gohome.com.hk
+key_name: awscloud-squarefoot-development-singapore
+aws_vpc_id:  vpc-c9ef63ad
+vpc_cidr: 10.39.48.0/20
+dns_servers: 169.254.169.253,10.39.48.2
+vpc_dns: 10.39.48.2
+zones: ap-southeast-1a,ap-southeast-1b
+
+nat_subnets:  subnet-36c6b440,subnet-9d9bd5f9
+private_subnets:  subnet-37c6b441,subnet-939bd5f7
+public_subnets:  subnet-49c6b43f,subnet-9c9bd5f8
+
+nat_subnet_cidr_blocks: 10.39.56.0/23, 10.39.58.0/23
+public_subnet_cidr_blocks: 10.39.52.0/23, 10.39.54.0/23
+private_subnet_cidr_blocks: 10.39.48.0/23, 10.39.50.0/23
+
+nat_subnet_supernet: 10.39.56.0/22
+public_subnet_supernet: 10.39.52.0/22
+private_subnet_supernet: 10.39.48.0/22
+
+ami: ami-9a44f9f9
+bastion_public_ip:  52.221.97.29
+ssh_from_bastion_sg_id:  sg-0834b66f
+low_pager_duty_arn: arn:aws:sns:ap-southeast-1:331887960933:Low-Priority-Squarefoot-Dev-PagerDuty
+high_pager_duty_arn: arn:aws:sns:ap-southeast-1:331887960933:High-Priority-Squarefoot-Dev-PagerDuty
+ssl_cert_arn: arn:aws:acm:ap-southeast-1:331887960933:certificate/ae7fed36-0562-4c50-a23c-3dffcfcc969f
+
+web_service_count: 1
+hp_service_count: 1
+srp_service_count: 1
+
+resource_bucket_name: prod-sg-sfhk-infra-common
+sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
+sumo_logic_access_id: su37UzMYy9KsP0
+sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf
+new_relic_rpm: newrelic-sysmond-2.3.0.132-1.x86_64.rpm
+new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df
+
+deployment_ecr: 678965432744.dkr.ecr.ap-southeast-1.amazonaws.com
+build_ecr: 331887960933.dkr.ecr.ap-southeast-1.amazonaws.com
+instance_profile_role: EC2-Role-Instance-Profile
+
+ecs_amis:
+  ap-southeast-1: ami-b4ae1dd7
+  ap-northeast-1: ami-f63f6f91
+  ap-southeast-2: ami-fbe9eb98

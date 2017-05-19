@@ -1,0 +1,58 @@
+aws_region: ap-southeast-1
+project: squarefoot
+deployment_env: production-singapore
+env: production
+business_unit: HK
+private_zone: production.squarefoot-singapore.ipga.local
+public_zone: sg.squarefoot.com.hk
+key_name: awscloud-squarefoot-production-singapore
+aws_vpc_id:  vpc-1c70e178
+vpc_cidr: 10.39.0.0/20
+dns_servers: 169.254.169.253,10.39.0.2
+vpc_dns: 10.39.0.2
+zones: ap-southeast-1a,ap-southeast-1b
+
+nat_subnets: subnet-90b0f6e6,subnet-4ce6b428
+private_subnets: subnet-9eb0f6e8,subnet-43e6b427
+public_subnets: subnet-91b0f6e7,subnet-42e6b426
+
+nat_subnet_cidr_blocks: 10.39.8.0/23,10.39.10.0/23
+public_subnet_cidr_blocks: 10.39.4.0/23,10.39.6.0/23
+private_subnet_cidr_blocks: 10.39.0.0/23,10.39.2.0/23
+
+nat_subnet_supernet: 10.39.8.0/22
+public_subnet_supernet: 10.39.4.0/22
+private_subnet_supernet: 10.39.0.0/22
+
+ami: ami-9a44f9f9
+bastion_public_ip: 52.74.72.75
+ssh_from_bastion_sg_id: sg-6094f007
+low_pager_duty_arn: arn:aws:sns:ap-southeast-1:678965432744:Low-Priority-Squarefoot-Prod-Sg-PagerDuty
+high_pager_duty_arn: arn:aws:sns:ap-southeast-1:678965432744:High-Priority-Squarefoot-Prod-Sg-PagerDuty
+ssl_cert_arn: arn:aws:acm:ap-southeast-1:678965432744:certificate/e92b6f1b-cefe-45f7-ba71-e34acd7e866a
+
+web_service_count: 2
+hp_service_count: 2
+srp_service_count: 2
+
+resource_bucket_name: prod-sg-sfhk-infra-common
+backup_bucket_name: prod-sg-sfhk-backups
+sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
+sumo_logic_access_id: su37UzMYy9KsP0
+sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf
+new_relic_rpm: newrelic-sysmond-2.3.0.132-1.x86_64.rpm
+new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df
+instance_profile_role: EC2-Role-Instance-Profile
+
+deployment_ecr: 678965432744.dkr.ecr.ap-southeast-1.amazonaws.com
+
+target_group_arns:
+  capi-adapter-listing-live: arn:aws:elasticloadbalancing:ap-southeast-1:678965432744:targetgroup/listing-target-group-live/ff8b20ef37bbab58
+  capi-adapter-suggestion-live: arn:aws:elasticloadbalancing:ap-southeast-1:678965432744:targetgroup/suggestion-target-group-live/0ad88efe885a33a3
+  capi-adapter-listing-beta: arn:aws:elasticloadbalancing:ap-southeast-1:678965432744:targetgroup/listing-target-group-beta/97c790aab7bb7498
+  capi-adapter-suggestion-beta: arn:aws:elasticloadbalancing:ap-southeast-1:678965432744:targetgroup/suggestion-target-group-beta/4aca6155e0007e0e
+
+ecs_amis:
+  ap-southeast-1: ami-b4ae1dd7
+  ap-northeast-1: ami-f63f6f91
+  ap-southeast-2: ami-fbe9eb98

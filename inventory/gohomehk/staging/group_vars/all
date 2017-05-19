@@ -1,0 +1,55 @@
+aws_region: ap-southeast-1
+project: squarefoot
+business_unit: HK
+env: staging
+deployment_env: staging-singapore
+private_zone: staging.squarefoot-singapore.ipga.local
+public_zone: stg.sg.squarefoot.com.hk
+key_name: awscloud-squarefoot-staging-singapore
+aws_vpc_id:  vpc-74d35f10
+vpc_cidr: 10.39.32.0/20
+dns_servers: 169.254.169.253,10.39.32.2
+vpc_dns: 10.39.32.2
+zones: ap-southeast-1a,ap-southeast-1b
+
+nat_subnets: subnet-d7ddafa1,subnet-759fd111
+private_subnets: subnet-d6ddafa0,subnet-779fd113
+public_subnets: subnet-e9ddaf9f,subnet-769fd112
+
+nat_subnet_cidr_blocks: 10.39.40.0/23,10.39.42.0/23
+public_subnet_cidr_blocks: 10.39.36.0/23,10.39.38.0/23
+private_subnet_cidr_blocks: 10.39.32.0/23,10.39.34.0/23
+
+nat_subnet_supernet: 10.39.40.0/22
+public_subnet_supernet: 10.39.36.0/22
+private_subnet_supernet: 10.39.32.0/22
+
+ami: ami-9a44f9f9
+bastion_public_ip:  52.74.223.189
+ssh_from_bastion_sg_id:  sg-042cae63
+low_pager_duty_arn: arn:aws:sns:ap-southeast-1:866270780045:Low-Priority-Squarefoot-Staging-PagerDuty
+high_pager_duty_arn: arn:aws:sns:ap-southeast-1:866270780045:High-Priority-Squarefoot-Staging-PagerDuty
+ssl_cert_arn: arn:aws:acm:ap-southeast-1:866270780045:certificate/01130418-81c9-471e-b7cc-999725598295
+
+web_service_count: 1
+hp_service_count: 1
+srp_service_count: 1
+
+resource_bucket_name: prod-sg-sfhk-infra-common
+sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
+sumo_logic_access_id: su37UzMYy9KsP0
+sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf
+new_relic_rpm: newrelic-sysmond-2.3.0.132-1.x86_64.rpm
+new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df
+instance_profile_role: EC2-Role-Instance-Profile
+
+target_group_arns:
+  capi-adapter-listing-live: arn:aws:elasticloadbalancing:ap-southeast-1:866270780045:targetgroup/listing-target-group-live/c24c2360f4aef1ad
+  capi-adapter-suggestion-live: arn:aws:elasticloadbalancing:ap-southeast-1:866270780045:targetgroup/suggestion-target-group-live/f8d87ce69cb9cb9c
+
+deployment_ecr: 678965432744.dkr.ecr.ap-southeast-1.amazonaws.com
+
+ecs_amis:
+  ap-southeast-1: ami-b4ae1dd7
+  ap-northeast-1: ami-f63f6f91
+  ap-southeast-2: ami-fbe9eb98
