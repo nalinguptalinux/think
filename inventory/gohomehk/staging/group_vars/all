@@ -1,5 +1,5 @@
 aws_region: ap-southeast-1
-project: squarefoot
+project: gohomehk
 business_unit: HK
 env: staging
 deployment_env: staging-singapore
