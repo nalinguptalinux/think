@@ -14,6 +14,12 @@ srp_pdp_ecr_repo=gohomehk/srp-pdp:latest
 nginx_ecr_repo=nginx:latest
 elb_name=frontend-dev-gohomehk-elb
 
+[clean-up-stack]
+web.dev.sg.gohome.com.hk
+
+[clean-up-stack:vars]
+application=frontend-gohomehk
+
 [elb]
 127.0.0.1
 
