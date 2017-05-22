@@ -1,5 +1,5 @@
 aws_region: ap-southeast-1
-project: squarefoot
+project: gohomehk
 deployment_env: production-singapore
 env: production
 business_unit: HK
