@@ -3,7 +3,7 @@ web.dev.sg.gohome.com.hk
 
 [frontend:vars]
 dns_hostname=web
-application=frontend-gohomehk
+application=gohomehk-frontend
 ab=a
 ecs_instance_type=t2.medium
 min_asg_size=1
@@ -14,11 +14,6 @@ srp_pdp_ecr_repo=gohomehk/srp-pdp:latest
 nginx_ecr_repo=nginx:latest
 elb_name=frontend-dev-gohomehk-elb
 
-[clean-up-stack]
-web.dev.sg.gohome.com.hk
-
-[clean-up-stack:vars]
-application=frontend-gohomehk
 
 [elb]
 127.0.0.1
