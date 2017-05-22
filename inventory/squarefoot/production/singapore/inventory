@@ -59,16 +59,17 @@ listing_update_queue_name=squarefoot-updated-listings-sg
 rds.production.squarefoot-singapore.ipga.local
 
 [rds:vars]
-application=rds-mysql
-db_name=sf-www
-db_class=db.r3.xlarge
-db_allocated_storage=500
-backup_duration=20
+application=rds-mysql-reporting
+db_name=reporting
+db_class=db.m4.xlarge
+db_allocated_storage=100
+backup_duration=7
 db_engine=MySQL
-db_engine_version=5.5.53
+db_engine_version=5.7
+db_parameter_group_version=MySQL5.5
 db_port=3306
-public_access=false
-ab=a
+public_access=true
+ab=b
 
 [legacy-cron]
 legacy-cron.production.squarefoot-singapore.ipga.local

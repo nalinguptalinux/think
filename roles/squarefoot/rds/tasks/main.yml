@@ -21,6 +21,7 @@
         DBInstanceIdentifier: "{{project}}-{{application}}-{{ab}}"
         Engine: "{{db_engine}}"
         EngineVersion: "{{db_engine_version}}"
+        ParameterGroupVersion: "{{db_engine_version}}"
         Port: "{{db_port}}"
         PagerDutyArn: "{{low_pager_duty_arn}}"
         BillingTag: "{{project}}"

@@ -62,6 +62,9 @@ Parameters:
   EngineVersion:
     Description: Engine Version
     Type: String
+  ParameterGroupVersion:
+    Description: ParameterGroup Version
+    Type: String
   Port:
     Description: Port for DB
     Type: String
@@ -103,7 +106,7 @@ Resources:
     Type: AWS::RDS::DBParameterGroup
     Properties:
       Description: Mysql RDS Parameter Group
-      Family: MySQL5.5
+      Family: !Ref 'ParameterGroupVersion'
       Parameters:
         wait_timeout: 300
         max_allowed_packet: 32000000
