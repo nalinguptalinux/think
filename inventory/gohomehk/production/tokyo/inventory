@@ -8,11 +8,11 @@ ab=a
 ecs_instance_type=t2.medium
 min_asg_size=1
 max_asg_size=2
-desired_asg_capacity=1
+desired_asg_capacity=2
 hp_ecr_repo=gohomehk/hp:latest
 srp_pdp_ecr_repo=gohomehk/srp-pdp:latest
 nginx_ecr_repo=nginx:latest
-elb_name=frontend-tk-gohomehk-elb
+elb_name=frontend-live-gohomehk-elb
 
 [elb]
 127.0.0.1
