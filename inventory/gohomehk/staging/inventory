@@ -3,7 +3,7 @@ stg.sg.gohome.com.hk
 
 [frontend:vars]
 dns_hostname=web
-application=frontend-gohomehk
+application=gohomehk-frontend
 ab=a
 ecs_instance_type=t2.medium
 min_asg_size=1
