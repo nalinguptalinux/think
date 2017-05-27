@@ -110,13 +110,13 @@ build_number=82
 adapter_name=capi-adapter-listing
 instance_type=c4.large
 max_size_asg=8
-min_size_asg=2
+min_size_asg=4
 elb_port=80
 host_port=3000
 container_port=3000
 elb_protocol=HTTP
 health_check_path=http:3000/diagnostic/status/heartbeat
-desired_asg_capacity=2
+desired_asg_capacity=4
 
 [cleanup-stack]
 127.0.0.1
