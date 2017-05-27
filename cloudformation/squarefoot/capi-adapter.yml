@@ -292,8 +292,8 @@ Resources:
       MetricName: CPUUtilization
       Namespace: AWS/EC2
       Statistic: Average
-      Period: 180
-      EvaluationPeriods: 2
+      Period: 60
+      EvaluationPeriods: 5
       Threshold: 60
       AlarmActions:
       - Ref: EC2ScaleUpPolicy
@@ -311,8 +311,8 @@ Resources:
       MetricName: CPUUtilization
       Namespace: AWS/EC2
       Statistic: Average
-      Period: 180
-      EvaluationPeriods: 2
+      Period: 60
+      EvaluationPeriods: 5
       Threshold: 40
       AlarmActions:
       - Ref: EC2ScaleDownPolicy
@@ -459,11 +459,11 @@ Resources:
   ECSCPUHighAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      EvaluationPeriods: 2
+      EvaluationPeriods: 5
       Statistic: Average
       Threshold: 60
       AlarmDescription: Alarm if CPU utilization if great than 60
-      Period: 180
+      Period: 60
       AlarmActions:
         - Ref: ServiceScalingUpPolicy
         - Ref: EC2ScaleUpPolicy
@@ -493,11 +493,11 @@ Resources:
   ECSCPULowAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      EvaluationPeriods: 2
+      EvaluationPeriods: 5
       Statistic: Average
       Threshold: 40
       AlarmDescription: Alarm if CPU utilization is less than to 40
-      Period: 180
+      Period: 60
       AlarmActions:
         - Ref: ServiceScalingDownPolicy
       Namespace: AWS/ECS
