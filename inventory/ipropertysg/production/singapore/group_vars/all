@@ -6,7 +6,7 @@ public_zone: sg.iproperty.com.sg
 aws_region: ap-southeast-1
 key_name: awscloud-ipropertysg-prod-singapore
 aws_vpc_id: vpc-3a6f085e
-vpc_cidr: 10.90.160.0/22
+vpc_cidr: 10.90.160.0/20
 dns_servers: 169.254.169.253,10.90.160.2
 vpc_dns: 10.90.160.2
 zones: ap-southeast-1a,ap-southeast-1b
