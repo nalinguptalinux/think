@@ -1,0 +1,28 @@
+---
+  - name: Create ECS cluster
+    vars:
+      region: "{{aws_region}}"
+    cloudformation:
+      stack_name: Page-For-Everything-Cluster
+      state: present
+      region: "{{aws_region}}"
+      disable_rollback: true
+      template: "cloudformation/page-for-everything/cluster.yml"
+      stack_policy: "policies/cloudformation/stack-policy.json"
+      template_parameters:
+        VpcId: "{{aws_vpc_id}}"
+        KeyPair: "{{key_name}}"
+        AMI: "{{ecs_amis[region]}}"
+        InstanceType: "{{instance_type}}"
+        PrivateSubnets: "{{private_subnets}}"
+        AZs: "{{zones}}"
+        MaxSizeASG: "{{max_asg}}"
+        MinSizeASG: "{{min_asg}}"
+        DesiredCapacity: "{{desired_asg_capacity}}"
+        PagerDuty: "{{high_pager_duty_arn}}"
+        ClusterName: "{{cluster_name}}"
+        BusinessUnit: "{{business_unit}}"
+      tags:
+        project: "{{project}}"
+        lob: "International"
+        env: "{{env}}"
