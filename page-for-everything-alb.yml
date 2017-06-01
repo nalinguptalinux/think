@@ -1,0 +1,6 @@
+---
+- hosts: page-for-everything
+  connection: local
+  gather_facts: False
+  roles:
+    - page-for-everything/alb

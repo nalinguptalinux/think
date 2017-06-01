@@ -1,0 +1,22 @@
+---
+  - name: Create Application Load Balancer
+    cloudformation:
+      stack_name: Page-For-Everything-ALB
+      state: present
+      region: "{{aws_region}}"
+      disable_rollback: true
+      template: "cloudformation/page-for-everything/alb.yml"
+      stack_policy: "policies/cloudformation/stack-policy.json"
+      template_parameters:
+        VpcID: "{{aws_vpc_id}}"
+        PublicSubnets: "{{public_subnets}}"
+        LoadBalancerName: "{{alb_name}}"
+        Scheme: "{{scheme}}"
+        BusinessUnit: "{{business_unit}}"
+        HealthCheckPath: "{{healcheck_path}}"
+        TargetGroupName: "{{target_group_name}}"
+        InstancePort: "{{instance_port}}"
+      tags:
+        project: "{{project}}"
+        lob: "International"
+        env: "{{env}}"

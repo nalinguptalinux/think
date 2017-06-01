@@ -30,3 +30,13 @@ instance_port=80
 scheme=internet-facing
 subnets={{public_subnets}}
 elb_idle_timeout=180
+
+[page-for-everything]
+127.0.0.1
+
+[page-for-everything:vars]
+alb_name=page-for-everything
+scheme=internet-facing
+healcheck_path=/hp/status
+target_group_name=page-for-everything
+instance_port=80
