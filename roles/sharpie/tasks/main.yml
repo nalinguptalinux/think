@@ -5,7 +5,7 @@
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
-      template: "cloudformation/squarefoot/sharpie.yml"
+      template: "cloudformation/sharpie.yml"
       stack_policy: "policies/cloudformation/stack-policy.json"
       template_parameters:
         UpstreamPrimaryRegion: "{{upstream_p_region}}"
