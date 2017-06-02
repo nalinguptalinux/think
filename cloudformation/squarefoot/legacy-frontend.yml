@@ -257,7 +257,10 @@ Resources:
 
           #aws s3 sync s3://prod-sg-sfhk-backups/legacy-web  /var/www/html --region ${AWS::Region} || error_exit 'unable to download legacy web from s3'
           #find ./ -type f -exec sed -i -e  's/573266-db2.squarefoot.com.hk/rds.production.squarefoot-singapore.ipga.local/g' {} \;
-          chown -R ec2-user:ec2-user /var/www/html/xml /var/www/html/corn
+          mkdir -p /var/www/private/consultancy-agent-uploads
+          sed -i -e 's/hk-tableau.cjretgqtdl2a.ap-southeast-1.rds.amazonaws.com/reporting.sg.squarefoot.com.hk/g' /var/www/html/_config_db_access.php
+          sed -i -e 's/%{HTTPS} !=on/%{HTTP:X-Forwarded-Proto} !https/g' /var/www/html/.htaccess /var/www/html/admin/.htaccess /var/www/html/admin/app/.htaccess /var/www/html/admin/app/webroot/.htaccess
+          chown -R apache:apache /var/www/html/static/oasis/report /var/www/html/static/pp/report /var/www/html/corn/emarsys /var/www/html/corn/google_remarketing /var/www/html/xml/asiaclassified /var/www/html/xml/mitula /var/www/html/xml/oncc /var/www/html/xml/trovit /var/www/html/{cmd} /var/www/html/sitemap /var/www/html/images/propertyblog/uploads /var/www/html/images/propertyblog/author_uploads /var/www/html/admin/app/webroot/img/Image /var/www/html/admin/app/tmp /var/www/private/consultancy-agent-uploads
           service httpd start
 
           # Start up the cfn-hup daemon to listen for changes
