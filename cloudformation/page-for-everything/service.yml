@@ -60,7 +60,7 @@ Resources:
           TargetGroupArn:
             Ref: TargetGroup
       DeploymentConfiguration:
-        MaximumPercent: '150'
+        MaximumPercent: '200'
         MinimumHealthyPercent: '50'
       TaskDefinition:
         Ref: TaskDefinition
