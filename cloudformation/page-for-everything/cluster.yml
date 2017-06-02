@@ -210,16 +210,12 @@ Resources:
         Ref: VpcId
       SecurityGroupIngress:
       - IpProtocol: tcp
-        FromPort: '22'
-        ToPort: '22'
+        FromPort: 22
+        ToPort: 22
         CidrIp: 0.0.0.0/0
       - IpProtocol: tcp
-        FromPort: '3000'
-        ToPort: '3000'
-        CidrIp: 0.0.0.0/0
-      - IpProtocol: icmp
-        FromPort: "-1"
-        ToPort: "-1"
+        FromPort: 32768
+        ToPort: 61000
         CidrIp: 0.0.0.0/0
 
   AutoScalingGroup:
