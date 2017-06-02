@@ -37,7 +37,7 @@ elb_idle_timeout=180
 [page-for-everything:vars]
 alb_name=page-for-everything
 scheme=internet-facing
-healcheck_path=/hp/status
+healcheck_path=/diagnostic/status
 target_group_name=page-for-everything
 instance_port=80
 instance_type=t2.medium
