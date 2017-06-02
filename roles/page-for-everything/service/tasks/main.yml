@@ -1,0 +1,28 @@
+---
+  - name: Create ECS Service
+    vars:
+      region: "{{aws_region}}"
+    cloudformation:
+      stack_name: "{{service_name}}-ECS-Service-{{build_number}}"
+      state: present
+      region: "{{aws_region}}"
+      disable_rollback: true
+      template: "cloudformation/page-for-everything/service.yml"
+      stack_policy: "policies/cloudformation/stack-policy.json"
+      template_parameters:
+        LoadBalancerName: "{{alb_name}}"
+        TargetGroup: "{{target_group_arn}}"
+        ServiceName: "{{service_name}}"
+        BuildNumber: "{{build_number}}"
+        ContainerPort: "{{container_port}}"
+        DesiredCount: "{{service_desired_count}}"
+        PagerDuty: "{{high_pager_duty_arn}}"
+        BusinessUnit: "{{business_unit}}"
+        ECR: "{{ecr}}"
+        ECSCluster: "{{cluster_name}}"
+        ServiceMaxASG: "{{service_max_asg}}"
+        ServiceMinASG: "{{service_min_asg}}"
+      tags:
+        project: "{{project}}"
+        lob: "International"
+        env: "{{env}}"

@@ -1,0 +1,219 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Setup an ECS service for specified build
+Parameters:
+  LoadBalancerName:
+    Description: ALB name
+    Type: String
+  PagerDuty:
+    Description: Pager duty SNS arn
+    Type: String
+  BusinessUnit:
+    Type: String
+    Description: Two letters country code for billing purpose
+    AllowedValues:
+    - HK
+    - MY
+    - ID
+    - SG
+  TargetGroup:
+    Type: String
+    Description: Name of TargetGroup
+  DesiredCount:
+    Type: Number
+    Description: Desired count of task
+  ServiceName:
+    Type: String
+    Description: name of service
+  BuildNumber:
+    Type: Number
+    Description: build number
+  ContainerPort:
+    Type: Number
+    Description: port exposed in Container
+    Default: 3000
+  ECR:
+    Type: String
+    Description: ECR which stores the required images
+  ECSCluster:
+    Type: String
+    Description: Cluster Name
+  ServiceMaxASG:
+    Type: String
+    Description: Max scaling number for service
+    Default: 4
+  ServiceMinASG:
+    Type: String
+    Description: Min scaling number for service
+    Default: 1
+
+Resources:
+  ECSService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        Ref: ECSCluster
+      DesiredCount:
+        Ref: DesiredCount
+      LoadBalancers:
+        - ContainerName: !Join ['-', [!Ref 'ServiceName', !Ref 'BuildNumber']]
+          ContainerPort: 3000
+          TargetGroupArn:
+            Ref: TargetGroup
+      DeploymentConfiguration:
+        MaximumPercent: '150'
+        MinimumHealthyPercent: '50'
+      TaskDefinition:
+        Ref: TaskDefinition
+      Role:
+        Ref: ECSRole
+
+  ECSRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+            - ecs.amazonaws.com
+            - ecs-tasks.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Policies:
+      - PolicyName: ecs-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - ec2:AuthorizeSecurityGroupIngress
+            - ec2:Describe*
+            - elasticloadbalancing:DeregisterInstancesFromLoadBalancer
+            - elasticloadbalancing:DeregisterTargets
+            - elasticloadbalancing:Describe*
+            - elasticloadbalancing:RegisterInstancesWithLoadBalancer
+            - elasticloadbalancing:RegisterTargets
+            - sts:AssumeRole
+            Resource: "*"
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Volumes:
+        - Host:
+            SourcePath: /var/run/docker.sock
+          Name: docker_sock
+      ContainerDefinitions:
+        - Name: !Join ['-', [!Ref 'ServiceName', !Ref 'BuildNumber']]
+          Cpu: 512
+          Essential: 'true'
+          Memory: 512
+          PortMappings:
+            - HostPort: 0
+              Protocol: tcp
+              ContainerPort: !Ref 'ContainerPort'
+          Image: !Join [':', [!Join ['/', [!Ref 'ECR', !Ref 'ServiceName']], !Ref 'BuildNumber']]
+
+  ECSAutoscalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [application-autoscaling.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+      - PolicyName: service-autoscaling
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - application-autoscaling:*
+            - cloudwatch:DescribeAlarms
+            - cloudwatch:PutMetricAlarm
+            - ecs:DescribeServices
+            - ecs:UpdateService
+            Resource: '*'
+
+  ServiceScalingTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    DependsOn: ECSService
+    Properties:
+      MaxCapacity: !Ref 'ServiceMaxASG'
+      MinCapacity: !Ref 'ServiceMinASG'
+      ResourceId: !Join ['', [service/, !Ref 'ECSCluster', /, !GetAtt [ECSService, Name]]]
+      RoleARN: !GetAtt [ECSAutoscalingRole, Arn]
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+
+  ServiceScalingUpPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: ScaleUpPolicy
+      PolicyType: StepScaling
+      ScalingTargetId: !Ref 'ServiceScalingTarget'
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ChangeInCapacity
+        Cooldown: 300
+        MetricAggregationType: Average
+        StepAdjustments:
+        - MetricIntervalLowerBound: 0
+          ScalingAdjustment: 1
+
+  ECSCPUHighAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      EvaluationPeriods: 5
+      Statistic: Average
+      Threshold: 60
+      AlarmDescription: Alarm if CPU utilization if great than 60
+      Period: 60
+      AlarmActions:
+        - Ref: ServiceScalingUpPolicy
+        - Ref: PagerDuty
+      Namespace: AWS/ECS
+      Dimensions:
+      - Name: ClusterName
+        Value:
+          Ref: ECSCluster
+      ComparisonOperator: GreaterThanThreshold
+      MetricName: CPUUtilization
+
+  ServiceScalingDownPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: ScaleDownPolicy
+      PolicyType: StepScaling
+      ScalingTargetId: !Ref 'ServiceScalingTarget'
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ChangeInCapacity
+        Cooldown: 300
+        MetricAggregationType: Average
+        StepAdjustments:
+        - MetricIntervalUpperBound: 0
+          ScalingAdjustment: -1
+
+  ECSCPULowAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      EvaluationPeriods: 5
+      Statistic: Average
+      Threshold: 40
+      AlarmDescription: Alarm if CPU utilization is less than to 40
+      Period: 60
+      AlarmActions:
+        - Ref: ServiceScalingDownPolicy
+      Namespace: AWS/ECS
+      Dimensions:
+      - Name: ClusterName
+        Value:
+          Ref: ECSCluster
+      ComparisonOperator: LessThanThreshold
+      MetricName: CPUUtilization
+
+Outputs:
+  ECSServiceName:
+    Description: ECS service name
+    Value: !GetAtt [ECSService, Name]

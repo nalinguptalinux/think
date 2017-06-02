@@ -3,7 +3,7 @@
     vars:
       region: "{{aws_region}}"
     cloudformation:
-      stack_name: Page-For-Everything-Cluster
+      stack_name: Page-For-Everything-ECS-Cluster
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
