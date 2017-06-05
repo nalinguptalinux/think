@@ -21,6 +21,8 @@
         ASGMaxSize: "{{as_max}}"
         ASGMinSize: "{{as_min}}"
         BackupBucketName: "{{backup_bucket_name}}"
+        RackSpaceBackupBucketName: "{{rackspace_backup_bucket}}"
+        ReportingDatabase: "{{reporting_database}}"
         VpcNet: "{{vpc_cidr}}"
         NewRelicLicenseKey: "{{new_relic_license_key}}"
         PagerDutyArn: "{{low_pager_duty_arn}}"

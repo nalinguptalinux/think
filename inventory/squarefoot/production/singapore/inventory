@@ -85,10 +85,12 @@ as_min=1
 version=1
 
 [legacy-frontend]
-legacy-frontend.production.squarefoot-singapore.ipga.local
+legacy-frontend.sg.squarefoot.com.hk
 
 [legacy-frontend:vars]
 application=legacy-frontend
+rackspace_backup_bucket=prod-sg-sfhk-backups
+reporting_database=reporting.sg.squarefoot.com.hk
 ab=b
 instance_type=c4.4xlarge
 as_max=1

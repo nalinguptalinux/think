@@ -4,6 +4,12 @@ Parameters:
   BackupBucketName:
     Description: Name of the S3 backup bucket
     Type: String
+  RackSpaceBackupBucketName:
+    Description: Name of the S3 backup bucket from RackSpace
+    Type: String
+  ReportingDatabase:
+    Description: Endpoint of the Reporting Database
+    Type: String
   AvailabilityZones:
     Description: The availability zones in the VPC
     Type: CommaDelimitedList
@@ -56,8 +62,6 @@ Parameters:
   SSLCertArn:
     Description: ssl cert arn
     Type: String
-Conditions:
-  RegionCondition: !Not [!Equals [!Ref 'AWS::Region', cn-north-1]]
 Resources:
   Role:
     Type: AWS::IAM::Role
@@ -66,10 +70,11 @@ Resources:
       AssumeRolePolicyDocument:
         Statement:
         - Effect: Allow
-          Principal: !If [RegionCondition, {Service: [ec2.amazonaws.com]}, {Service: [
-                ec2.amazonaws.com.cn]}]
+          Principal:
+            Service:
+              - "ec2.amazonaws.com"
           Action:
-          - sts:AssumeRole
+            - sts:AssumeRole
       Policies:
       - PolicyName: permit-s3-and-cfn
         PolicyDocument:
@@ -78,13 +83,20 @@ Resources:
             Action: cloudformation:DescribeStackResource
             Resource: '*'
           - Effect: Allow
-            Action: s3:GetObject
-            Resource: !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'BackupBucketName',
-                  /*]], !Join ['', ['arn:aws-cn:s3:::', !Ref 'BackupBucketName', /*]]]
+            Action:
+             - s3:Put*
+            Resource:
+             - !Join ['', ['arn:aws:s3:::', !Ref 'BackupBucketName',/*]]
           - Effect: Allow
-            Action: s3:ListBucket
-            Resource: !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'BackupBucketName']],
-              !Join ['', ['arn:aws-cn:s3:::', !Ref 'BackupBucketName']]]
+            Action:
+             - s3:Get*
+            Resource:
+             - !Join ['', ['arn:aws:s3:::', !Ref 'RackSpaceBackupBucketName',/*]]
+          - Effect: Allow
+            Action: s3:List*
+            Resource:
+             - !Join ['', ['arn:aws:s3:::', !Ref 'BackupBucketName']],
+             - !Join ['', ['arn:aws:s3:::', !Ref 'RackSpaceBackupBucketName']]
   Profile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -199,6 +211,14 @@ Resources:
                         /sbin/service httpd reload > /dev/null 2>/dev/null || true
                     endscript
                 }
+            /root/backup_www_to_s3.sh:
+              content: !Sub |
+                #!/usr/bin/env bash
+                #echo 'creating archive'
+                #tar -zcvf legacy-web.tar.gz --exclude='/var/www/html/admin/app/webroot/img/Image' --exclude='/var/www/html/corn/google_remarketing' --exclude='/var/www/html/corn/emarsys' /var/www/html
+                echo "Syncing to s3..."
+                aws s3 sync /var/www/html s3://${BackupBucketName}/legacy-web-aws-backup/html --exclude='/var/www/html/admin/app/webroot/img/Image/*' --exclude='/var/www/html/corn/google_remarketing/*' --exclude='/var/www/html/corn/emarsys/*' --region ap-southeast-1
+                aws s3 sync /etc/httpd s3://${BackupBucketName}/legacy-web-aws-backup/httpd --exclude='/etc/httpd/logs/*' --region ap-southeast-1
           services:
             sysvinit:
               cfn-hup:
@@ -257,10 +277,11 @@ Resources:
           /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
           /opt/aws/bin/cfn-signal -e 0 -r "WebInstance instance Stack Complete."  '${WaitHandle}'
 
-          aws s3 sync s3://prod-sg-sfhk-backups/legacy-web  /var/www/html --region ${AWS::Region} || error_exit 'unable to download legacy web from s3'
-          find ./ -type f -exec sed -i -e  's/573266-db2.squarefoot.com.hk/rds.production.squarefoot-singapore.ipga.local/g' {} \;
+          aws s3 sync s3://${RackSpaceBackupBucketName}/legacy-web  /var/www/html --region ${AWS::Region} || error_exit 'unable to download legacy web from s3'
+          cd /var/www/html
+          find ./ -type f -exec sed -i -e  's/573266-db2.squarefoot.com.hk/rds/g' {} \;
           mkdir -p /var/www/private/consultancy-agent-uploads
-          sed -i -e 's/hk-tableau.cjretgqtdl2a.ap-southeast-1.rds.amazonaws.com/reporting.sg.squarefoot.com.hk/g' /var/www/html/_config_db_access.php
+          sed -i -e 's/hk-tableau.cjretgqtdl2a.ap-southeast-1.rds.amazonaws.com/${ReportingDatabase}/g' /var/www/html/_config_db_access.php
           sed -i -e 's/%{HTTPS} !=on/%{HTTP:X-Forwarded-Proto} !https/g' /var/www/html/.htaccess /var/www/html/admin/.htaccess /var/www/html/admin/app/.htaccess /var/www/html/admin/app/webroot/.htaccess
           chown -R apache:apache /var/www/html/static/oasis/report /var/www/html/static/pp/report /var/www/html/corn/emarsys /var/www/html/corn/google_remarketing /var/www/html/xml/asiaclassified /var/www/html/xml/mitula /var/www/html/xml/oncc /var/www/html/xml/trovit /var/www/html/{cmd} /var/www/html/sitemap /var/www/html/images/propertyblog/uploads /var/www/html/images/propertyblog/author_uploads /var/www/html/admin/app/webroot/img/Image /var/www/html/admin/app/tmp /var/www/private/consultancy-agent-uploads
           service httpd start
@@ -283,7 +304,6 @@ Resources:
         PropagateAtLaunch: true
   WebRecordSet:
     Type: AWS::Route53::RecordSet
-    Condition: RegionCondition
     Properties:
       HostedZoneName:  !Join ['', [!Ref 'HostedZoneName', '.']]
       Comment: DNS name for Web
