@@ -59,18 +59,18 @@ listing_update_queue_name=squarefoot-updated-listings-sg
 rds.production.squarefoot-singapore.ipga.local
 
 [rds:vars]
-application=rds-mysql-reporting
-db_name=reporting
-db_class=db.m4.xlarge
-db_allocated_storage=100
-backup_duration=7
+application=rds-mysql
+db_name=sfwww
+db_class=db.r3.xlarge
+db_allocated_storage=500
+backup_duration=20
 db_engine=MySQL
 db_engine_version=5.7
 db_parameter_group_version=mysql5.7
 db_port=3306
 public_access=true
-rds_subnets={{public_subnets}}
-rds_zone={{public_zone}}
+rds_subnets={{private_subnets}}
+rds_zone={{private_zone}}
 ab=b
 
 [legacy-cron]
@@ -78,11 +78,12 @@ legacy-cron.production.squarefoot-singapore.ipga.local
 
 [legacy-cron:vars]
 application=legacy-cron
-ab=b
-instance_type=t2.micro
+reporting_database=reporting.sg.squarefoot.com.hk
+ab=a
+instance_type=c4.xlarge
 as_max=1
 as_min=1
-version=1
+version=2
 
 [legacy-frontend]
 legacy-frontend.sg.squarefoot.com.hk

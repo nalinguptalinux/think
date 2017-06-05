@@ -95,7 +95,7 @@ Resources:
           - Effect: Allow
             Action: s3:List*
             Resource:
-             - !Join ['', ['arn:aws:s3:::', !Ref 'BackupBucketName']],
+             - !Join ['', ['arn:aws:s3:::', !Ref 'BackupBucketName']]
              - !Join ['', ['arn:aws:s3:::', !Ref 'RackSpaceBackupBucketName']]
   Profile:
     Type: AWS::IAM::InstanceProfile

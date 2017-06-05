@@ -4,6 +4,9 @@ Parameters:
   BackupBucketName:
     Description: Name of the S3 backup bucket
     Type: String
+  ReportingDatabase:
+    Description: Endpoint of the Reporting Database
+    Type: String
   AvailabilityZones:
     Description: The availability zones in the VPC
     Type: CommaDelimitedList
@@ -242,8 +245,11 @@ Resources:
 
           aws s3 cp --recursive s3://prod-sg-sfhk-backups/legacy-cron-scripts /opt/legacy-cron-scripts --region ${AWS::Region} || error_exit 'unable to download legacy cron scripts from s3'
           chmod -R 755 /opt/legacy-cron-scripts
-          /opt/legacy-cron-scripts/setup_cron.sh
+          /opt/legacy-cron-scripts/setup_cron.sh || error_exit 'failed to run setup cron'
 
+          sed -i -e 's/reporting.sg.squarefoot.com.hk/${ReportingDatabase}/g' /root/mycron || error_exit 'failed to modify cron'
+          crontab /root/mycron || error_exit 'failed to apply cron'
+          rm -f /root/mycron || error_exit 'failed to remove cron'
           # Start up the cfn-hup daemon to listen for changes
           /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
           /opt/aws/bin/cfn-signal -e 0 -r "CronInstance instance Stack Complete."  '${WaitHandle}'
