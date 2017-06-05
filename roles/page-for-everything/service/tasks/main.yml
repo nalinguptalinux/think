@@ -3,7 +3,7 @@
     vars:
       region: "{{aws_region}}"
     cloudformation:
-      stack_name: "{{service_name}}-ECS-Service-{{build_number}}"
+      stack_name: "{{service_name}}-ECS-Service"
       state: present
       region: "{{aws_region}}"
       disable_rollback: true
