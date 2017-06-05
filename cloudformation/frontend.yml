@@ -462,8 +462,9 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'Webservice'
     Properties:
-      AlarmDescription: 'Scale-up if CPU > 60% for 5 minutes'
-      MetricName: 'MemoryUtilization'
+      AlarmDescription: 'Scale-up if CPUUtilization  60% for 5 minutes ECSWebHigh '
+      AlarmName: !Join ['', ['ECSWebHigh-CPU-60%', '-', !Ref 'Env', '-', !Ref 'Version']]
+      MetricName: 'CPUUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
       Period: '300'
@@ -482,7 +483,8 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'Webservice'
     Properties:
-      AlarmDescription: 'Scale-down if CPU < 5% for 10 minutes'
+      AlarmDescription: 'Scale-up if MemoryUtilization  5% for 5 minutes ECSWebMemLow '
+      AlarmName: !Join ['', ['ECSWebMemLow-Memory-5%', '-', !Ref 'Env', '-', !Ref 'Version' ]]
       MetricName: 'MemoryUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
@@ -574,8 +576,9 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'SRPService'
     Properties:
-      AlarmDescription: 'Scale-up if CPU > 60% for 5 minutes'
-      MetricName: 'MemoryUtilization'
+      AlarmDescription: 'Scale-up if CPUUtilization  60% for 5 minutes ECSSprHigh '
+      AlarmName: !Join ['', ['ECSSprHigh-CPU-60%', '-', !Ref 'Env', '-', !Ref 'Version']]
+      MetricName: 'CPUUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
       Period: '300'
@@ -594,7 +597,8 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'SRPService'
     Properties:
-      AlarmDescription: 'Scale-down if CPU < 5% for 10 minutes'
+      AlarmDescription: 'Scale-up if MemoryUtilization  5% for 5 minutes ECSSrpMemLow'
+      AlarmName: !Join ['', ['ECSSrpMem-Memory-5', '-', !Ref 'Env', '-', !Ref 'Version']]
       MetricName: 'MemoryUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
@@ -609,7 +613,6 @@ Resources:
       - Name: ServiceName
         Value: !GetAtt 'SRPService.Name'
       ComparisonOperator: LessThanThreshold
-
 
   HpServiceScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
@@ -657,8 +660,9 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'HPService'
     Properties:
-      AlarmDescription: 'Scale-up if CPU > 60% for 5 minutes'
-      MetricName: 'MemoryUtilization'
+      AlarmDescription: 'Scale-up if CPUUtilization  60% for 5 minutes ECSHpHigh '
+      AlarmName: !Join ['', ['ECSHpHigh-CPU-60%', '-', !Ref 'Env', '-', !Ref 'Version']]
+      MetricName: 'CPUUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
       Period: '300'
@@ -677,7 +681,8 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'HPService'
     Properties:
-      AlarmDescription: 'Scale-down if CPU < 5% for 10 minutes'
+      AlarmDescription: 'Scale-up if MemoryUtilization  5% for 5 minutes ECSHPMemLow '
+      AlarmName: !Join ['', ['ECSHPMemLow-Mem-5%', '-', !Ref 'Env', '-', !Ref 'Version']]
       MetricName: 'MemoryUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
