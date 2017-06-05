@@ -483,7 +483,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'Webservice'
     Properties:
-      AlarmDescription: 'Scale-up if MemoryUtilization  5% for 5 minutes ECSWebMemLow '
+      AlarmDescription: 'Scale-Down if MemoryUtilization  5% for 5 minutes ECSWebMemLow '
       AlarmName: !Join ['', ['ECSWebMemLow-Memory-5%', '-', !Ref 'Env', '-', !Ref 'Version' ]]
       MetricName: 'MemoryUtilization'
       Namespace: 'AWS/ECS'
@@ -597,7 +597,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'SRPService'
     Properties:
-      AlarmDescription: 'Scale-up if MemoryUtilization  5% for 5 minutes ECSSrpMemLow'
+      AlarmDescription: 'Scale-Down if MemoryUtilization  5% for 5 minutes ECSSrpMemLow'
       AlarmName: !Join ['', ['ECSSrpMem-Memory-5', '-', !Ref 'Env', '-', !Ref 'Version']]
       MetricName: 'MemoryUtilization'
       Namespace: 'AWS/ECS'
@@ -681,7 +681,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'HPService'
     Properties:
-      AlarmDescription: 'Scale-up if MemoryUtilization  5% for 5 minutes ECSHPMemLow '
+      AlarmDescription: 'Scale-Down if MemoryUtilization  5% for 5 minutes ECSHPMemLow '
       AlarmName: !Join ['', ['ECSHPMemLow-Mem-5%', '-', !Ref 'Env', '-', !Ref 'Version']]
       MetricName: 'MemoryUtilization'
       Namespace: 'AWS/ECS'
