@@ -80,6 +80,7 @@ legacy-cron.production.squarefoot-singapore.ipga.local
 application=legacy-cron
 reporting_database=reporting.sg.squarefoot.com.hk
 ab=a
+cron_data_bucket_name=prod-sg-sfhk-backups
 instance_type=c4.xlarge
 as_max=1
 as_min=1

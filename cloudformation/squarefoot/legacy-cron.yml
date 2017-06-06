@@ -4,6 +4,9 @@ Parameters:
   BackupBucketName:
     Description: Name of the S3 backup bucket
     Type: String
+  CronFilesBucketName:
+    Description: Name of the S3 cron data bucket
+    Type: String
   ReportingDatabase:
     Description: Endpoint of the Reporting Database
     Type: String
@@ -82,13 +85,20 @@ Resources:
             Action: cloudformation:DescribeStackResource
             Resource: '*'
           - Effect: Allow
-            Action: s3:GetObject
-            Resource: !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'BackupBucketName',
-                  /*]], !Join ['', ['arn:aws-cn:s3:::', !Ref 'BackupBucketName', /*]]]
+            Action:
+             - s3:Put*
+            Resource:
+             - !Join ['', ['arn:aws:s3:::', !Ref 'BackupBucketName',/*]]
           - Effect: Allow
-            Action: s3:ListBucket
-            Resource: !If [RegionCondition, !Join ['', ['arn:aws:s3:::', !Ref 'BackupBucketName']],
-              !Join ['', ['arn:aws-cn:s3:::', !Ref 'BackupBucketName']]]
+            Action:
+             - s3:Get*
+            Resource:
+             - !Join ['', ['arn:aws:s3:::', !Ref 'CronFilesBucketName',/*]]
+          - Effect: Allow
+            Action: s3:List*
+            Resource:
+             - !Join ['', ['arn:aws:s3:::', !Ref 'BackupBucketName']]
+             - !Join ['', ['arn:aws:s3:::', !Ref 'CronFilesBucketName']]
   Profile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -248,6 +258,8 @@ Resources:
           /opt/legacy-cron-scripts/create_cron_file.sh || error_exit 'failed to run setup cron'
 
           sed -i -e 's/reporting.sg.squarefoot.com.hk/${ReportingDatabase}/g' /root/mycron || error_exit 'failed to modify cron'
+          cd /opt/legacy-cron-scripts
+          find ./ -type f -exec sed -i -e  's/prod-sg-sfhk-backups/${BackupBucketName}/g' {} \; || error_exit 'failed to replace backup bucket'
           crontab /root/mycron || error_exit 'failed to apply cron'
           rm -f /root/mycron || error_exit 'failed to remove cron'
           # Start up the cfn-hup daemon to listen for changes

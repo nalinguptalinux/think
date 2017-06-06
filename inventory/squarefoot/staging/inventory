@@ -178,3 +178,16 @@ public_access=false
 rds_subnets={{private_subnets}}
 rds_zone={{private_zone}}
 ab=b
+
+[legacy-cron]
+legacy-cron.staging.squarefoot-singapore.ipga.local
+
+[legacy-cron:vars]
+application=legacy-cron
+reporting_database=reporting.sg.squarefoot.com.hk
+ab=a
+cron_files_bucket_name=prod-sg-sfhk-backups
+instance_type=c4.large
+as_max=1
+as_min=1
+version=2
