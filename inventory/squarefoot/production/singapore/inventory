@@ -60,8 +60,8 @@ rds.production.squarefoot-singapore.ipga.local
 
 [rds:vars]
 application=rds-mysql
-db_name=sf-www
-db_class=db.r3.xlarge
+db_name=sfwww
+db_class=db.r3.2xlarge
 db_allocated_storage=500
 backup_duration=20
 db_engine=MySQL
@@ -71,7 +71,7 @@ db_port=3306
 public_access=true
 rds_subnets={{private_subnets}}
 rds_zone={{private_zone}}
-ab=b
+ab=c
 
 [legacy-cron]
 legacy-cron.production.squarefoot-singapore.ipga.local
