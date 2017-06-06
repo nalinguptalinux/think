@@ -79,8 +79,8 @@ legacy-cron.production.squarefoot-singapore.ipga.local
 [legacy-cron:vars]
 application=legacy-cron
 reporting_database=reporting.sg.squarefoot.com.hk
-ab=a
-cron_data_bucket_name=prod-sg-sfhk-backups
+ab=b
+cron_files_bucket_name=prod-sg-sfhk-backups
 instance_type=c4.xlarge
 as_max=1
 as_min=1
@@ -94,10 +94,10 @@ application=legacy-frontend
 rackspace_backup_bucket=prod-sg-sfhk-backups
 reporting_database=reporting.sg.squarefoot.com.hk
 ab=b
-instance_type=c4.4xlarge
+instance_type=c4.8xlarge
 as_max=1
 as_min=1
-version=lnx
+version=2
 legacy_ami=ami-fdf6729e
 
 [switch-stack]
