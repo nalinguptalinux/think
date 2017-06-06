@@ -158,7 +158,7 @@ ab=b
 instance_type=c4.large
 as_max=1
 as_min=1
-version=lnx
+version=2
 legacy_ami=ami-fdf6729e
 
 [rds]
@@ -184,7 +184,7 @@ legacy-cron.staging.squarefoot-singapore.ipga.local
 
 [legacy-cron:vars]
 application=legacy-cron
-reporting_database=reporting.sg.squarefoot.com.hk
+reporting_database=rds
 ab=a
 cron_files_bucket_name=prod-sg-sfhk-backups
 instance_type=c4.large
