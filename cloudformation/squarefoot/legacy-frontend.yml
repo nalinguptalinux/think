@@ -269,7 +269,7 @@ Resources:
           configure_hosts
 
           /opt/aws/bin/cfn-init -s ${AWS::StackName} -r WebASLaunchConf  --region ${AWS::Region} || error_exit 'Failed to run cfn-init'
-
+          /opt/SumoCollector/collector stop
           /etc/init.d/newrelic-sysmond restart
           mkdir -p /var/www/html
 

@@ -251,6 +251,8 @@ Resources:
           yum install -y nodejs mysql || error_exit 'failed to install npm or mysql'
           npm install -g crontab-ui || error_exit 'failed to install crontab-ui'
           /sbin/initctl start crontab-ui  || error_exit 'failed to start crontab-ui'
+
+          /opt/SumoCollector/collector stop
           /etc/init.d/newrelic-sysmond restart
 
           aws s3 cp --recursive s3://prod-sg-sfhk-backups/legacy-cron-scripts /opt/legacy-cron-scripts --region ${AWS::Region} || error_exit 'unable to download legacy cron scripts from s3'
