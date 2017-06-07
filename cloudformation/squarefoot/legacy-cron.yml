@@ -214,7 +214,7 @@ Resources:
       BlockDeviceMappings:
       - DeviceName: /dev/xvda
         Ebs:
-          VolumeSize: '120'
+          VolumeSize: '512'
           VolumeType: gp2
           DeleteOnTermination: 'true'
       UserData:
