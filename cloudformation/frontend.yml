@@ -149,6 +149,10 @@ Parameters:
     Description: Instance Profile Detail
     Type: String
 
+  Project:
+    Description: Instance Profile Detail
+    Type: String
+
 Mappings:
   AWSRegionArch2AMI:
     ap-southeast-1:
@@ -304,11 +308,12 @@ Resources:
           /bin/echo -e '######-----------------Configure Hostname on EC2 Host-----------------###### \n'
           function configure_hosts {
             recordName=${RecordName}
+            project=${Project}
             instance_ip=$(/usr/bin/curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
             domain=$(/bin/awk '/^search/ { print $2 }' /etc/resolv.conf)
             ipend=`/bin/echo $instance_ip | /bin/sed 's/\./\-/g'`
             /bin/echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
-            /bin/hostname $recordName-$ipend
+            /bin/hostname $recordName-$project-$ipend
           }
           configure_hosts
           /bin/echo -e '######------------Install Sumo Logic Collector on EC2 Host------------###### \n'

@@ -39,9 +39,10 @@
         Env: "{{env}}"
         Version: "{{version}}"
         InstProfile: "{{instance_profile_role}}"
+        Project: "{{project}}"
 
       tags:
-        project: "{{project}}"
+        Project: "{{project}}"
         application: "{{application}}"
         lob: "regional-web"
         env: "{{env}}"
