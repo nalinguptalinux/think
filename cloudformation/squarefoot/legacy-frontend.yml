@@ -243,58 +243,84 @@ Resources:
           DeleteOnTermination: 'true'
       UserData:
         "Fn::Base64": !Sub |
-          #!/bin/bash -ex
-          exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
-          resize2fs /dev/sda1
-          function error_exit
-          {
-            /opt/aws/bin/cfn-signal -e 1 -r $1 ${WaitHandle}
-            exit 1
-          }
-          function await_network {
-            while [ $(curl --connect-timeout 2 169.254.169.254 >/dev/null 2>&1; echo $?) -ne 0 ]; do
-              echo Waiting for networking and/or DNS
-              sleep 10
-            done
-          }
-          function configure_hosts {
-            recordName=${RecordName}
-            instance_ip=$(curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
-            domain=$(awk '/^search/ { print $2 }' /etc/resolv.conf)
-            ipend=`echo $instance_ip | sed 's/\./\-/g'`
-            echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
-            hostname $recordName-$ipend
-          }
-          await_network
-          configure_hosts
+            Content-Type: multipart/mixed; boundary="===============6449828822076195157=="
+            MIME-Version: 1.0
 
-          /opt/aws/bin/cfn-init -s ${AWS::StackName} -r WebASLaunchConf  --region ${AWS::Region} || error_exit 'Failed to run cfn-init'
-          /opt/SumoCollector/collector stop
-          /etc/init.d/newrelic-sysmond restart
-          mkdir -p /var/www/html
+            --===============6449828822076195157==
+            Content-Type: text/cloud-config; charset="us-ascii"
+            MIME-Version: 1.0
+            Content-Transfer-Encoding: 7bit
+            Content-Disposition: attachment; filename="cloud.cfg"
 
-          # Start up the cfn-hup daemon to listen for changes
-          /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
-          /opt/aws/bin/cfn-signal -e 0 -r "WebInstance instance Stack Complete."  '${WaitHandle}'
+            #cloud-config
+            repo_upgrade: none
 
-          aws s3 sync s3://${RackSpaceBackupBucketName}/legacy-web  /var/www/html --region ${AWS::Region} || error_exit 'unable to download legacy web from s3'
-          cd /var/www/html
-          find ./ -type f -exec sed -i -e  's/573266-db2.squarefoot.com.hk/rds/g' {} \;
-          mkdir -p /var/www/private/consultancy-agent-uploads
-          sed -i -e 's/hk-tableau.cjretgqtdl2a.ap-southeast-1.rds.amazonaws.com/${ReportingDatabase}/g' /var/www/html/_config_db_access.php
-          
-          sed -i -e 's/RewriteCond %{HTTPS} !=on//g' /var/www/html/admin/.htaccess /var/www/html/admin/app/.htaccess /var/www/html/admin/app/webroot/.htaccess
-          sed -i -e 's/RewriteCond %{REQUEST_URI} admin//g' /var/www/html/admin/.htaccess /var/www/html/admin/app/.htaccess /var/www/html/admin/app/webroot/.htaccess
-          sed -i -e 's/RewriteRule !^(img|css|js|docs)(\$|\/) https:\/\/%{SERVER_NAME}\/admin\/$1 \[NC,R=301,L\]//g' /var/www/html/admin/.htaccess /var/www/html/admin/app/.htaccess /var/www/html/admin/app/webroot/.htaccess
-          
-          sed -i -e 's/RewriteCond %{HTTPS} !=on//g' /var/www/html/.htaccess
-          sed -i -e 's/RewriteCond %{REQUEST_URI} !bob-property-awards-2017//g' /var/www/html/.htaccess
-          sed -i -e 's/RewriteCond %{REQUEST_URI} !corn\/api\/capi//g' /var/www/html/.htaccess 
-          sed -i -e 's/RewriteCond %{REQUEST_URI} !xml//g' /var/www/html/.htaccess
-          sed -i -e 's/RewriteRule !^(img|css|js|docs)(\$|\/) https:\/\/%{SERVER_NAME}%{REQUEST_URI} \[R=301,L\]//g' /var/www/html/.htaccess 
+            --===============6449828822076195157==
+            Content-Type: text/x-shellscript; charset="us-ascii"
+            MIME-Version: 1.0
+            Content-Transfer-Encoding: 7bit
+            Content-Disposition: attachment; filename="script.sh"
 
-          chown -R apache:apache /var/www/html/static/oasis/report /var/www/html/static/pp/report /var/www/html/corn/emarsys /var/www/html/corn/google_remarketing /var/www/html/xml/asiaclassified /var/www/html/xml/mitula /var/www/html/xml/oncc /var/www/html/xml/trovit /var/www/html/{cmd} /var/www/html/sitemap /var/www/html/images/propertyblog/uploads /var/www/html/images/propertyblog/author_uploads /var/www/html/admin/app/webroot/img/Image /var/www/html/admin/app/tmp /var/www/private/consultancy-agent-uploads
-          service httpd start
+            #!/bin/bash -ex
+            exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+            resize2fs /dev/sda1
+            function error_exit
+            {
+              /opt/aws/bin/cfn-signal -e 1 -r $1 ${WaitHandle}
+              exit 1
+            }
+            function await_network {
+              while [ $(curl --connect-timeout 2 169.254.169.254 >/dev/null 2>&1; echo $?) -ne 0 ]; do
+                echo Waiting for networking and/or DNS
+                sleep 10
+              done
+            }
+            function configure_hosts {
+              recordName=${RecordName}
+              instance_ip=$(curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
+              domain=$(awk '/^search/ { print $2 }' /etc/resolv.conf)
+              ipend=`echo $instance_ip | sed 's/\./\-/g'`
+              echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
+              hostname $recordName-$ipend
+            }
+            await_network
+            configure_hosts
+
+            /opt/aws/bin/cfn-init -s ${AWS::StackName} -r WebASLaunchConf  --region ${AWS::Region} || error_exit 'Failed to run cfn-init'
+            /opt/SumoCollector/collector stop
+            /etc/init.d/newrelic-sysmond restart
+            mkdir -p /var/www/html
+
+            sysctl -w net.ipv4.ip_local_port_range="1024 65535"
+            sed -i -e 's/security/none./g' /etc/cloud/cloud.cfg
+            echo -e "#Increasing port range for sockets\nnet.ipv4.ip_local_port_range=1024 65535" >> /etc/sysctl.conf
+
+
+            # Start up the cfn-hup daemon to listen for changes
+            /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
+            /opt/aws/bin/cfn-signal -e 0 -r "WebInstance instance Stack Complete."  '${WaitHandle}'
+
+            aws s3 sync s3://${RackSpaceBackupBucketName}/legacy-web  /var/www/html --region ${AWS::Region} || error_exit 'unable to download legacy web from s3'
+            cd /var/www/html
+            find ./ -type f -exec sed -i -e  's/573266-db2.squarefoot.com.hk/rds/g' {} \;
+            mkdir -p /var/www/private/consultancy-agent-uploads
+            sed -i -e 's/hk-tableau.cjretgqtdl2a.ap-southeast-1.rds.amazonaws.com/${ReportingDatabase}/g' /var/www/html/_config_db_access.php
+
+            sed -i -e 's/RewriteCond %{HTTPS} !=on//g' /var/www/html/admin/.htaccess /var/www/html/admin/app/.htaccess /var/www/html/admin/app/webroot/.htaccess
+            sed -i -e 's/RewriteCond %{REQUEST_URI} admin//g' /var/www/html/admin/.htaccess /var/www/html/admin/app/.htaccess /var/www/html/admin/app/webroot/.htaccess
+            sed -i -e 's/RewriteRule !^(img|css|js|docs)(\$|\/) https:\/\/%{SERVER_NAME}\/admin\/$1 \[NC,R=301,L\]//g' /var/www/html/admin/.htaccess /var/www/html/admin/app/.htaccess /var/www/html/admin/app/webroot/.htaccess
+
+            sed -i -e 's/RewriteCond %{HTTPS} !=on//g' /var/www/html/.htaccess
+            sed -i -e 's/RewriteCond %{REQUEST_URI} !bob-property-awards-2017//g' /var/www/html/.htaccess
+            sed -i -e 's/RewriteCond %{REQUEST_URI} !corn\/api\/capi//g' /var/www/html/.htaccess
+            sed -i -e 's/RewriteCond %{REQUEST_URI} !xml//g' /var/www/html/.htaccess
+            sed -i -e 's/RewriteRule !^(img|css|js|docs)(\$|\/) https:\/\/%{SERVER_NAME}%{REQUEST_URI} \[R=301,L\]//g' /var/www/html/.htaccess
+
+            chown -R apache:apache /var/www/html/static/oasis/report /var/www/html/static/pp/report /var/www/html/corn/emarsys /var/www/html/corn/google_remarketing /var/www/html/xml/asiaclassified /var/www/html/xml/mitula /var/www/html/xml/oncc /var/www/html/xml/trovit /var/www/html/{cmd} /var/www/html/sitemap /var/www/html/images/propertyblog/uploads /var/www/html/images/propertyblog/author_uploads /var/www/html/admin/app/webroot/img/Image /var/www/html/admin/app/tmp /var/www/private/consultancy-agent-uploads
+            service httpd start
+
+            --===============6449828822076195157==--
+
   WebASGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:

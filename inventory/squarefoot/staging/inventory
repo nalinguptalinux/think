@@ -154,7 +154,7 @@ legacy-frontend.stg.sg.squarefoot.com.hk
 application=legacy-frontend
 rackspace_backup_bucket=prod-sg-sfhk-backups
 reporting_database=rds
-ab=b
+ab=a
 instance_type=c4.large
 as_max=1
 as_min=1

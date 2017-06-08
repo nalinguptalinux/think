@@ -7,7 +7,7 @@ opts = Trollop::options do
   opt :loops, "How many times to loop each thread <only applicable to dev mode>", :type => :integer
   opt :rampup, "Time in seconds to ramp your load up", :type => :integer
   opt :api_key, "flood.io api key <only applicable to prod mode>", :type => :string
-  opt :flood_name, "Unique name of the flood to be ran <only applicable to prod mode>", :type => :string, default: "Squarefoot SRP Test Same URL#{Time.now}"
+  opt :flood_name, "Unique name of the flood to be ran <only applicable to prod mode>", :type => :string, default: "Squarefoot SRP Test 4x#{Time.now}"
   opt :region, "Region to generate the flood from <only applicable to prod mode>", :type => :string, default: 'ap-southeast-1'
   opt :free_flood, "Do a light run against the free flood node", :default => false
   opt :duration, "How long time you want to run", :type => :integer
@@ -17,8 +17,8 @@ end
 $end
 
 if opts[:mode].eql? 'prod'
-  opts[:num_threads] ||= 30
-  opts[:rampup] ||= 15
+  opts[:num_threads] ||= 100
+  opts[:rampup] ||= 25
   opts[:duration] ||= 600
   opts[:loops] = nil
   opts[:continue_forever] = false
@@ -35,7 +35,7 @@ else
 end
 
 # Let' do it!
-host = 'legacy.prelaunch.squarefoot.com.hk'
+host = 'legacy2.prelaunch.squarefoot.com.hk'
 test do
 
   cache clear: true
@@ -54,12 +54,12 @@ test do
          ]
 
   threads count: opts[:num_threads], rampup: opts[:rampup], duration: opts[:duration] do
-    csv_data_set_config filename: "srp_query.csv", variableNames: 'srp_query'
+    csv_data_set_config filename: "srp_query_decoded.csv", variableNames: 'srp_query'
 
     think_time 1000, 5000
-    visit "/${srp_query}", name: 'Squarefoot SRP Specific Performance Test'
+    visit "${srp_query}", name: 'Squarefoot SRP Specific Performance Test'
   end
   view_results if opts[:mode] == 'dev'
 
 #end.run(gui: true)
-end.flood(opts[:api_key], {files: ["#{Dir.pwd}/srp_query.csv"], region: opts[:region], name: opts[:flood_name], grid: opts[:api_grid]})
+end.flood(opts[:api_key], {files: ["#{Dir.pwd}/srp_query_decoded.csv"], region: opts[:region], name: opts[:flood_name], grid: opts[:api_grid]})

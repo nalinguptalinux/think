@@ -94,10 +94,10 @@ application=legacy-frontend
 rackspace_backup_bucket=prod-sg-sfhk-backups
 reporting_database=reporting.sg.squarefoot.com.hk
 ab=a
-instance_type=c4.4xlarge
+instance_type=m3.medium
 as_max=1
 as_min=1
-version=2
+version=3
 legacy_ami=ami-fdf6729e
 
 [switch-stack]
