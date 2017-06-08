@@ -339,7 +339,7 @@ Resources:
           /bin/echo -e '######--------------------------Signal success------------------------###### \n '
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
           export NEW_RELIC_LICENSE_KEY=${NewRelicLicenseKey}
-          /bin/echo ${NEW_RELIC_LICENSE_KEY}
+          /bin/echo env | grep NEW_RELIC_LICENSE_KEY
 
   EcsHpELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
