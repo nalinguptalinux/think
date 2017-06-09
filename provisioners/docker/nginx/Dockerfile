@@ -2,7 +2,7 @@ FROM ubuntu:trusty
 
 MAINTAINER Devops <devops@iproperty.com>
 RUN apt-get update
-RUN apt-get install wget
+RUN apt-get install -y wget
 RUN apt-get install -y nginx nginx-extras \
  && rm -rf /var/lib/apt/lists/*
 
@@ -15,7 +15,7 @@ RUN wget -O- http://nginx.org/keys/nginx_signing.key | sudo apt-key add -
 RUN echo "deb http://nginx.org/packages/ubuntu/ trusty nginx" >>  /etc/apt/sources.list.d/nginx.list \
         && echo "deb-src http://nginx.org/packages/ubuntu/ trusty nginx" >> /etc/apt/sources.list.d/nginx.list
 RUN apt-get update \
-        && apt-get install nginx-nr-agent \
+        && apt-get install -y nginx-nr-agent \
         && rm -rf /var/lib/apt/lists/*
 COPY nginx-nr-agent.ini /etc/nginx-nr-agent/nginx-nr-agent.ini
 RUN service nginx-nr-agent start
