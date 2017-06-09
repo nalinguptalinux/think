@@ -18,7 +18,6 @@ RUN apt-get update \
         && apt-get install -y nginx-nr-agent \
         && rm -rf /var/lib/apt/lists/*
 COPY nginx-nr-agent.ini /etc/nginx-nr-agent/nginx-nr-agent.ini
-RUN service nginx-nr-agent start
 
 #### END #######
 

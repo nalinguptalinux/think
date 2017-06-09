@@ -389,6 +389,7 @@ Resources:
         - !GetAtt ECSSrpPdpELB.DNSName
         - Ref: VpcDns
         - Ref: Version
+        - Ref: NewRelicLicenseKey
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'NginxECRRepo']]
 
   ILBWebSecurityGroup:
