@@ -1,7 +1,8 @@
 FROM ubuntu:trusty
 
 MAINTAINER Devops <devops@iproperty.com>
-RUN apt-get update wget
+RUN apt-get update
+RUN apt-get install wget
 RUN apt-get install -y nginx nginx-extras \
  && rm -rf /var/lib/apt/lists/*
 
