@@ -181,6 +181,10 @@ Resources:
         Environment:
         - Name: NODE_ENV
           Value: production
+        - Name: NEW_RELIC_LICENSE_KEY
+          Value: ${NewRelicLicenseKey}
+        - Name: NEW_RELIC_APP_NAME
+          Value: SRP-PDP-{{project}}
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'HpECRRepo']]
 
   ECSAutoScalingGroup:
@@ -338,8 +342,7 @@ Resources:
           /sbin/chkconfig newrelic-sysmond on
           /bin/echo -e '######--------------------------Signal success------------------------###### \n '
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
-          export NEW_RELIC_LICENSE_KEY=${NewRelicLicenseKey}
-          /usr/bin/env | grep NEW_RELIC_LICENSE_KEY
+
 
   EcsHpELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
@@ -791,6 +794,10 @@ Resources:
         Environment:
         - Name: NODE_ENV
           Value: production
+        - Name: NEW_RELIC_LICENSE_KEY
+          Value: ${NewRelicLicenseKey}
+        - Name: NEW_RELIC_APP_NAME
+          Value: SRP-PDP-{{project}}
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'SrpPdpECRRepo']]
 
   ECSSrpPdpELB:
