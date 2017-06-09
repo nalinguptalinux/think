@@ -178,6 +178,8 @@ Resources:
       - Name: ClusterName
         Value:
           Ref: ECSCluster
+      - Name: ServiceName
+        Value: !GetAtt [ECSService, Name]
       ComparisonOperator: GreaterThanThreshold
       MetricName: CPUUtilization
 
@@ -210,6 +212,8 @@ Resources:
       - Name: ClusterName
         Value:
           Ref: ECSCluster
+      - Name: ServiceName
+        Value: !GetAtt [ECSService, Name]
       ComparisonOperator: LessThanThreshold
       MetricName: CPUUtilization
 

@@ -110,6 +110,7 @@ Resources:
       Parameters:
         wait_timeout: 300
         max_allowed_packet: 32000000
+        max_connect_errors: 10000
   RDSDB:
     Type: AWS::RDS::DBInstance
     Properties:

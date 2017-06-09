@@ -7,7 +7,7 @@ opts = Trollop::options do
   opt :loops, "How many times to loop each thread <only applicable to dev mode>", :type => :integer
   opt :rampup, "Time in seconds to ramp your load up", :type => :integer
   opt :api_key, "flood.io api key <only applicable to prod mode>", :type => :string
-  opt :flood_name, "Unique name of the flood to be ran <only applicable to prod mode>", :type => :string, default: "Squarefoot PDP Test #{Time.now}"
+  opt :flood_name, "Unique name of the flood to be ran <only applicable to prod mode>", :type => :string, default: "Squarefoot PDP Test 4x #{Time.now}"
   opt :region, "Region to generate the flood from <only applicable to prod mode>", :type => :string, default: 'ap-southeast-1'
   opt :free_flood, "Do a light run against the free flood node", :default => false
   opt :duration, "How long time you want to run", :type => :integer
@@ -18,7 +18,7 @@ $end
 
 if opts[:mode].eql? 'prod'
   opts[:num_threads] ||= 100
-  opts[:rampup] ||= 50
+  opts[:rampup] ||= 25
   opts[:duration] ||= 600
   opts[:loops] = nil
   opts[:continue_forever] = false
@@ -35,7 +35,7 @@ else
 end
 
 # Let' do it!
-host = 'legacy.prelaunch.squarefoot.com.hk'
+host = 'legacy2.prelaunch.squarefoot.com.hk'
 test do
 
   cache clear: true
