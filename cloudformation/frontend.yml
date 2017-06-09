@@ -184,7 +184,7 @@ Resources:
         - Name: NEW_RELIC_LICENSE_KEY
           Value: !Sub '${NewRelicLicenseKey}'
         - Name: NEW_RELIC_APP_NAME
-          Value: !Sub 'SRP-PDP-{{project}}'
+          Value: !Join ['', ['HP', '/', !Ref 'Project']]
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'HpECRRepo']]
 
   ECSAutoScalingGroup:
@@ -798,7 +798,7 @@ Resources:
         - Name: NEW_RELIC_LICENSE_KEY
           Value: !Sub '${NewRelicLicenseKey}'
         - Name: NEW_RELIC_APP_NAME
-          Value: !Sub 'SRP-PDP-{{project}}'
+          Value: !Join ['', ['SRP-PDP', '/', !Ref 'Project']]
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'SrpPdpECRRepo']]
 
   ECSSrpPdpELB:
