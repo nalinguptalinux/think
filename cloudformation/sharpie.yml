@@ -183,7 +183,7 @@ Resources:
         HealthyThreshold: '2'
         Interval: '60'
         Timeout: '8'
-        Target: HTTP:80/diagnostic/status/heartbeat
+        Target: HTTP:80/50x50/test.png
         UnhealthyThreshold: '2'
   SharpieASLaunchConf:
     Type: AWS::AutoScaling::LaunchConfiguration
