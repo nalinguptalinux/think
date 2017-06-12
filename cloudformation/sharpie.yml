@@ -319,7 +319,7 @@ Resources:
               sharpie-nginx:latest
 
           docker ps
-
+          sed -i -e 's/\/var\/log\/messages/\/dev\/null/g' /etc/rsyslog.conf
           service rsyslog restart || error_exit 'faild to start rsyslog'
           /etc/init.d/newrelic-sysmond restart || error_exit 'faild to start newrelic sysmon application'
           echo; echo --- cleaning up
