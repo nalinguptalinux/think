@@ -387,9 +387,10 @@ Resources:
         Command:
         - !GetAtt EcsHpELB.DNSName
         - !GetAtt ECSSrpPdpELB.DNSName
-        - Ref: VpcDns
-        - Ref: Version
-        - Ref: NewRelicLicenseKey
+        - Ref: 'VpcDns'
+        - Ref: 'Version'
+        - Ref: 'NewRelicLicenseKey'
+        - Ref: 'Env'
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'NginxECRRepo']]
 
   ILBWebSecurityGroup:
