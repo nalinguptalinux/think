@@ -40,7 +40,6 @@
         Version: "{{version}}"
         InstProfile: "{{instance_profile_role}}"
         Project: "{{project}}"
-        AssetsURLPrefix: "{{assets_url_prefix}}"
 
       tags:
         Project: "{{project}}"

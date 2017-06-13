@@ -39,7 +39,6 @@ hp_service_count: 2
 srp_service_count: 2
 
 resource_bucket_name: prod-sg-ipsg-infra-common
-assets_url_prefix: https://assets.iproperty.com.sg/assets/
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
 sumo_logic_access_id: su37UzMYy9KsP0
 sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf
