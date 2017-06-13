@@ -302,6 +302,7 @@ Resources:
 
             aws s3 sync s3://${RackSpaceBackupBucketName}/legacy-web  /var/www/html --region ${AWS::Region} || error_exit 'unable to download legacy web from s3'
             cd /var/www/html
+            rm -f phpinfo.php
             find ./ -type f -exec sed -i -e  's/573266-db2.squarefoot.com.hk/rds/g' {} \;
             mkdir -p /var/www/private/consultancy-agent-uploads
             sed -i -e 's/hk-tableau.cjretgqtdl2a.ap-southeast-1.rds.amazonaws.com/${ReportingDatabase}/g' /var/www/html/_config_db_access.php
