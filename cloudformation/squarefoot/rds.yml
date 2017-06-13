@@ -111,6 +111,7 @@ Resources:
         wait_timeout: 300
         max_allowed_packet: 32000000
         max_connect_errors: 10000
+        time_zone: Asia/Shanghai
   RDSDB:
     Type: AWS::RDS::DBInstance
     Properties:

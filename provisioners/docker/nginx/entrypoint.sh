@@ -10,6 +10,7 @@ then
         /bin/sed -i "s|vpc-dns|$3|g" /etc/nginx/nginx.conf      #######  For VPC DNS change #
         /bin/sed -i "s|<VERSION>|$4|g" /etc/nginx/nginx.conf
         /bin/sed -i "s|New_Relic_Key|$5|g" /etc/nginx-nr-agent/nginx-nr-agent.ini
+        /bin/sed -i "s|Replace-with-host|Nginx-$6|g" /etc/nginx-nr-agent/nginx-nr-agent.ini
         /usr/sbin/service nginx-nr-agent start
 fi
 

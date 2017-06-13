@@ -188,7 +188,7 @@ Resources:
         - Name: NEW_RELIC_LICENSE_KEY
           Value: !Sub '${NewRelicLicenseKey}'
         - Name: NEW_RELIC_APP_NAME
-          Value: !Join ['', [!Ref 'Project', '-', !Ref 'Env', '-' ,'HP']]
+          Value: !Join ['', [!Ref 'Env', '-' ,'HP']]
         - NAME: ASSETS_URL_PREFIX
           Value: !Ref 'AssetsURLPrefix'
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'HpECRRepo']]
@@ -393,9 +393,10 @@ Resources:
         Command:
         - !GetAtt EcsHpELB.DNSName
         - !GetAtt ECSSrpPdpELB.DNSName
-        - Ref: VpcDns
-        - Ref: Version
-        - Ref: NewRelicLicenseKey
+        - Ref: 'VpcDns'
+        - Ref: 'Version'
+        - Ref: 'NewRelicLicenseKey'
+        - Ref: 'Env'
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'NginxECRRepo']]
 
   ILBWebSecurityGroup:
@@ -804,7 +805,7 @@ Resources:
         - Name: NEW_RELIC_LICENSE_KEY
           Value: !Sub '${NewRelicLicenseKey}'
         - Name: NEW_RELIC_APP_NAME
-          Value: !Join ['', [!Ref 'Project', '-', !Ref 'Env', '-' ,'SRP-PDP']]
+          Value: !Join ['', [!Ref 'Env', '-' ,'SRP-PDP']]
         - NAME: ASSETS_URL_PREFIX
           Value: !Ref 'AssetsURLPrefix'
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'SrpPdpECRRepo']]
