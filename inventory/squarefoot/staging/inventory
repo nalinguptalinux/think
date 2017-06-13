@@ -159,7 +159,7 @@ instance_type=c4.large
 as_max=1
 as_min=1
 version=2
-legacy_ami=ami-fdf6729e
+legacy_ami=ami-5ecc4e3d
 
 [rds]
 rds.production.squarefoot-singapore.ipga.local
