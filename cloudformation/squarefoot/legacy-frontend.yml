@@ -310,12 +310,9 @@ Resources:
             sed -i -e 's/RewriteCond %{REQUEST_URI} admin//g' /var/www/html/admin/.htaccess /var/www/html/admin/app/.htaccess /var/www/html/admin/app/webroot/.htaccess
             sed -i -e 's/RewriteRule !^(img|css|js|docs)(\$|\/) https:\/\/%{SERVER_NAME}\/admin\/$1 \[NC,R=301,L\]//g' /var/www/html/admin/.htaccess /var/www/html/admin/app/.htaccess /var/www/html/admin/app/webroot/.htaccess
 
-            sed -i -e 's/RewriteCond %{HTTPS} !=on//g' /var/www/html/.htaccess
-            sed -i -e 's/RewriteCond %{REQUEST_URI} !bob-property-awards-2017//g' /var/www/html/.htaccess
-            sed -i -e 's/RewriteCond %{REQUEST_URI} !corn\/api\/capi//g' /var/www/html/.htaccess
-            sed -i -e 's/RewriteCond %{REQUEST_URI} !xml//g' /var/www/html/.htaccess
-            sed -i -e 's/RewriteRule !^(img|css|js|docs)(\$|\/) https:\/\/%{SERVER_NAME}%{REQUEST_URI} \[R=301,L\]//g' /var/www/html/.htaccess
-
+            sed -i -e 's/RewriteCond %{HTTPS} !=on/RewriteCond %{HTTP:X-Forwarded-Proto} !https \nRewriteCond %{REQUEST_URI} !unprotected\n/g' /var/www/html/.htaccess
+            sed -i -e 's/RewriteCond %{HTTPS} =on/RewriteCond %{HTTP:X-Forwarded-Proto} https/g' /var/www/html/.htaccess
+            
             chown -R apache:apache /var/www/html/static/oasis/report /var/www/html/static/pp/report /var/www/html/corn/emarsys /var/www/html/corn/google_remarketing /var/www/html/xml/asiaclassified /var/www/html/xml/mitula /var/www/html/xml/oncc /var/www/html/xml/trovit /var/www/html/{cmd} /var/www/html/sitemap /var/www/html/images/propertyblog/uploads /var/www/html/images/propertyblog/author_uploads /var/www/html/admin/app/webroot/img/Image /var/www/html/admin/app/tmp /var/www/private/consultancy-agent-uploads
             service httpd start
 
