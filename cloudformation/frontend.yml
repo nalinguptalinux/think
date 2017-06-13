@@ -153,6 +153,10 @@ Parameters:
     Description: Instance Profile Detail
     Type: String
 
+  AssetsURLPrefix:
+    Description: URL prefix of Webpack build assets
+    Type: String
+
 Mappings:
   AWSRegionArch2AMI:
     ap-southeast-1:
@@ -185,8 +189,8 @@ Resources:
           Value: !Sub '${NewRelicLicenseKey}'
         - Name: NEW_RELIC_APP_NAME
           Value: !Join ['', [!Ref 'Env', '-' ,'HP']]
-        - Name: RESOURCE_BUCKET
-          Value: !Ref 'ResourceBucketName'
+        - NAME: ASSETS_URL_PREFIX
+          Value: !Ref 'AssetsURLPrefix'
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'HpECRRepo']]
 
   ECSAutoScalingGroup:
@@ -802,8 +806,8 @@ Resources:
           Value: !Sub '${NewRelicLicenseKey}'
         - Name: NEW_RELIC_APP_NAME
           Value: !Join ['', [!Ref 'Env', '-' ,'SRP-PDP']]
-        - Name: RESOURCE_BUCKET
-          Value: !Ref 'ResourceBucketName'
+        - NAME: ASSETS_URL_PREFIX
+          Value: !Ref 'AssetsURLPrefix'
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'SrpPdpECRRepo']]
 
   ECSSrpPdpELB:
