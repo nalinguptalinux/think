@@ -24,6 +24,7 @@ nat_subnet_supernet: 10.39.8.0/22
 public_subnet_supernet: 10.39.4.0/22
 private_subnet_supernet: 10.39.0.0/22
 
+assets_url_prefix: ' '
 ami: ami-9a44f9f9
 bastion_public_ip: 52.74.72.75
 ssh_from_bastion_sg_id: sg-6094f007
