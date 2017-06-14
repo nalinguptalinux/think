@@ -2,6 +2,7 @@ FROM ubuntu:trusty
 MAINTAINER Devops <devops@iproperty.com>
 
 ARG MARKET
+ENV MARKET_CONF $MARKET
 RUN apt-get update
 RUN apt-get install -y wget
 RUN apt-get install -y nginx nginx-extras \
@@ -10,6 +11,7 @@ RUN apt-get install -y nginx nginx-extras \
 # forward request and error logs to docker log collector
 RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 && ln -sf /dev/stderr /var/log/nginx/error.log
+COPY $MARKET_CONF /etc/nginx/nginx.conf
 
 ####   Only for Newrelic    ###########
 RUN wget -O- http://nginx.org/keys/nginx_signing.key | sudo apt-key add -
@@ -21,8 +23,6 @@ RUN apt-get update \
 COPY nginx-nr-agent.ini /etc/nginx-nr-agent/nginx-nr-agent.ini
 #### END #######
 
-
-COPY ${MARKET} /etc/nginx/nginx.conf
 COPY htpasswd /etc/nginx/.htpasswd
 COPY entrypoint.sh /entrypoint.sh
 RUN /usr/sbin/update-rc.d -f nginx disable
