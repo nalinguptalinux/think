@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
 cd provisioners/docker/nginx
 docker build --build-arg market=${MARKET} --no-cache=true -t nginx .
