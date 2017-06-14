@@ -4,7 +4,7 @@ business_unit: HK
 env: staging
 deployment_env: staging-singapore
 private_zone: staging.squarefoot-singapore.ipga.local
-public_zone: stg.sg.squarefoot.com.hk
+public_zone: stg.sg.gohome.com.hk
 key_name: awscloud-squarefoot-staging-singapore
 aws_vpc_id:  vpc-74d35f10
 vpc_cidr: 10.39.32.0/20
@@ -24,7 +24,6 @@ nat_subnet_supernet: 10.39.40.0/22
 public_subnet_supernet: 10.39.36.0/22
 private_subnet_supernet: 10.39.32.0/22
 
-assets_url_prefix: 'https://assets.prelaunch.gohome.com.hk/assets/'
 
 ami: ami-9a44f9f9
 bastion_public_ip:  52.74.223.189
@@ -37,6 +36,7 @@ web_service_count: 1
 hp_service_count: 1
 srp_service_count: 1
 
+assets_url_prefix: 'https://assets.stg.sg.gohome.com.hk/assets/'
 resource_bucket_name: prod-sg-sfhk-infra-common
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
 sumo_logic_access_id: su37UzMYy9KsP0

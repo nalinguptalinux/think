@@ -35,6 +35,7 @@ web_service_count: 2
 hp_service_count: 2
 srp_service_count: 2
 
+assets_url_prefix: https://assets.prelaunch.squarefoot.com.hk/assets/
 resource_bucket_name: prod-sg-sfhk-infra-common
 backup_bucket_name: prod-sg-sfhk-backups
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
@@ -43,7 +44,6 @@ sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCu
 new_relic_rpm: newrelic-sysmond-2.3.0.132-1.x86_64.rpm
 new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df
 instance_profile_role: EC2-Role-Instance-Profile
-assets_url_prefix: https://assets.prelaunch.squarefoot.com.hk/assets/
 
 deployment_ecr: 678965432744.dkr.ecr.ap-southeast-1.amazonaws.com
 

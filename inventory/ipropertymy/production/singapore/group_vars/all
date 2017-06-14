@@ -28,7 +28,6 @@ web_service_count: 2
 hp_service_count: 2
 srp_service_count: 2
 
-assets_url_prefix: https://assets.prelaunch.iproperty.com.my/assets/
 low_pager_duty_arn: arn:aws:sns:ap-southeast-1:676958722968:Low-Priority-Iproperty-My-PagerDuty
 high_pager_duty_arn: arn:aws:sns:ap-southeast-1:676958722968:High-Priority-Iproperty-My-PagerDuty
 ssl_cert_arn: arn:aws:acm:ap-southeast-1:676958722968:certificate/2714d7bb-8946-47b1-bfda-e2b944141cf2
@@ -38,6 +37,7 @@ ami: ami-9a44f9f9
 bastion_public_ip: 52.221.175.36
 ssh_from_bastion_sg_id: sg-e0790187
 
+assets_url_prefix: https://assets.prelaunch.iproperty.com.my/assets/
 resource_bucket_name: prod-sg-ipmy-infra-common
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
 sumo_logic_access_id: su37UzMYy9KsP0

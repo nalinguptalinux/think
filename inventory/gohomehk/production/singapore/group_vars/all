@@ -4,7 +4,7 @@ deployment_env: production-singapore
 env: production
 business_unit: HK
 private_zone: production.squarefoot-singapore.ipga.local
-public_zone: sg.squarefoot.com.hk
+public_zone: sg.gohome.com.hk
 key_name: awscloud-squarefoot-production-singapore
 aws_vpc_id:  vpc-1c70e178
 vpc_cidr: 10.39.0.0/20
@@ -24,7 +24,6 @@ nat_subnet_supernet: 10.39.8.0/22
 public_subnet_supernet: 10.39.4.0/22
 private_subnet_supernet: 10.39.0.0/22
 
-assets_url_prefix: 'https://assets.prelaunch.gohome.com.hk/assets/'
 ami: ami-9a44f9f9
 bastion_public_ip: 52.74.72.75
 ssh_from_bastion_sg_id: sg-6094f007
@@ -36,6 +35,7 @@ web_service_count: 2
 hp_service_count: 2
 srp_service_count: 2
 
+assets_url_prefix: 'https://assets.prelaunch.gohome.com.hk/assets/'
 resource_bucket_name: prod-sg-sfhk-infra-common
 backup_bucket_name: prod-sg-sfhk-backups
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh

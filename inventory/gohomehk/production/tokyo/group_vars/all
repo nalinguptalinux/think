@@ -4,7 +4,7 @@ deployment_env: production-tokyo
 env: production
 business_unit: HK
 private_zone: production.squarefoot-tokyo.ipga.local
-public_zone: tk.squarefoot.com.hk
+public_zone: tk.gohome.com.hk
 key_name: awscloud-squarefoot-production-tokyo
 aws_vpc_id:  vpc-ea7cf18e
 vpc_cidr: 10.39.16.0/20
@@ -23,7 +23,6 @@ private_subnet_cidr_blocks: 10.39.16.0/23,10.39.18.0/23
 nat_subnet_supernet: 10.39.24.0/22
 public_subnet_supernet: 10.39.20.0/22
 private_subnet_supernet: 10.39.16.0/22
-assets_url_prefix: 'https://assets.prelaunch.gohome.com.hk/assets/'
 
 ami: ami-b7500ad0
 bastion_public_ip: 13.113.68.100
@@ -36,6 +35,7 @@ web_service_count: 2
 hp_service_count: 2
 srp_service_count: 2
 
+assets_url_prefix: 'https://assets.prelaunch.gohome.com.hk/assets/'
 resource_bucket_name: prod-tk-sfhk-infra-common
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
 sumo_logic_access_id: su37UzMYy9KsP0

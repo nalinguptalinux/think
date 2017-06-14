@@ -28,7 +28,6 @@ web_service_count: 2
 hp_service_count: 2
 srp_service_count: 2
 
-assets_url_prefix: https://assets.prelaunch.rumah123.com//assets/
 low_pager_duty_arn: arn:aws:sns:ap-southeast-1:737535160577:Low-Priority-Rumah-SG-PagerDuty
 high_pager_duty_arn: arn:aws:sns:ap-southeast-1:737535160577:High-Priority-Rumah-SG-PagerDuty
 ssl_cert_arn: arn:aws:acm:ap-southeast-1:737535160577:certificate/5ddef10b-f995-4082-81c8-533c4c4dee66
@@ -37,6 +36,7 @@ ami: ami-dc9339bf
 bastion_public_ip: 13.228.19.118
 ssh_from_bastion_sg_id: sg-055c2462
 
+assets_url_prefix: https://assets.prelaunch.rumah123.com//assets/
 resource_bucket_name: prod-sg-rmid-infra-common
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
 sumo_logic_access_id: su37UzMYy9KsP0
