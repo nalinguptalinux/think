@@ -1,5 +1,7 @@
 FROM ubuntu:trusty
 
+#ARG market
+ARG COUNTRY_VAR
 MAINTAINER Devops <devops@iproperty.com>
 RUN apt-get update
 RUN apt-get install -y wget
@@ -21,7 +23,7 @@ COPY nginx-nr-agent.ini /etc/nginx-nr-agent/nginx-nr-agent.ini
 
 #### END #######
 
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY $COUNTRY_VAR /etc/nginx/nginx.conf
 COPY htpasswd /etc/nginx/.htpasswd
 COPY entrypoint.sh /entrypoint.sh
 RUN /usr/sbin/update-rc.d -f nginx disable
