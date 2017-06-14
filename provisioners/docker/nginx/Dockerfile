@@ -2,7 +2,7 @@ FROM ubuntu:trusty
 
 #ARG market
 ARG market
-ENV MARKET=$market
+ENV MARKET market
 
 MAINTAINER Devops <devops@iproperty.com>
 RUN apt-get update
@@ -24,6 +24,7 @@ RUN apt-get update \
 COPY nginx-nr-agent.ini /etc/nginx-nr-agent/nginx-nr-agent.ini
 #### END #######
 
+COPY ${MARKET} /etc/nginx/nginx.conf
 COPY nginx.cnf /etc/nginx/nginx.conf
 COPY htpasswd /etc/nginx/.htpasswd
 COPY entrypoint.sh /entrypoint.sh
