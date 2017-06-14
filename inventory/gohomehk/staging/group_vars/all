@@ -24,7 +24,7 @@ nat_subnet_supernet: 10.39.40.0/22
 public_subnet_supernet: 10.39.36.0/22
 private_subnet_supernet: 10.39.32.0/22
 
-assets_url_prefix: ' '
+assets_url_prefix: 'https://assets.prelaunch.gohome.com.hk/assets/'
 
 ami: ami-9a44f9f9
 bastion_public_ip:  52.74.223.189
