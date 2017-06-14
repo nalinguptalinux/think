@@ -28,6 +28,7 @@ web_service_count: 2
 hp_service_count: 2
 srp_service_count: 2
 
+assets_url_prefix: https://assets.prelaunch.iproperty.com.my/assets/
 low_pager_duty_arn: arn:aws:sns:ap-northeast-1:676958722968:Low-Priority-Iproperty-TK-My-PagerDuty
 high_pager_duty_arn: arn:aws:sns:ap-northeast-1:676958722968:High-Priority-Iproperty-My-TK-PagerDuty
 

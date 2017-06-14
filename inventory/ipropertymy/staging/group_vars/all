@@ -23,6 +23,7 @@ nat_subnet_supernet: 10.90.40.0/22
 public_subnet_supernet: 10.90.36.0/22
 private_subnet_supernet: 10.90.32.0/22
 
+assets_url_prefix: https://assets.prelaunch.iproperty.com.my/assets/
 ami: ami-9a44f9f9
 bastion_public_ip: 52.221.151.29
 ssh_from_bastion_sg_id: sg-04acc463

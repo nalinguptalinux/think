@@ -28,6 +28,7 @@ web_service_count: 2
 hp_service_count: 2
 srp_service_count: 2
 
+assets_url_prefix: https://assets.prelaunch.iproperty.com.my/assets/
 low_pager_duty_arn: arn:aws:sns:ap-southeast-1:676958722968:Low-Priority-Iproperty-My-PagerDuty
 high_pager_duty_arn: arn:aws:sns:ap-southeast-1:676958722968:High-Priority-Iproperty-My-PagerDuty
 ssl_cert_arn: arn:aws:acm:ap-southeast-1:676958722968:certificate/2714d7bb-8946-47b1-bfda-e2b944141cf2
