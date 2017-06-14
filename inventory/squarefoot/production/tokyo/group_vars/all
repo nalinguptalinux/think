@@ -30,6 +30,7 @@ ssh_from_bastion_sg_id: sg-43e9b024
 low_pager_duty_arn: arn:aws:sns:ap-northeast-1:678965432744:Low-Priority-Squarefoot-Prod-Tk-PagerDuty
 high_pager_duty_arn: arn:aws:sns:ap-northeast-1:678965432744:High-Priority-Squarefoot-Prod-Tk-PagerDuty
 ssl_cert_arn: arn:aws:acm:ap-northeast-1:678965432744:certificate/4d402d6b-5403-4a01-a11c-4c78e68cbd0e
+assets_url_prefix: https://assets.prelaunch.squarefoot.com.hk/assets/
 
 web_service_count: 2
 hp_service_count: 2
