@@ -2,7 +2,7 @@ FROM ubuntu:trusty
 
 #ARG market
 ARG market
-ENV MARKET market
+ENV MARKET $market
 
 MAINTAINER Devops <devops@iproperty.com>
 RUN apt-get update
