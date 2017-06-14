@@ -10,6 +10,11 @@ RUN apt-get install -y wget
 RUN apt-get install -y nginx nginx-extras \
  && rm -rf /var/lib/apt/lists/*
 
+RUN echo $MARKET
+RUN echo ${MARKET}
+RUN echo $market
+RUN echo ${market}
+
 # forward request and error logs to docker log collector
 RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 && ln -sf /dev/stderr /var/log/nginx/error.log
@@ -24,7 +29,7 @@ RUN apt-get update \
 COPY nginx-nr-agent.ini /etc/nginx-nr-agent/nginx-nr-agent.ini
 #### END #######
 
-#COPY ${MARKET} /etc/nginx/nginx.conf
+
 COPY nginx.cnf /etc/nginx/nginx.conf
 COPY htpasswd /etc/nginx/.htpasswd
 COPY entrypoint.sh /entrypoint.sh
