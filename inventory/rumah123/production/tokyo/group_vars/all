@@ -28,6 +28,7 @@ web_service_count: 2
 hp_service_count: 2
 srp_service_count: 2
 
+assets_url_prefix: https://assets.prelaunch.rumah123.com//assets/
 low_pager_duty_arn: arn:aws:sns:ap-northeast-1:737535160577:Low-Priority-Rumah-TK-PagerDuty
 high_pager_duty_arn: arn:aws:sns:ap-northeast-1:737535160577:High-Priority-Rumah-TK-PagerDuty
 ssl_cert_arn: arn:aws:acm:ap-northeast-1:737535160577:certificate/c10339b8-c428-4bae-9a91-58424d1a19b7
