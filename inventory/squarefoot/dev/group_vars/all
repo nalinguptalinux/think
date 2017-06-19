@@ -37,15 +37,19 @@ srp_service_count: 1
 
 assets_url_prefix: https://assets.dev.sg.squarefoot.com.hk/assets/
 resource_bucket_name: prod-sg-sfhk-infra-common
+backup_bucket_name: dev-sg-sfhk-backups
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
 sumo_logic_access_id: su37UzMYy9KsP0
 sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCuY719uLf
 new_relic_rpm: newrelic-sysmond-2.3.0.132-1.x86_64.rpm
 new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df
+instance_profile_role: EC2-Role-Instance-Profile
+
+target_group_arns:
+  capi-adapter-listing-live: arn:aws:elasticloadbalancing:ap-southeast-1:866270780045:targetgroup/listing-target-group-live/c24c2360f4aef1ad
+  capi-adapter-suggestion-live: arn:aws:elasticloadbalancing:ap-southeast-1:866270780045:targetgroup/suggestion-target-group-live/f8d87ce69cb9cb9c
 
 deployment_ecr: 678965432744.dkr.ecr.ap-southeast-1.amazonaws.com
-build_ecr: 331887960933.dkr.ecr.ap-southeast-1.amazonaws.com
-instance_profile_role: EC2-Role-Instance-Profile
 
 ecs_amis:
   ap-southeast-1: ami-b4ae1dd7
