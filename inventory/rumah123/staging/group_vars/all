@@ -36,7 +36,6 @@ low_pager_duty_arn: arn:aws:sns:ap-southeast-1:546096582539:Low-Priority-Rumah-S
 high_pager_duty_arn: arn:aws:sns:ap-southeast-1:546096582539:High-Priority-Rumah-Stg-PagerDuty
 ssl_cert_arn: arn:aws:acm:ap-southeast-1:546096582539:certificate/eff0315a-65b4-4655-8945-64981bf7c421
 
-assets_url_prefix: https://assets.stg.sg.rumah123.com//assets/
 resource_bucket_name: prod-sg-rmid-infra-common
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
 sumo_logic_access_id: su37UzMYy9KsP0

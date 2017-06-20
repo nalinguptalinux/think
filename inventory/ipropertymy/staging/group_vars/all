@@ -30,7 +30,6 @@ high_pager_duty_arn: arn:aws:sns:ap-southeast-1:904385174501:High-Priority-Iprop
 low_pager_duty_arn: arn:aws:sns:ap-southeast-1:904385174501:Low-Priority-Iproperty-MY-Staging-PagerDuty
 ssl_cert_arn: arn:aws:acm:ap-southeast-1:904385174501:certificate/29fef856-e894-4079-ad23-7eeef9742f8f
 
-assets_url_prefix: https://assets.stg.sg.iproperty.com.my/assets/
 resource_bucket_name: prod-sg-ipmy-infra-common
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
 sumo_logic_access_id: su37UzMYy9KsP0
