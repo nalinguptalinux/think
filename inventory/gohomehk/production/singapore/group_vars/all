@@ -35,7 +35,6 @@ web_service_count: 2
 hp_service_count: 2
 srp_service_count: 2
 
-assets_url_prefix: 'https://assets.prelaunch.gohome.com.hk/assets/'
 resource_bucket_name: prod-sg-sfhk-infra-common
 backup_bucket_name: prod-sg-sfhk-backups
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh

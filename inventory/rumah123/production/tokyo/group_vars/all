@@ -36,7 +36,6 @@ ami: ami-56d4ad31
 bastion_public_ip: 13.112.69.178
 ssh_from_bastion_sg_id: sg-aa2a28cd
 
-assets_url_prefix: https://assets.prelaunch.rumah123.com//assets/
 resource_bucket_name: prod-tk-rmid-infra-common
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh
 sumo_logic_access_id: su37UzMYy9KsP0
@@ -44,4 +43,3 @@ sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCu
 new_relic_rpm: newrelic-sysmond-2.3.0.132-1.x86_64.rpm
 new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df
 instance_profile_role: EC2-Role-Instance-Profile
-
