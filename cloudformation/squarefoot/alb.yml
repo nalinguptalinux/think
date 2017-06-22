@@ -156,6 +156,36 @@ Resources:
         Ref: ALBListener
       Priority: 3
 
+  ListenerRuleSubLocation:
+    Type: "AWS::ElasticLoadBalancingV2::ListenerRule"
+    Properties:
+      Actions:
+        - TargetGroupArn:
+            Ref: TargetGroupSuggestion
+          Type : forward
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - '/capi/getSubLocation'
+      ListenerArn:
+        Ref: ALBListener
+      Priority: 4
+
+  ListenerRuleLocationParse:
+    Type: "AWS::ElasticLoadBalancingV2::ListenerRule"
+    Properties:
+      Actions:
+        - TargetGroupArn:
+            Ref: TargetGroupSuggestion
+          Type : forward
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - '/capi/getLocation'
+      ListenerArn:
+        Ref: ALBListener
+      Priority: 5
+
   ListenerRuleSuggestionVersion:
     Type: "AWS::ElasticLoadBalancingV2::ListenerRule"
     Properties:
@@ -169,7 +199,7 @@ Resources:
             - Ref: PathOfSuggestionVersion
       ListenerArn:
         Ref: ALBListener
-      Priority: 4
+      Priority: 6
 
   ListenerRuleListingVersion:
     Type: "AWS::ElasticLoadBalancingV2::ListenerRule"
@@ -184,7 +214,7 @@ Resources:
             - Ref: PathOfListingVersion
       ListenerArn:
         Ref: ALBListener
-      Priority: 5
+      Priority: 7
 
   TargetGroupListing:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
