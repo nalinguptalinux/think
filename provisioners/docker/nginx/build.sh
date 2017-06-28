@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 cd provisioners/docker/nginx
-docker build --build-arg market=${MARKET} --no-cache=true -t nginx .  || { echo 'Nginx-Build failed' ; exit 1; }
+docker build --build-arg market=${MARKET} --no-cache=true -t nginx .
 
 for repository_uri in ${ECR_REPO_URIS};
 do
