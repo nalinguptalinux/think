@@ -284,6 +284,11 @@ Resources:
           /sbin/chkconfig newrelic-sysmond on
           /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --configsets InstallAndRun --resource EC2Instance
           /opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource EC2Instance
+          # Setup git settings
+          mkdir /var/lib/jenkins/.ssh
+          echo "Host git.realestate.com.au\n  Port 65422 \n  User git" > /var/lib/jenkins/.ssh/config
+          chown -R jenkins:jenkins /var/lib/jenkins/.ssh
+
 
   EC2InstanceProfile:
     Type: AWS::IAM::InstanceProfile
