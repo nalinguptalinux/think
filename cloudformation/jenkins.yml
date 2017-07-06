@@ -24,6 +24,10 @@ Parameters:
     Description: Choose which subnets this Jenkins server should be deployed to
     Type: String
 
+  Subnets:
+    Description: The subnets which the ELB is hosted.
+    Type: CommaDelimitedList
+
   KeyName:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
     Type: AWS::EC2::KeyPair::KeyName
@@ -74,6 +78,10 @@ Parameters:
 
   ResourceBucketName:
     Description: Name of the S3 bucket to retrieve the downloaded scripts or installation files
+    Type: String
+
+  CertificateARN:
+    Description: arn of SSL certificate
     Type: String
 
 Mappings:
@@ -284,6 +292,37 @@ Resources:
       Roles:
       - Ref: JenkinsInstanceRole
 
+  JenkinsELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Scheme: 'internet-facing'
+      Subnets: !Ref 'Subnets'
+      SecurityGroups:
+      - !Ref 'InstanceSecurityGroup'
+      LoadBalancerName: 'jenkins-elb'
+      CrossZone: true
+      ConnectionSettings:
+        IdleTimeout: '180'
+      ConnectionDrainingPolicy:
+        Enabled: true
+        Timeout: 60
+      Instances:
+      - !Ref 'EC2Instance'
+      Listeners:
+      - InstancePort: '443'
+        LoadBalancerPort: '443'
+        Protocol: 'HTTPS'
+        SSLCertificateId: !Ref 'CertificateARN'
+      - InstancePort: '80'
+        LoadBalancerPort: '80'
+        Protocol: 'HTTP'
+      HealthCheck:
+        Target: TCP:80
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '3'
+        Interval: '30'
+        Timeout: '5'
+
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -313,10 +352,10 @@ Resources:
       Comment: Domain records for Squarefoot Jenkins Server.
       RecordSets:
       - Name: !Ref 'DnsPrefix'
-        Type: A
+        Type: CNAME
         TTL: '300'
         ResourceRecords:
-        - !GetAtt [EC2Instance, PublicIp]
+        - !GetAtt [JenkinsELB, DNSName]
 
 Outputs:
 

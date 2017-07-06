@@ -13,6 +13,8 @@
         DnsZoneName: "{{public_zone}}."
         KeyName: "{{key_name}}"
         SubnetId: "{{public_subnets.split(',')[0]}}"
+        Subnets: "{{public_subnets}}"
+        CertificateARN: "{{ssl_cert_arn}}"
         VPC: "{{aws_vpc_id}}"
         VpcCidr: "{{vpc_cidr}}"
         NewRelicRPM: "{{new_relic_rpm}}"
