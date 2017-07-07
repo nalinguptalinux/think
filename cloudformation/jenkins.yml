@@ -217,7 +217,10 @@ Resources:
                           server_name  _;
 
                           location / {
-                                proxy_pass http://127.0.0.1:8080;
+                            proxy_pass http://127.0.0.1:8080;
+                            if ($http_x_forwarded_proto != 'https') {
+                              return 301 https://$host$request_uri;
+                            }
                           }
                         }
                       }
@@ -349,7 +352,7 @@ Resources:
         CidrIp: 0.0.0.0/0
       - IpProtocol: tcp
         FromPort: '443'
-        ToPort: '443'
+        ToPort: '80'
         CidrIp: 0.0.0.0/0
       Tags:
       - Key: Name
