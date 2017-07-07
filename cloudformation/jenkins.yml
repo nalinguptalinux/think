@@ -115,11 +115,13 @@ Resources:
           - Effect: Allow
             Action:
             - autoscaling:*
+            - application-autoscaling:*
             - cloudformation:CreateStack
             - cloudformation:DeleteStack
             - cloudformation:Describe*
             - cloudformation:ListStack*
             - cloudformation:UpdateStack
+            - cloudformation:SetStackPolicy
             - cloudwatch:*
             - ec2:*
             - ec2:AuthorizeSecurityGroupIngress
@@ -149,7 +151,10 @@ Resources:
             - iam:ListRoles
             - iam:PassRole
             - iam:PutRolePolicy
+            - iam:AttachRolePolicy
+            - iam:DetachRolePolicy
             - iam:RemoveRoleFromInstanceProfile
+            - iam:Get*
             - route53:ChangeResourceRecordSets
             - route53:ListHostedZonesByName
             - route53:ListHostedZones
