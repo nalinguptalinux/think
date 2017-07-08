@@ -1,0 +1,6 @@
+---
+- hosts: web
+  connection: local
+  gather_facts: False
+  roles:
+    - web

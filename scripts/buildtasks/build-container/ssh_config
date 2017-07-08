@@ -1,0 +1,4 @@
+Host git.realestate.com.au
+    Port 65422
+    IdentityFile /root/.ssh/id_rsa
+    StrictHostKeyChecking no

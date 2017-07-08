@@ -1,0 +1,142 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'RDS Stack'
+Parameters:
+  VpcId:
+    Type: String
+    Description: VpcId of your existing Virtual Private Cloud (VPC)
+  Subnets:
+    Type: CommaDelimitedList
+    Description: The list of SubnetIds, for at least two Availability Zones in the
+      region in your Virtual Private Cloud (VPC)
+  DBName:
+    Description: The database name
+    Type: String
+    MinLength: '1'
+    MaxLength: '64'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric
+      characters.
+  DBUsername:
+    NoEcho: 'true'
+    Description: The database admin account username
+    Type: String
+    MinLength: '8'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric
+      characters.
+  DBPassword:
+    NoEcho: 'true'
+    Description: The database admin account password
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.
+  DBClass:
+    Description: Database instance class
+    Type: String
+  DBAllocatedStorage:
+    Description: The size of the database (Gb)
+    Type: Number
+    MinValue: '5'
+    MaxValue: '1024'
+    ConstraintDescription: must be between 5 and 1024Gb.
+  BackupRetentionPeriod:
+    Description: Backup retention period of RDS in days
+    Type: Number
+    MinValue: '5'
+    MaxValue: '100'
+  HostedZoneName:
+    Description: Hosted Zone Name
+    Type: String
+  PubliclyAccessible:
+    Description: Can the database be accesed publicly
+    Type: String
+  DBInstanceIdentifier:
+    Description: DBInstanceIdentifier Name ex MySQL
+    Type: String
+  Engine:
+    Description: Engine Name ex MySQL
+    Type: String
+  EngineVersion:
+    Description: Engine Version
+    Type: String
+  ParameterGroupVersion:
+    Description: ParameterGroup Version
+    Type: String
+  Env:
+    Description: ParameterGroup Version
+    Type: String
+  Port:
+    Description: Port for DB
+    Type: String
+  MultiAZ:
+    Description: Enable Multi Availability Zones?
+    Type: String
+    Default: 'false'
+    AllowedValues:
+    - 'true'
+    - 'false'
+
+Resources:
+  RDSDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnets available for the RDS DB Instance
+      SubnetIds: !Ref 'Subnets'
+  VPCSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for RDS DB Instance.
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: !Ref 'Port'
+        ToPort: !Ref 'Port'
+        IpProtocol: tcp
+      VpcId: !Ref 'VpcId'
+  RDSRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Join ['', [!Ref 'HostedZoneName', '.']]
+      Name: !Join ['', [!Ref 'Env', '-rds','.', !Ref 'HostedZoneName', '.']]
+      Type: CNAME
+      TTL: 60
+      ResourceRecords:
+      - !GetAtt [RDSDB, Endpoint.Address]
+  RDSDBParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: Mysql RDS Parameter Group
+      Family: !Ref 'ParameterGroupVersion'
+      Parameters:
+        wait_timeout: 300
+        max_allowed_packet: 32000000
+        max_connect_errors: 10000
+        time_zone: Asia/Singapore
+  RDSDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: !Ref 'DBInstanceIdentifier'
+      DBName: !Ref 'DBName'
+      AllocatedStorage: !Ref 'DBAllocatedStorage'
+      StorageType: 'gp2'
+      DBInstanceClass: !Ref 'DBClass'
+      Engine: !Ref 'Engine'
+      EngineVersion: !Ref 'EngineVersion'
+      MasterUsername: !Ref 'DBUsername'
+      MasterUserPassword: !Ref 'DBPassword'
+      DBSubnetGroupName: !Ref 'RDSDBSubnetGroup'
+      DBParameterGroupName: !Ref 'RDSDBParameterGroup'
+      BackupRetentionPeriod: !Ref 'BackupRetentionPeriod'
+      PubliclyAccessible: !Ref 'PubliclyAccessible'
+      MultiAZ: !Ref 'MultiAZ'
+      AllowMajorVersionUpgrade: 'false'
+      Port: !Ref 'Port'
+      VPCSecurityGroups:
+      - !Ref 'VPCSecurityGroup'
+
+Outputs:
+  MysqlEndPoint:
+    Description: Mysql End Point for database
+    Value: !Join ['', [!GetAtt [RDSDB, Endpoint.Address], ':', !GetAtt [RDSDB, Endpoint.Port]]]

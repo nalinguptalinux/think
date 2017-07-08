@@ -1,0 +1,9 @@
+# "snapshot" is just a default to prevent unwanted machines from pushing
+BUILD_NUMBER=${BUILD_NUMBER:=snapshot}
+JOB_BASE_NAME=${JOB_BASE_NAME:=${PWD##*/}}
+
+# Image name to use locally
+IMAGE=${JOB_BASE_NAME}-${MARKET}:${BUILD_NUMBER}
+
+# Ephemeral test containers needs a name
+TEST_CONTAINER_PREFIX=${JOB_BASE_NAME}_${BUILD_NUMBER}

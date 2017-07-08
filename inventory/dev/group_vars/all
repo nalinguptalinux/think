@@ -1,0 +1,29 @@
+
+instance_type: t2.micro
+ssh_key: awscloud-thinkofliving-development
+ssh_ip:  "192.228.247.1/32"
+application:  web
+project: TOL
+application: thinkofliving-bastion
+env: Dev
+aws_region: ap-southeast-1
+min_asg: 1
+max_asg: 2
+desire_count: 1
+record_name: thinkofliving.com
+ami_id: ami-fc5ae39f
+
+###########   Terraform  Variable #########
+vpc_cidr: "10.89.128.0/20"
+aws_instance_id: i-05e7382c4f0b6793e
+aws_instance_ip: 13.228.84.236
+aws_vpc_id: vpc-15d49571
+instance_profile_name: s3-single-policy
+private_subnets: subnet-5e727a3a,subnet-47655831
+public_subnets: subnet-30737b54,subnet-cb6b56bd
+
+#################
+private_zone: dev.tol.ipga.local
+ssl_cert_arn:
+resource_bucket_name:
+backup_bucket_name:

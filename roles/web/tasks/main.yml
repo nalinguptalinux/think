@@ -1,0 +1,26 @@
+---
+  - name: Setup web server
+    cloudformation:
+      stack_name: "{{web_stack_name}}-{{version}}"
+      state: present
+      region: "{{aws_region}}"
+      disable_rollback: true
+      template: "cloudformation/Web.yml"
+      stack_policy: "policies/stack-policy.json"
+      template_parameters:
+        InstanceType: "{{instance_type}}"
+        KeyName: "{{ssh_key}}"
+        ASGMinSize: "{{min_asg}}"
+        ASGMaxSize: "{{max_asg}}"
+        DesiredCapacity: "{{desire_count}}"
+        RecordName: "{{record_name}}"
+        PublicSubnets: "{{public_subnets}}"
+        PrivateSubnets: "{{private_subnets}}"
+        VpcID: "{{aws_vpc_id}}"
+        VpcNet: "{{vpc_cidr}}"
+        AMI: "{{ami_id}}"
+        InstProfile: "{{instance_profile_name}}"
+        DesiredCapacity: "{{desire_count}}"
+        Project: "{{project}}"
+        Env: "{{env}}"
+        CertificateARN: "{{ssl_cert_arn}}"

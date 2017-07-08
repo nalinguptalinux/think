@@ -1,0 +1,74 @@
+node {
+    try {
+        notifyBuild('STARTED')
+        timestamps {
+            ansiColor('xterm') {
+                stage('Preparation') {
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: '*/master']],
+                        doGenerateSubmoduleConfigurations: false,
+                        extensions: [[$class: 'MessageExclusion', excludedMessage: '.*\\[no-build\\].*']],
+                        submoduleCfg: [],
+                        userRemoteConfigs: [[url: "git@git.realestate.com.au:nalin-gupta/thinkofliving.git"]]
+                    ])
+                    // prepare version file
+                    sh "scripts/buildtasks/scripts/generate_version_file.sh"
+                }
+                stage('Build') {
+                    sh "scripts/buildtasks/scripts/build.sh"
+                }
+                stage('Test') {
+                    // more testing tasks to be added here
+                    sh "echo "test wil be here" "
+                }
+                //stage('Push') {
+                //    sh 'scripts/buildtasks/scripts/push.sh'
+                //}
+                //stage('Cleanup') {
+                //    sh 'scripts/buildtasks/scripts/cleanup.sh'
+                //}
+                stage('Post-Build Tasks') {
+                    sh "/bin/sed -i '1s;builds=;builds=${env.BUILD_NUMBER},;' ../${env.JOB_BASE_NAME}-build-numbers.txt"
+                    sh "/bin/echo 'last=${env.BUILD_NUMBER}' > ../${env.JOB_BASE_NAME}-last-build.txt"
+                }
+            }
+        }
+    }
+    catch (e) {
+        // If there was an exception thrown, the build failed
+        currentBuild.result = "FAILED"
+        throw e
+    } finally {
+        // Success or failure, always send notifications
+        notifyBuild(currentBuild.result)
+    }
+}
+
+def notifyBuild(String buildStatus = 'STARTED') {
+  // build status of null means successful
+  buildStatus =  buildStatus ?: 'SUCCESSFUL'
+
+  // Default values
+  def colorName = 'RED'
+  def colorCode = '#FF0000'
+  def subject = "${buildStatus}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'"
+  def summary = "${subject} (<${env.BUILD_URL}|Open>)"
+
+  // Override default values based on build status
+  if (buildStatus == 'STARTED') {
+    color = 'YELLOW'
+    colorCode = '#FFFF00'
+  } else if (buildStatus == 'SUCCESSFUL') {
+    color = 'GREEN'
+    colorCode = '#00FF00'
+  } else {
+    color = 'RED'
+    colorCode = '#FF0000'
+  }
+
+  // Send notifications
+  withCredentials([string(credentialsId: 'SLACK_INTEGRATION_TOKEN', variable: 'SLACK_INTEGRATION_TOKEN')]) {
+    slackSend channel: "${env.SLACK_CHANNEL}", color: colorCode, message: summary, teamDomain: 'rea-group', token: "${SLACK_INTEGRATION_TOKEN}"
+  }
+}

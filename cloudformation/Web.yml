@@ -1,0 +1,239 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Web Stack
+Parameters:
+  PublicSubnets:
+    Description: The public subnets in the VPC
+    Type: CommaDelimitedList
+  PrivateSubnets:
+    Description: The private subnets in the VPC
+    Type: CommaDelimitedList
+  DesiredCapacity:
+    Description: Name of an existing EC2 KeyPair to enable SSH access
+    Type: String
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access
+    Type: String
+  RecordName:
+    Description: The name of the DNS record to create.
+    Type: String
+  AMI:
+    Description: The AMI id of the Platform image.
+    Type: String
+    MinLength: '12'
+    MaxLength: '12'
+    AllowedPattern: ami-[a-f0-9]{8}
+  InstanceType:
+    Description: The Instance type which used to build stack.
+    Type: String
+  VpcID:
+    Description: The private Subnet ID in VPC that has connection to Equinix.
+    Type: String
+    AllowedPattern: vpc-[a-f0-9]{8}
+  ASGMaxSize:
+    Description: AutoScaling max size
+    Type: Number
+  ASGMinSize:
+    Description: AutoScaling min size
+    Type: Number
+  VpcNet:
+    Description: VPC CidrIp
+    Type: String
+  InstProfile:
+    Description: Instance Profile Detail
+    Type: String
+  Project:
+    Description: Instance Project Detail
+    Type: String
+  AMI:
+    Description: Instance AMI
+    Type: String
+  Env:
+    Description: Environment name
+    Type: String
+    Default: 'TOL'
+  CertificateARN:
+    Description: arn of SSL certificate
+    Type: String
+
+Resources:
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing Web client connection
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+      VpcId: !Ref 'VpcID'
+  WebSSHSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing incoming on ssh port
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: '-1'
+        FromPort: '0'
+        ToPort: '0'
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+      VpcId: !Ref 'VpcID'
+  WebELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Subnets: !Ref 'PublicSubnets'
+      Scheme: internet-facing
+      CrossZone: true
+      SecurityGroups:
+      - !Ref 'WebSecurityGroup'
+      ConnectionDrainingPolicy:
+        Enabled: true
+        Timeout: 60
+      Listeners:
+      - InstancePort: '80'
+        LoadBalancerPort: '443'
+        Protocol: 'HTTPS'
+        SSLCertificateId: !Ref 'CertificateARN'
+      - InstancePort: '80'
+        LoadBalancerPort: '80'
+        Protocol: 'HTTP'
+      HealthCheck:
+        Target: TCP:80
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '6'
+        Interval: '30'
+        Timeout: '5'
+  CPUAlarmHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      EvaluationPeriods: '2'
+      Statistic: Average
+      Threshold: '70'
+      AlarmDescription: CPU utilization of Web is over 70%.
+      Period: '60'
+      Namespace: AWS/EC2
+      Dimensions:
+      - Name: AutoScalingGroupName
+        Value: !Ref 'ECSAutoScalingGroup'
+      ComparisonOperator: GreaterThanThreshold
+      MetricName: CPUUtilization
+
+  WebASLaunchConf:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Metadata:
+      'AWS::CloudFormation::Init':
+        configSets:
+          InstallAndRun: [Configure]
+        Configure:
+          packages:
+            yum:
+              mysql: []
+              mysql-libs: []
+              httpd: []
+              php: []
+              php-mysql: []
+              nginx: []
+          services:
+            sysvinit:
+              httpd:
+                enabled: 'true'
+                ensureRunning: 'true'
+              nginx:
+                enabled: 'true'
+                ensureRunning: 'true'
+              sendmail:
+                enabled: "false"
+                ensureRunning: "false"
+    Properties:
+      KeyName:
+        Ref: KeyName
+      ImageId: !Ref 'AMI'
+      InstanceType:
+        Ref: InstanceType
+      InstanceMonitoring: true
+      AssociatePublicIpAddress: 'true'
+      IamInstanceProfile: !Ref 'InstProfile'
+      SecurityGroups:
+      - Ref: 'WebSSHSecurityGroup'
+      UserData:
+        "Fn::Base64": !Sub |
+          #!/bin/bash -ex
+          /bin/echo -e '######--------------------------Install software----------------------###### \n'
+          /usr/bin/yum update -y
+          /usr/bin/yum install -y sysstat nmap telnet curl wget vim elinks bind-utils jq
+          /usr/bin/yum install -y aws-cfn-bootstrap awslogs
+          /usr/bin/easy_install awscli
+          /bin/echo -e '######-----------------Configure Hostname on EC2 Host-----------------###### \n'
+          function configure_hosts {
+            env=${Env}
+            project=${Project}
+            instance_ip=$(/usr/bin/curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
+            domain=$(/bin/awk '/^search/ { print $2 }' /etc/resolv.conf)
+            ipend=`/bin/echo $instance_ip | /bin/sed 's/\./\-/g'`
+            /bin/echo "$instance_ip $env.$domain $env-$ipend">> /etc/hosts
+            /bin/hostname $env-$project-$ipend
+          }
+          configure_hosts
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource WebASLaunchConf --configsets InstallAndRun --region ${AWS::Region}
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
+
+  ECSAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        Ref: PrivateSubnets
+      LaunchConfigurationName: !Ref 'WebASLaunchConf'
+      AvailabilityZones: [!Select [0, !GetAZs ''], !Select [1, !GetAZs '']]
+      Cooldown: '40'
+      HealthCheckGracePeriod: '60'
+      LoadBalancerNames:
+      - Ref: WebELB
+      HealthCheckType: ELB
+      MetricsCollection:
+      - Granularity: 1Minute
+        Metrics:
+        - GroupMinSize
+        - GroupMaxSize
+        - GroupDesiredCapacity
+        - GroupInServiceInstances
+        - GroupPendingInstances
+        - GroupTotalInstances
+        - GroupTerminatingInstances
+        - GroupStandbyInstances
+      MinSize:
+        Ref: ASGMinSize
+      MaxSize:
+        Ref: ASGMaxSize
+      DesiredCapacity:
+        Ref: DesiredCapacity
+      Tags:
+      - Value:
+          Ref: AWS::StackName
+        Key: CF-Name
+        PropagateAtLaunch: true
+      - Value: Web-Instance
+        Key: Name
+        PropagateAtLaunch: true
+
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT5M
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: '1'
+        MaxBatchSize: '1'
+        PauseTime: PT15M
+        WaitOnResourceSignals: 'true'
+Outputs:
+  ELBEndpoint:
+    Description: Web elb dns name.
+    Value: !GetAtt [WebELB, DNSName]
+  ServiceEndpoint:
+    Description: Web endpoint.
+    Value: !Ref 'RecordName'

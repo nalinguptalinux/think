@@ -1,0 +1,81 @@
+node {
+    try {
+        notifyBuild('STARTED')
+        timestamps {
+            ansiColor('xterm') {
+                stage('Preparation') {
+                    checkout([
+                            $class: 'GitSCM',
+                            branches: [[name: '*/master']],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [],
+                            submoduleCfg: [],
+                            userRemoteConfigs: [[url: "git@git.realestate.com.au:ipp-regional-web/web-srp-pdp.git"]]
+                    ])
+                    // prepare version file
+                    sh "buildtasks/scripts/generate_version_file.sh"
+                }
+                stage('Build') {
+                    sh "buildtasks/scripts/build.sh"
+                }
+                stage('Parallel Tasks') {
+                    parallel test: {
+                        sh 'buildtasks/scripts/test.sh'
+                    },
+                            lint: {
+                                sh 'buildtasks/scripts/lint.sh'
+                            },
+                            e2e: {
+                                sh 'buildtasks/scripts/e2e.sh'
+                            }
+                }
+                stage('Push') {
+                    sh 'buildtasks/scripts/push.sh'
+                }
+                stage('Cleanup') {
+                    sh 'buildtasks/scripts/cleanup.sh'
+                }
+                stage('Post-Build Tasks') {
+                    sh "/bin/sed -i '1s;builds=;builds=${env.BUILD_NUMBER},;' ../${env.JOB_BASE_NAME}-build-numbers.txt"
+                    sh "/bin/echo 'last=${env.BUILD_NUMBER}' > ../${env.JOB_BASE_NAME}-last-build.txt"
+                }
+            }
+        }
+    }
+    catch (e) {
+        // If there was an exception thrown, the build failed
+        currentBuild.result = "FAILED"
+        throw e
+    } finally {
+        // Success or failure, always send notifications
+        notifyBuild(currentBuild.result)
+    }
+}
+
+def notifyBuild(String buildStatus = 'STARTED') {
+    // build status of null means successful
+    buildStatus =  buildStatus ?: 'SUCCESSFUL'
+
+    // Default values
+    def colorName = 'RED'
+    def colorCode = '#FF0000'
+    def subject = "${buildStatus}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'"
+    def summary = "${subject} (<${env.BUILD_URL}|Open>)"
+
+    // Override default values based on build status
+    if (buildStatus == 'STARTED') {
+        color = 'YELLOW'
+        colorCode = '#FFFF00'
+    } else if (buildStatus == 'SUCCESSFUL') {
+        color = 'GREEN'
+        colorCode = '#00FF00'
+    } else {
+        color = 'RED'
+        colorCode = '#FF0000'
+    }
+
+    // Send notifications
+    withCredentials([string(credentialsId: 'SLACK_INTEGRATION_TOKEN', variable: 'SLACK_INTEGRATION_TOKEN')]) {
+        slackSend channel: "${env.SLACK_CHANNEL}", color: colorCode, message: summary, teamDomain: 'rea-group', token: "${SLACK_INTEGRATION_TOKEN}"
+    }
+}

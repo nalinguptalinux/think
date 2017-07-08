@@ -1,0 +1,6 @@
+---
+- hosts: bastion
+  connection: local
+  gather_facts: False
+  roles:
+    - bastion
