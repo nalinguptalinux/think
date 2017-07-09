@@ -10,7 +10,7 @@ echo "Building image..."
 DOCKERFILE="$(dirname $0)/../dockerfiles/prod.Dockerfile"
 
 if [[ ! -z "${BUILD_NUMBER}" ]] ; then
-    docker build -t ${IMAGE} ./
+    docker build -t ${IMAGE} -f ${DOCKERFILE} ./
 else
     docker build -t ${IMAGE} \
         --build-arg market=${MARKET} \
