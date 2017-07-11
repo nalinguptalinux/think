@@ -24,6 +24,10 @@ Parameters:
     Description: Choose which subnets this Jenkins server should be deployed to
     Type: String
 
+  Subnets:
+    Description: The subnets which the ELB is hosted.
+    Type: CommaDelimitedList
+
   KeyName:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
     Type: AWS::EC2::KeyPair::KeyName
@@ -76,15 +80,19 @@ Parameters:
     Description: Name of the S3 bucket to retrieve the downloaded scripts or installation files
     Type: String
 
+  CertificateARN:
+    Description: arn of SSL certificate
+    Type: String
+
 Mappings:
 
   RegionMap:
         ap-southeast-1:
-            AMI: ami-dc9339bf
+            AMI: ami-77af2014
         ap-northeast-1:
-            AMI: ami-56d4ad31
+            AMI: ami-3bd3c45c
         ap-southeast-2:
-            AMI: ami-1c47407f
+            AMI: ami-10918173
 
 Resources:
 
@@ -107,11 +115,13 @@ Resources:
           - Effect: Allow
             Action:
             - autoscaling:*
+            - application-autoscaling:*
             - cloudformation:CreateStack
             - cloudformation:DeleteStack
             - cloudformation:Describe*
             - cloudformation:ListStack*
             - cloudformation:UpdateStack
+            - cloudformation:SetStackPolicy
             - cloudwatch:*
             - ec2:*
             - ec2:AuthorizeSecurityGroupIngress
@@ -141,7 +151,10 @@ Resources:
             - iam:ListRoles
             - iam:PassRole
             - iam:PutRolePolicy
+            - iam:AttachRolePolicy
+            - iam:DetachRolePolicy
             - iam:RemoveRoleFromInstanceProfile
+            - iam:Get*
             - route53:ChangeResourceRecordSets
             - route53:ListHostedZonesByName
             - route53:ListHostedZones
@@ -203,11 +216,39 @@ Resources:
                           listen       80;
                           server_name  _;
 
+                          location @jenkins {
+                            sendfile off;
+                            proxy_pass         http://127.0.0.1:8080;
+                            proxy_redirect     default;
+                            proxy_http_version 1.1;
+
+                            proxy_set_header   Host             $host;
+                            proxy_set_header   X-Real-IP        $remote_addr;
+                            proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+                            proxy_max_temp_file_size 0;
+
+                            #this is the maximum upload size
+                            client_max_body_size       10m;
+                            client_body_buffer_size    128k;
+
+                            proxy_connect_timeout      90;
+                            proxy_send_timeout         90;
+                            proxy_read_timeout         90;
+
+                            proxy_buffer_size          4k;
+                            proxy_buffers              4 32k;
+                            proxy_busy_buffers_size    64k;
+                            proxy_temp_file_write_size 64k;
+                          }
+
                           location / {
-                                proxy_pass http://127.0.0.1:8080;
+                            try_files $uri @jenkins;
+                            if ($http_x_forwarded_proto != 'https') {
+                              return 301 https://$host$request_uri;
+                            }
                           }
                         }
-                      }
+                    }
               mode: '000755'
               owner: root
               group: root
@@ -256,7 +297,8 @@ Resources:
           wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins.io/redhat-stable/jenkins.repo
           echo "enabled=1" >> /etc/yum.repos.d/jenkins.repo
           rpm --import http://pkg.jenkins.io/redhat-stable/jenkins.io.key
-          yum install -y jenkins
+          yum install -y jenkins java-1.8.0-openjdk
+          yum remove -y java-1.7.0-openjdk
           gpasswd -a jenkins docker
           /etc/init.d/jenkins start || /etc/init.d/jenkins restart
           chkconfig jenkins on
@@ -275,6 +317,11 @@ Resources:
           /sbin/chkconfig newrelic-sysmond on
           /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --configsets InstallAndRun --resource EC2Instance
           /opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource EC2Instance
+          # Setup git settings
+          mkdir /var/lib/jenkins/.ssh
+          echo "Host git.realestate.com.au\n  Port 65422 \n  User git" > /var/lib/jenkins/.ssh/config
+          chown -R jenkins:jenkins /var/lib/jenkins/.ssh
+
 
   EC2InstanceProfile:
     Type: AWS::IAM::InstanceProfile
@@ -282,6 +329,37 @@ Resources:
       Path: "/"
       Roles:
       - Ref: JenkinsInstanceRole
+
+  JenkinsELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Scheme: 'internet-facing'
+      Subnets: !Ref 'Subnets'
+      SecurityGroups:
+      - !Ref 'InstanceSecurityGroup'
+      LoadBalancerName: 'jenkins-elb'
+      CrossZone: true
+      ConnectionSettings:
+        IdleTimeout: '180'
+      ConnectionDrainingPolicy:
+        Enabled: true
+        Timeout: 60
+      Instances:
+      - !Ref 'EC2Instance'
+      Listeners:
+      - InstancePort: '443'
+        LoadBalancerPort: '443'
+        Protocol: 'HTTPS'
+        SSLCertificateId: !Ref 'CertificateARN'
+      - InstancePort: '80'
+        LoadBalancerPort: '80'
+        Protocol: 'HTTP'
+      HealthCheck:
+        Target: TCP:80
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '3'
+        Interval: '30'
+        Timeout: '5'
 
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -297,6 +375,10 @@ Resources:
         FromPort: '80'
         ToPort: '80'
         CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '80'
+        CidrIp: 0.0.0.0/0
       Tags:
       - Key: Name
         Value: jenkins-server-security-group
@@ -308,10 +390,10 @@ Resources:
       Comment: Domain records for Squarefoot Jenkins Server.
       RecordSets:
       - Name: !Ref 'DnsPrefix'
-        Type: A
+        Type: CNAME
         TTL: '300'
         ResourceRecords:
-        - !GetAtt [EC2Instance, PublicIp]
+        - !GetAtt [JenkinsELB, DNSName]
 
 Outputs:
 
