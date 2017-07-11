@@ -165,27 +165,58 @@ Mappings:
 Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
-
-  HPtaskdefinition:
-    Type: AWS::ECS::TaskDefinition
+######
+  ECSScaleUpPolicy:
+    Type: 'AWS::AutoScaling::ScalingPolicy'
     Properties:
-      ContainerDefinitions:
-      - Name: ECS-HP-TASK
-        Cpu: '256'
-        Memory: '1024'
-        Essential: true
-        PortMappings:
-        - HostPort: '3000'
-          Protocol: tcp
-          ContainerPort: '3000'
-        Environment:
-        - Name: NODE_ENV
-          Value: production
-        - Name: NEW_RELIC_LICENSE_KEY
-          Value: !Sub '${NewRelicLicenseKey}'
-        - Name: NEW_RELIC_APP_NAME
-          Value: !Join ['', [!Ref 'Env', '-' ,'HP']]
-        Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'HpECRRepo']]
+      AdjustmentType: PercentChangeInCapacity
+      MinAdjustmentStep: 1
+      AutoScalingGroupName: !Ref ECSAutoScalingGroup
+      Cooldown: 300
+      ScalingAdjustment: 25
+  ECSScaleDownPolicy:
+    Type: 'AWS::AutoScaling::ScalingPolicy'
+    Properties:
+      AdjustmentType: PercentChangeInCapacity
+      MinAdjustmentStep: 1
+      AutoScalingGroupName: !Ref ECSAutoScalingGroup
+      Cooldown: 300
+      ScalingAdjustment: -25
+  CPUReservationHighAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmDescription: 'Average CPU utilization over last 1 minutes higher than 70%'
+      AlarmName: !Join ['', ['ECS-CPU>70%', '-', !Ref 'ECSCluster']]
+      Namespace: 'AWS/ECS'
+      Dimensions:
+      - Name: ClusterName
+        Value: !Ref ECSCluster
+      MetricName: CPUUtilization
+      ComparisonOperator: GreaterThanThreshold
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: 2
+      Threshold: 70
+      AlarmActions:
+      - !Ref ECSScaleUpPolicy
+  CPUReservationLowAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmDescription: 'Average CPU utilization over last 10 minutes less than 20%'
+      AlarmName: !Join ['', ['ECS-CPU<20%', '-', !Ref 'ECSCluster']]
+      Namespace: 'AWS/ECS'
+      Dimensions:
+      - Name: ClusterName
+        Value: !Ref ECSCluster
+      MetricName: CPUUtilization
+      ComparisonOperator: LessThanThreshold
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 20
+      AlarmActions:
+      - !Ref ECSScaleDownPolicy
+######
 
   ECSAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -343,6 +374,27 @@ Resources:
           /bin/echo -e '######--------------------------Signal success------------------------###### \n '
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
 
+
+  HPtaskdefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+      - Name: ECS-HP-TASK
+        Cpu: '256'
+        Memory: '1024'
+        Essential: true
+        PortMappings:
+        - HostPort: '3000'
+          Protocol: tcp
+          ContainerPort: '3000'
+        Environment:
+        - Name: NODE_ENV
+          Value: production
+        - Name: NEW_RELIC_LICENSE_KEY
+          Value: !Sub '${NewRelicLicenseKey}'
+        - Name: NEW_RELIC_APP_NAME
+          Value: !Join ['', [!Ref 'Env', '-' ,'HP']]
+        Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'HpECRRepo']]
 
   EcsHpELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
@@ -588,14 +640,14 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'SRPService'
     Properties:
-      AlarmDescription: 'Scale-up if CPUUtilization  60% for 5 minutes ECSSprHigh '
-      AlarmName: !Join ['', ['ECSSprHigh-CPU-60%', '-', !Ref 'Env', '-', !Ref 'Version']]
-      MetricName: 'CPUUtilization'
+      AlarmDescription: 'Scale-up if MemoryUtilization  85% for 2 minutes ECSSprHigh '
+      AlarmName: !Join ['', ['ECSSprHigh-Mem-85%', '-', !Ref 'Env', '-', !Ref 'Version']]
+      MetricName: 'MemoryUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
-      Period: '300'
-      EvaluationPeriods: '1'
-      Threshold: '60'
+      Period: '60'
+      EvaluationPeriods: '2'
+      Threshold: '85'
       AlarmActions:
       - Ref: 'SrpServiceScalingUpPolicy'
       Dimensions:
@@ -609,14 +661,14 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'SRPService'
     Properties:
-      AlarmDescription: 'Scale-Down if MemoryUtilization  5% for 5 minutes ECSSrpMemLow'
-      AlarmName: !Join ['', ['ECSSrpMem-Memory-5', '-', !Ref 'Env', '-', !Ref 'Version']]
+      AlarmDescription: 'Scale-Down if MemoryUtilization  25% for 5 minutes ECSSrpMemLow'
+      AlarmName: !Join ['', ['ECSSrpMem-Memory-25', '-', !Ref 'Env', '-', !Ref 'Version']]
       MetricName: 'MemoryUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
       Period: '300'
       EvaluationPeriods: '1'
-      Threshold: '5'
+      Threshold: '25'
       AlarmActions:
       - Ref: 'SrpServiceScalingDownPolicy'
       Dimensions:
@@ -672,14 +724,14 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'HPService'
     Properties:
-      AlarmDescription: 'Scale-up if CPUUtilization  60% for 5 minutes ECSHpHigh '
-      AlarmName: !Join ['', ['ECSHpHigh-CPU-60%', '-', !Ref 'Env', '-', !Ref 'Version']]
-      MetricName: 'CPUUtilization'
+      AlarmDescription: 'Scale-up if MemoryUtilization  85% for 2 minutes ECSHpHigh '
+      AlarmName: !Join ['', ['ECSHpHigh-Mem-85%', '-', !Ref 'Env', '-', !Ref 'Version']]
+      MetricName: 'MemoryUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
-      Period: '300'
-      EvaluationPeriods: '1'
-      Threshold: '60'
+      Period: '60'
+      EvaluationPeriods: '2'
+      Threshold: '85'
       AlarmActions:
       - Ref: 'HpServiceScalingUpPolicy'
       Dimensions:
@@ -693,14 +745,14 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'HPService'
     Properties:
-      AlarmDescription: 'Scale-Down if MemoryUtilization  5% for 5 minutes ECSHPMemLow '
+      AlarmDescription: 'Scale-Down if MemoryUtilization  25% for 5 minutes ECSHPMemLow '
       AlarmName: !Join ['', ['ECSHPMemLow-Mem-5%', '-', !Ref 'Env', '-', !Ref 'Version']]
       MetricName: 'MemoryUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
       Period: '300'
       EvaluationPeriods: '1'
-      Threshold: '5'
+      Threshold: '25'
       AlarmActions:
       - Ref: 'HpServiceScalingDownPolicy'
       Dimensions:
