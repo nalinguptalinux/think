@@ -526,12 +526,12 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'Webservice'
     Properties:
-      AlarmDescription: 'Scale-up if CPUUtilization  60% for 5 minutes ECSWebHigh '
+      AlarmDescription: 'Scale-up if CPUUtilization  60% for 1 minutes ECSWebHigh '
       AlarmName: !Join ['', ['ECSWebHigh-CPU-60%', '-', !Ref 'Env', '-', !Ref 'Version']]
       MetricName: 'CPUUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
-      Period: '300'
+      Period: '60'
       EvaluationPeriods: '1'
       Threshold: '60'
       AlarmActions:
@@ -640,14 +640,14 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'SRPService'
     Properties:
-      AlarmDescription: 'Scale-up if MemoryUtilization  85% for 2 minutes ECSSprHigh '
-      AlarmName: !Join ['', ['ECSSprHigh-Mem-85%', '-', !Ref 'Env', '-', !Ref 'Version']]
+      AlarmDescription: 'Scale-up if MemoryUtilization  75% for 1 minutes ECSSprHigh '
+      AlarmName: !Join ['', ['ECSSprHigh-Mem-75%', '-', !Ref 'Env', '-', !Ref 'Version']]
       MetricName: 'MemoryUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
       Period: '60'
-      EvaluationPeriods: '2'
-      Threshold: '85'
+      EvaluationPeriods: '1'
+      Threshold: '75'
       AlarmActions:
       - Ref: 'SrpServiceScalingUpPolicy'
       Dimensions:
@@ -724,14 +724,14 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'HPService'
     Properties:
-      AlarmDescription: 'Scale-up if MemoryUtilization  85% for 2 minutes ECSHpHigh '
-      AlarmName: !Join ['', ['ECSHpHigh-Mem-85%', '-', !Ref 'Env', '-', !Ref 'Version']]
+      AlarmDescription: 'Scale-up if MemoryUtilization  75% for 1 minutes ECSHpHigh '
+      AlarmName: !Join ['', ['ECSHpHigh-Mem-75%', '-', !Ref 'Env', '-', !Ref 'Version']]
       MetricName: 'MemoryUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
       Period: '60'
-      EvaluationPeriods: '2'
-      Threshold: '85'
+      EvaluationPeriods: '1'
+      Threshold: '75'
       AlarmActions:
       - Ref: 'HpServiceScalingUpPolicy'
       Dimensions:

@@ -12,3 +12,4 @@ function configure_hosts {
 }
 
 configure_hosts
+yum update -y
