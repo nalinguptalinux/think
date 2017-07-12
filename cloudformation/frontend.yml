@@ -526,14 +526,14 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'Webservice'
     Properties:
-      AlarmDescription: 'Scale-up if CPUUtilization  60% for 1 minutes ECSWebHigh '
+      AlarmDescription: 'Scale-up if CPUUtilization  50% for 1 minutes ECSWebHigh '
       AlarmName: !Join ['', ['ECSWebHigh-CPU-60%', '-', !Ref 'Env', '-', !Ref 'Version']]
       MetricName: 'CPUUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
       Period: '60'
       EvaluationPeriods: '1'
-      Threshold: '60'
+      Threshold: '50'
       AlarmActions:
       - Ref: ServiceScalingUpPolicy
       Dimensions:
@@ -640,14 +640,14 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'SRPService'
     Properties:
-      AlarmDescription: 'Scale-up if MemoryUtilization  75% for 1 minutes ECSSprHigh '
+      AlarmDescription: 'Scale-up if MemoryUtilization  65% for 1 minutes ECSSprHigh '
       AlarmName: !Join ['', ['ECSSprHigh-Mem-75%', '-', !Ref 'Env', '-', !Ref 'Version']]
       MetricName: 'MemoryUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
       Period: '60'
       EvaluationPeriods: '1'
-      Threshold: '75'
+      Threshold: '65'
       AlarmActions:
       - Ref: 'SrpServiceScalingUpPolicy'
       Dimensions:
@@ -724,14 +724,14 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'HPService'
     Properties:
-      AlarmDescription: 'Scale-up if MemoryUtilization  75% for 1 minutes ECSHpHigh '
-      AlarmName: !Join ['', ['ECSHpHigh-Mem-75%', '-', !Ref 'Env', '-', !Ref 'Version']]
+      AlarmDescription: 'Scale-up if MemoryUtilization  65% for 1 minutes ECSHpHigh '
+      AlarmName: !Join ['', ['ECSHpHigh-Mem-65%', '-', !Ref 'Env', '-', !Ref 'Version']]
       MetricName: 'MemoryUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
       Period: '60'
       EvaluationPeriods: '1'
-      Threshold: '75'
+      Threshold: '65'
       AlarmActions:
       - Ref: 'HpServiceScalingUpPolicy'
       Dimensions:
