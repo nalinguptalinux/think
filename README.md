@@ -170,6 +170,15 @@ ansible-playbook ami.yml -i inventory/staging/ -e "private_key_file=/home/hash/a
      |                                   |  |                                   |        
      -------------------------------------  -------------------------------------     
 
+
+## Run performance test
+switch to the path `provisioners/performance/squarefoot-legacy`
+
+* run `bundle install` to install missing gems.
+* run following command to start a production performance testing which will launch a task in flood.io
+
+  `bundle exec ruby hp_test.rb --mode prod --api-key xxxxxx --flood-name your-flood-name --region aws-region-of-flood --duration 600 --api-grid grid-in-flood-io`
+
 ---
 Spend some time on [ansible playbooks](http://docs.ansible.com/ansible/playbooks.html) and [cloudformation](https://aws.amazon.com/cloudformation/)
 
