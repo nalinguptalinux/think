@@ -526,14 +526,14 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     DependsOn: 'Webservice'
     Properties:
-      AlarmDescription: 'Scale-up if CPUUtilization  50% for 1 minutes ECSWebHigh '
-      AlarmName: !Join ['', ['ECSWebHigh-CPU-60%', '-', !Ref 'Env', '-', !Ref 'Version']]
+      AlarmDescription: 'Scale-up if CPUUtilization  40% for 1 minutes ECSWebHigh '
+      AlarmName: !Join ['', ['ECSWebHigh-CPU-40%', '-', !Ref 'Env', '-', !Ref 'Version']]
       MetricName: 'CPUUtilization'
       Namespace: 'AWS/ECS'
       Statistic: Average
       Period: '60'
       EvaluationPeriods: '1'
-      Threshold: '50'
+      Threshold: '40'
       AlarmActions:
       - Ref: ServiceScalingUpPolicy
       Dimensions:
