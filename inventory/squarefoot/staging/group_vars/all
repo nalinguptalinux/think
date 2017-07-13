@@ -31,9 +31,9 @@ low_pager_duty_arn: arn:aws:sns:ap-southeast-1:866270780045:Low-Priority-Squaref
 high_pager_duty_arn: arn:aws:sns:ap-southeast-1:866270780045:High-Priority-Squarefoot-Staging-PagerDuty
 ssl_cert_arn: arn:aws:acm:ap-southeast-1:866270780045:certificate/01130418-81c9-471e-b7cc-999725598295
 
-web_service_count: 1
-hp_service_count: 1
-srp_service_count: 1
+web_service_count: 2
+hp_service_count: 2
+srp_service_count: 2
 
 resource_bucket_name: prod-sg-sfhk-infra-common
 backup_bucket_name: stg-sg-sfhk-backups
