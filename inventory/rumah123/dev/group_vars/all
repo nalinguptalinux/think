@@ -4,7 +4,7 @@ env: rumah123-development
 private_zone: development.rumah123-singapore.ipga.local
 public_zone: dev.sg.rumah123.com
 aws_region: ap-southeast-1
-key_name: awscloud-rumah123-development-singapore
+key_name: awscloud-rumah123-development-sg
 aws_vpc_id: vpc-e19d0285
 vpc_cidr: 10.89.48.0/20
 dns_servers: 169.254.169.253,10.89.48.2
