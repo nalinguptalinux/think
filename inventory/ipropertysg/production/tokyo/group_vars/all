@@ -45,3 +45,4 @@ sumo_logic_access_key: aR2sAGxpvTuBHgRb6HcgygTPynv2wpRnjuQ4OgBt9zEBGcnXLAvhTMVCu
 new_relic_rpm: newrelic-sysmond-2.3.0.132-1.x86_64.rpm
 new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df
 instance_profile_role: EC2-Role-Instance-Profile
+ami: ami-19f7787a
