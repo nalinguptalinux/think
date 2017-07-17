@@ -297,13 +297,18 @@ Resources:
                   "sources": [
                     {
                       "sourceType": "LocalFile",
-                      "name": "frontend-Docker-local",
+                      "name": "frontend-Docker-local-${Env}",
                       "pathExpression": "/var/lib/docker/containers/*/*.log",
-                      "category": "frontend-docker-${Env}",
+                      "category": "frontend-Docker/Ecs/Container/logs",
                       "hostName": "${Env}-${AWS::StackName}",
                       "useAutolineMatching": false,
                       "multilineProcessingEnabled": false,
                       "timeZone": "UTC",
+                      "filters": [{
+                        "filterType":"Exclude",
+                        "name":"Route 53 Health Check",
+                        "regexp":".*Amazon Route 53 Health Check Service.*"
+                        }],
                       "automaticDateParsing": true,
                       "forceTimeZone": false,
                       "defaultDateFormat": "MMM dd HH:mm:ss"
