@@ -300,7 +300,7 @@ Resources:
                       "name": "frontend-Docker-local",
                       "pathExpression": "/var/lib/docker/containers/*/*.log",
                       "category": "frontend-Docker/Ecs/Container/logs",
-                      "hostName": " ${Env}-${AWS::StackName}",
+                      "hostName": "${Env}-${AWS::StackName}",
                       "useAutolineMatching": false,
                       "multilineProcessingEnabled": false,
                       "timeZone": "UTC",
