@@ -297,13 +297,18 @@ Resources:
                   "sources": [
                     {
                       "sourceType": "LocalFile",
-                      "name": "frontend-Docker-local",
+                      "name": "frontend-Docker-local-${Env}",
                       "pathExpression": "/var/lib/docker/containers/*/*.log",
-                      "category": "frontend-docker-${Env}",
+                      "category": "frontend-Docker/Ecs/Container/logs",
                       "hostName": "${Env}-${AWS::StackName}",
                       "useAutolineMatching": false,
                       "multilineProcessingEnabled": false,
                       "timeZone": "UTC",
+                      "filters": [{
+                        "filterType":"Exclude",
+                        "name":"Route 53 Health Check",
+                        "regexp":".*Amazon Route 53 Health Check Service.*"
+                        }],
                       "automaticDateParsing": true,
                       "forceTimeZone": false,
                       "defaultDateFormat": "MMM dd HH:mm:ss"
@@ -347,7 +352,7 @@ Resources:
             instance_ip=$(/usr/bin/curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
             domain=$(/bin/awk '/^search/ { print $2 }' /etc/resolv.conf)
             ipend=`/bin/echo $instance_ip | /bin/sed 's/\./\-/g'`
-            /bin/echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
+            /bin/echo "$instance_ip $recordName.$domain $recordName-$project-$ipend">> /etc/hosts
             /bin/hostname $recordName-$project-$ipend
           }
           configure_hosts
