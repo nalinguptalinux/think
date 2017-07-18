@@ -299,7 +299,7 @@ Resources:
                       "sourceType": "LocalFile",
                       "name": "${Env}-frontend-docker-log",
                       "pathExpression": "/var/lib/docker/containers/*/*.log",
-                      "category": "frontend-Docker/Ecs/Container/logs",
+                      "category": "frontend/docker/logs",
                       "hostName": "${Env}-${AWS::StackName}",
                       "useAutolineMatching": false,
                       "multilineProcessingEnabled": false,
