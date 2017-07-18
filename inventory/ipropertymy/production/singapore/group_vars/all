@@ -1,6 +1,6 @@
 project: ipropertymy
 business_unit: MY
-env: ipropertymy-prod
+env: production
 private_zone: prod.ipropertymy-sg.ipga.local
 public_zone: sg.iproperty.com.my
 aws_region: ap-southeast-1

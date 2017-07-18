@@ -1,7 +1,7 @@
 aws_region: ap-southeast-1
 project: squarefoot
 business_unit: HK
-env: squarefoot-development
+env: development
 deployment_env: development
 private_zone: development.squarefoot-singapore.ipga.local
 public_zone: dev.sg.squarefoot.com.hk
