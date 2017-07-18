@@ -1,6 +1,6 @@
 project: rumah123
 business_unit: ID
-env: rumah123-prod
+env: production
 private_zone: prod.rumah123-sg.ipga.local
 public_zone: sg.rumah123.com
 aws_region: ap-southeast-1

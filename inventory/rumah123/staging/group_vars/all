@@ -1,6 +1,6 @@
 project: rumah123
 business_unit: ID
-env: rumah123-staging
+env: staging
 private_zone: staging.rumah123-singapore.ipga.local
 public_zone: stg.sg.rumah123.com
 aws_region: ap-southeast-1
