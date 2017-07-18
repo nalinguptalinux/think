@@ -1,6 +1,6 @@
 project: ipropertysg
 business_unit: SG
-env: ipropertysg-development
+env: development
 private_zone: development.ipropertysg-singapore.ipga.local
 public_zone: dev.sg.iproperty.com.sg
 aws_region: ap-southeast-1
