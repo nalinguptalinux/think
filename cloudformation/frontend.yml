@@ -297,10 +297,10 @@ Resources:
                   "sources": [
                     {
                       "sourceType": "LocalFile",
-                      "name": "${Project}-frontend-docker-log",
+                      "name": "docker-logs",
                       "pathExpression": "/var/lib/docker/containers/*/*.log",
-                      "category": "frontend/docker/logs",
-                      "hostName": "${Env}-${AWS::StackName}",
+                      "category": "frontend/{AWS::StackName}",
+                      "hostName": "${Project}-${Env}",
                       "useAutolineMatching": false,
                       "multilineProcessingEnabled": false,
                       "timeZone": "UTC",
