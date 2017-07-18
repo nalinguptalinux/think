@@ -297,7 +297,7 @@ Resources:
                   "sources": [
                     {
                       "sourceType": "LocalFile",
-                      "name": "${Env}-frontend-docker-log",
+                      "name": "${Project}-frontend-docker-log",
                       "pathExpression": "/var/lib/docker/containers/*/*.log",
                       "category": "frontend/docker/logs",
                       "hostName": "${Env}-${AWS::StackName}",
