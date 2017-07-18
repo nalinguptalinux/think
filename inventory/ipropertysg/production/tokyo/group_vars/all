@@ -1,6 +1,6 @@
 aws_region: ap-northeast-1
 project: ipropertysg
-env: production-tokyo
+env: production
 business_unit: SG
 private_zone: prod.ipropertysg-tokyo.ipga.local
 public_zone: tk.iproperty.com.sg
