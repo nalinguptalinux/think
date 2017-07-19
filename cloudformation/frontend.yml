@@ -150,7 +150,7 @@ Parameters:
     Type: String
 
   Project:
-    Description: Instance Profile Detail
+    Description: Project Detail
     Type: String
 
 Mappings:
@@ -448,6 +448,7 @@ Resources:
         - Ref: 'Version'
         - Ref: 'NewRelicLicenseKey'
         - Ref: 'Env'
+        - Ref: 'Project'
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'NginxECRRepo']]
 
   ILBWebSecurityGroup:
