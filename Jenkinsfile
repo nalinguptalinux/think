@@ -1,8 +1,11 @@
 node {
-   stage('GitClone') {
+	stage 'Checkout'
+		checkout scm   
+   
+   //stage('GitClone') {
     // prepare version file
-    git url: 'git@github.com:nalinguptalinux/think.git'
-    }
+    //git url: 'git@github.com:nalinguptalinux/think.git'
+    //}
    stage('Preparation') {
     // prepare version file
     sh "scripts/buildtasks/scripts/generate_version_file.sh"
