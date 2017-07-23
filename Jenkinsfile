@@ -24,13 +24,6 @@ node {
     catch (err) {
 
         currentBuild.result = "FAILURE"
-
-            mail body: "project build error is here: ${env.BUILD_URL}" ,
-            from: 'nalin@localhost',
-            replyTo: 'nalin@localhost',
-            subject: 'project build failed',
-            to: 'nalin@localhost'
-
         throw err
     }
 }
