@@ -1,0 +1,32 @@
+# Entrypoints definition
+#
+# Optional
+# Default:
+ [entryPoints]
+   [entryPoints.http]
+   address = ":8080"
+
+ [web]
+ address = ":8081"
+
+################################################################
+# Sample rules
+################################################################
+ [file]
+ [backends]
+   [backends.backend1]
+     [backends.backend1.LoadBalancer]
+       sticky = true
+       method = "wrr"
+     [backends.backend1.servers.server1]
+     url = "https://www.squarefoot.com.hk"
+     weight = 9
+     [backends.backend1.servers.server2]
+     url = "https://www.prelaunch.squarefoot.com.hk"
+     weight = 1
+
+ [frontends]
+   [frontends.frontend1]
+   entrypoints = ["http"] # overrides defaultEntryPoints
+   backend = "backend1"
+

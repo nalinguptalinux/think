@@ -1,0 +1,348 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Traefik Stack
+Parameters:
+  AvailabilityZones:
+    Description: The availability zones in the VPC
+    Type: CommaDelimitedList
+  PublicSubnets:
+    Description: The public subnets in the VPC
+    Type: CommaDelimitedList
+  PrivateSubnets:
+    Description: The private subnets in the VPC
+    Type: CommaDelimitedList
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access
+    Type: String
+  AB:
+    Description: Define a / b stack
+    Type: String
+    AllowedValues:
+    - a
+    - b
+  Build:
+    Description: Define Build Number
+    Type: String
+  HostedZoneName:
+    Description: The Route53 Zone in which to create records
+    Type: String
+  RecordName:
+    Description: The name of the DNS record to create.
+    Type: String
+  AMI:
+    Description: The AMI id of the Platform image.
+    Type: String
+    MinLength: 12
+    MaxLength: 12
+    AllowedPattern: ami-[a-f0-9]{8}
+  InstanceType:
+    Description: The Instance type which used to build stack.
+    Type: String
+  VpcID:
+    Description: The private Subnet ID in VPC that has connection to Equinix.
+    Type: String
+    AllowedPattern: vpc-[a-f0-9]{8}
+  ASGMaxSize:
+    Description: AutoScaling max size
+    Type: Number
+    Default: 3
+  ASGMinSize:
+    Description: AutoScaling min size
+    Type: Number
+    Default: 3
+  S3Repository:
+    Description: Name of the S3 repository bucket hosting all myfun rpm packages
+    Type: String
+  NewRelicKey:
+    Description: NewRelic Key
+    Type: String
+  PagerDutyArn:
+    Description: pager duty arn.
+    Type: String
+  SSLCertArn:
+    Description: ssl cert arn
+    Type: String
+Resources:
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ec2.amazonaws.com]
+          Action:
+          - sts:AssumeRole
+      Policies:
+      - PolicyName: permit-s3-and-cfn
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - cloudwatch:PutMetricData
+            Resource: '*'
+          - Effect: Allow
+            Action: cloudformation:DescribeStackResource
+            Resource: '*'
+          - Effect: Allow
+            Action: elasticloadbalancing:DescribeInstanceHealth
+            Resource: '*'
+          - Effect: Allow
+            Action: s3:GetObject
+            Resource: !Join ['', ['arn:aws:s3:::', !Ref 'S3Repository',/*]]
+          - Effect: Allow
+            Action:
+            - s3:ListBucket
+            - s3:GetBucketLocation
+            Resource: !Join ['', ['arn:aws:s3:::', !Ref 'S3Repository',/*]]
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+      - !Ref 'Role'
+  TraefikSSHSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing incoming on ssh port
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: '-1'
+        FromPort: '0'
+        ToPort: '0'
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+      VpcId: !Ref 'VpcID'
+  TraefikELBConnectionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing Traefik client connection
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+      VpcId: !Ref 'VpcID'
+  TraefikConnectionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allowing Traefik client connection
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+      VpcId: !Ref 'VpcID'
+  TraefikELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Subnets: !Ref 'PublicSubnets'
+      CrossZone: true
+      SecurityGroups:
+      - !Ref 'TraefikELBConnectionSecurityGroup'
+      Listeners:
+      - InstancePort: '80'
+        LoadBalancerPort: '80'
+        Protocol: HTTP
+      - InstancePort: '80'
+        LoadBalancerPort: '443'
+        Protocol: HTTPS
+        SSLCertificateId: !Ref 'SSLCertArn'
+      HealthCheck:
+        HealthyThreshold: '2'
+        Interval: '60'
+        Timeout: '8'
+        Target: HTTP:80/50x50/test.png
+        UnhealthyThreshold: '2'
+  TraefikASLaunchConf:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          files:
+            /etc/cfn/cfn-hup.conf:
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+                interval=1
+            /etc/rsyslog.d/10-docker.conf:
+              content: !Sub |
+                $template DockerLogs, "/var/log/traefik/docker.log"
+                if $programname == 'docker' then -?DockerLogs
+                & stop
+            /etc/logrotate.d/traefik:
+              content: !Sub |
+                "/var/log/traefik/traefik.log"  {
+                 rotate 14
+                 daily
+                 missingok
+                 notifempty
+                 sharedscripts
+                 copytruncate
+                 compress
+                }
+          packages:
+            yum:
+              docker: []
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                - /etc/cfn/cfn-hup.conf
+                - /etc/cfn/hooks.conf
+    Properties:
+      InstanceType: !Ref 'InstanceType'
+      ImageId: !Ref 'AMI'
+      SecurityGroups:
+      - !Ref 'TraefikSSHSecurityGroup'
+      - !Ref 'TraefikConnectionSecurityGroup'
+      KeyName: !Ref 'KeyName'
+      IamInstanceProfile: !Ref 'InstanceProfile'
+      UserData:
+        "Fn::Base64": !Sub |
+          #!/bin/bash -ex
+          exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+
+          function error_exit
+          {
+            opt/aws/bin/cfn-signal -e 1 -r $1 ${WaitHandle}
+            exit 1
+          }
+
+          function await_network {
+            while [ $(curl --connect-timeout 2 169.254.169.254 >/dev/null 2>&1; echo $?) -ne 0 ]; do
+              echo Waiting for networking and/or DNS
+              sleep 10
+            done
+          }
+          function configure_hosts {
+              recordName=${RecordName}.${AB}
+              instance_ip=$(curl -q http://169.254.169.254/latest/meta-data/local-ipv4)
+              domain=$(awk '/^search/ { print $2 }' /etc/resolv.conf)
+              ipend=`echo $instance_ip | sed 's/\./\-/g'`
+              echo "$instance_ip $recordName.$domain $recordName-$ipend">> /etc/hosts
+              hostname $recordName-$ipend
+          }
+          await_network
+          configure_hosts
+
+          /opt/aws/bin/cfn-init -s ${AWS::StackName} -r TraefikASLaunchConf  --region ${AWS::Region} --role ${Role}|| error_exit 'Failed to run cfn-init'
+
+          service docker start
+          aws s3 cp s3://${S3Repository}/traefik/traefik /usr/bin/ --region ${S3Region} || error_exit 'faild to download traefik'
+          chmod 755 /usr/bin/traefik
+
+          mkdir -p /var/log/traefik
+
+          /etc/init.d/newrelic-sysmond restart || error_exit 'faild to start newrelic sysmon application'
+          echo; echo --- cleaning up
+
+          /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup',
+          /opt/aws/bin/cfn-signal -e 0 -r "Traefik instance Stack Complete." '${WaitHandle}'
+  TraefikScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      AutoScalingGroupName: !Ref 'TraefikASGroup'
+      Cooldown: '600'
+      ScalingAdjustment: '1'
+  TraefikScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      AutoScalingGroupName: !Ref 'TraefikASGroup'
+      Cooldown: '600'
+      ScalingAdjustment: '-1'
+  CPUAlarmHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      EvaluationPeriods: '2'
+      Statistic: Average
+      Threshold: '70'
+      AlarmDescription: CPU utilization of Traefik is over 60%.
+      Period: '60'
+      AlarmActions:
+      - !Ref 'TraefikScaleUpPolicy'
+      - !Ref 'PagerDutyArn'
+      InsufficientDataActions:
+      - !Ref 'PagerDutyArn'
+      OKActions:
+      - !Ref 'PagerDutyArn'
+      Namespace: AWS/EC2
+      Dimensions:
+      - Name: AutoScalingGroupName
+        Value: !Ref 'TraefikASGroup'
+      ComparisonOperator: GreaterThanThreshold
+      MetricName: CPUUtilization
+  CPUAlarmNormal:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      EvaluationPeriods: '4'
+      Statistic: Average
+      Threshold: '30'
+      AlarmDescription: CPU utilization of Traefik is lower than 40%.
+      Period: '300'
+      AlarmActions:
+      - !Ref 'TraefikScaleDownPolicy'
+      Namespace: AWS/EC2
+      Dimensions:
+      - Name: AutoScalingGroupName
+        Value: !Ref 'TraefikASGroup'
+      ComparisonOperator: LessThanThreshold
+      MetricName: CPUUtilization
+  TraefikASGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones: !Ref 'AvailabilityZones'
+      VPCZoneIdentifier: !Ref 'PrivateSubnets'
+      HealthCheckGracePeriod: 1000
+      HealthCheckType: ELB
+      LaunchConfigurationName: !Ref 'TraefikASLaunchConf'
+      MinSize: !Ref 'ASGMinSize'
+      MaxSize: !Ref 'ASGMaxSize'
+      LoadBalancerNames:
+      - !Ref 'TraefikELB'
+      Tags:
+      - Key: CloudFormationStack
+        Value: !Ref 'AWS::StackName'
+        PropagateAtLaunch: true
+      - Key: Name
+        Value: !Join ['', [!Ref 'RecordName', '-' ,!Ref 'AB', '-' , !Ref 'Build', '.',  !Ref 'HostedZoneName', '.']]
+        PropagateAtLaunch: true
+  TraefikRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Join ['', [!Ref 'HostedZoneName', '.']]
+      Name: !Join ['', [!Ref 'RecordName', '-' ,!Ref 'AB', '-' , !Ref 'Build', '.', !Ref 'HostedZoneName', '.']]
+      Type: CNAME
+      TTL: 60
+      ResourceRecords:
+      - !GetAtt [TraefikELB, DNSName]
+  WaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  WaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn: TraefikASGroup
+    Properties:
+      Handle: !Ref 'WaitHandle'
+      Timeout: '1500'
+Outputs:
+  ELBEndpoint:
+    Description: Traefik elb dns name.
+    Value: !GetAtt [TraefikELB, DNSName]
+  ApplicationEndpoint:
+    Description: Traefik endpoint.
+    Value: !Join ['', [!Ref 'RecordName', '-' ,!Ref 'AB', '-' , !Ref 'Build', '.',  !Ref 'HostedZoneName', '.']]
