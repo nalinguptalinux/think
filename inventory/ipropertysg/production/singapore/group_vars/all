@@ -45,3 +45,5 @@ new_relic_license_key: 566728cdfcce12ad0fef0741a0b24d5bbd4ee3df
 deployment_ecr: 864072874528.dkr.ecr.ap-southeast-1.amazonaws.com
 build_ecr: 951363673468.dkr.ecr.ap-southeast-1.amazonaws.com
 instance_profile_role: EC2-Role-Instance-Profile
+
+basic_auth: true

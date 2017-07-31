@@ -43,3 +43,5 @@ deployment_ecr: 676958722968.dkr.ecr.ap-southeast-1.amazonaws.com
 web_service_count: 2
 hp_service_count: 2
 srp_service_count: 2
+
+basic_auth: true

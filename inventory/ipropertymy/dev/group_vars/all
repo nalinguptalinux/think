@@ -45,3 +45,5 @@ instance_profile_role: EC2-Role-Instance-Profile
 
 deployment_ecr: 676958722968.dkr.ecr.ap-southeast-1.amazonaws.com
 build_ecr: 407510221296.dkr.ecr.ap-southeast-1.amazonaws.com
+
+basic_auth: true

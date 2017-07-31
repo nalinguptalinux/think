@@ -40,7 +40,7 @@
         Version: "{{version}}"
         InstProfile: "{{instance_profile_role}}"
         Project: "{{project}}"
-
+        BasicAuth: "{{basic_auth}}"
       tags:
         Project: "{{project}}"
         application: "{{application}}"

@@ -153,6 +153,10 @@ Parameters:
     Description: Project Detail
     Type: String
 
+  BasicAuth:
+    Description: Basic Auth Status
+    Type: String
+
 Mappings:
   AWSRegionArch2AMI:
     ap-southeast-1:
