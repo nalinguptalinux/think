@@ -147,14 +147,20 @@ live.sg.squarefoot.com.hk
 [frontend:vars]
 application=frontend
 ab=b-phased-deployment
-ecs_instance_type=t2.medium
+hp_ecr_repo=hp:latest
+srp_pdp_ecr_repo=srp-pdp:latest
+nginx_ecr_repo=nginx:latest
+################
+ecs_instance_type=c4.large
 min_asg_size=2
-max_asg_size=4
+max_asg_size=10
 desired_asg_capacity=2
-hp_ecr_repo=hp:76
-srp_pdp_ecr_repo=srp-pdp:171
-nginx_ecr_repo=nginx:78
-version=76-171-78
+hp_task_mem=1524
+srp_task_mem=1024
+nx_task_mem=786
+hp_task_cpu=786
+srp_task_cpu=512
+nx_task_cpu=512
 
 [alb]
 127.0.0.1

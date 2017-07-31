@@ -34,6 +34,12 @@ ssl_cert_arn: arn:aws:acm:ap-southeast-1:331887960933:certificate/ae7fed36-0562-
 web_service_count: 1
 hp_service_count: 1
 srp_service_count: 1
+hp_task_mem:1024
+srp_task_mem:1024
+nx_task_mem:512
+hp_task_cpu:256
+srp_task_cpu:256
+nx_task_cpu:512
 
 resource_bucket_name: prod-sg-sfhk-infra-common
 backup_bucket_name: dev-sg-sfhk-backups

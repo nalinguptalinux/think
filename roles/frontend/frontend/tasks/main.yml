@@ -41,6 +41,12 @@
         InstProfile: "{{instance_profile_role}}"
         Project: "{{project}}"
         BasicAuth: "{{basic_auth}}"
+        Hptaskmem: "{{hp_task_mem}}"
+        Hptaskcpu: "{{hp_task_cpu}}"
+        Srptaskmem: "{{srp_task_mem}}"
+        Srptaskcpu: "{{srp_task_cpu}}"
+        Nxtaskmem: "{{nx_task_mem}}"
+        Nxtaskcpu: "{{nx_task_cpu}}"
       tags:
         Project: "{{project}}"
         application: "{{application}}"

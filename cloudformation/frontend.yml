@@ -152,7 +152,24 @@ Parameters:
   Project:
     Description: Project Detail
     Type: String
-
+  Hptaskmem:
+    Description: Hp Container Memory
+    Type: Number
+  Hptaskcpu:
+    Description: Hp Container Cpu
+    Type: Number
+  Srptaskmem:
+    Description: Srp Container Memory
+    Type: Number
+  Srptaskcpu:
+    Description: Srp Container Cpu
+    Type: Number
+  Nxtaskmem:
+    Description: Nx Container Memory
+    Type: Number
+  Nxtaskcpu:
+    Description: Nx Container Cpu
+    Type: Number
   BasicAuth:
     Description: Basic Auth Status
     Type: String
@@ -389,8 +406,10 @@ Resources:
     Properties:
       ContainerDefinitions:
       - Name: ECS-HP-TASK
-        Cpu: '256'
-        Memory: '1024'
+        #Cpu: '256'
+        #Memory: '1024'
+        Memory: !Ref Hptaskmem
+        Cpu: !Ref Hptaskcpu
         Essential: true
         PortMappings:
         - HostPort: '3000'
@@ -438,8 +457,10 @@ Resources:
     Properties:
       ContainerDefinitions:
       - Name: ECS-Web-TASK
-        Cpu: '512'
-        Memory: '512'
+        #Cpu: '512'
+        #Memory: '512'
+        Memory: !Ref Nxtaskmem
+        Cpu: !Ref Nxtaskcpu
         Essential: true
         PortMappings:
         - HostPort: '80'
@@ -485,7 +506,7 @@ Resources:
       DesiredCount: !Ref 'WebserviceCount'
       TaskDefinition: !Ref 'WebTaskDefinition'
       DeploymentConfiguration:
-        MaximumPercent: '200'
+        MaximumPercent: '150'
         MinimumHealthyPercent: '50'
 
   ServiceScalingTarget:
@@ -848,8 +869,10 @@ Resources:
     Properties:
       ContainerDefinitions:
       - Name: ECS-SRP-TASK
-        Cpu: '256'
-        Memory: '1024'
+        #Cpu: '256'
+        #Memory: '1024'
+        Memory: !Ref Srptaskmem
+        Cpu: !Ref Srptaskcpu
         Essential: true
         PortMappings:
         - HostPort: '4000'
