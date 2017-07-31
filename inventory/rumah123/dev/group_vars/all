@@ -33,12 +33,12 @@ ssl_cert_arn: arn:aws:acm:ap-southeast-1:538471682716:certificate/0a4f6730-5a79-
 web_service_count: 1
 hp_service_count: 1
 srp_service_count: 1
-hp_task_mem:1024
-srp_task_mem:1024
-nx_task_mem:512
-hp_task_cpu:256
-srp_task_cpu:256
-nx_task_cpu:512
+hp_task_mem: 1024
+srp_task_mem: 1024
+nx_task_mem: 512
+hp_task_cpu: 256
+srp_task_cpu: 256
+nx_task_cpu: 512
 
 resource_bucket_name: prod-sg-rmid-infra-common
 sumo_logic_installer: SumoCollector_linux_amd64_19_182-17.sh

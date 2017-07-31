@@ -621,8 +621,6 @@ Resources:
             Service: 'ecs.amazonaws.com'
           Action: 'sts:AssumeRole'
 
-
-
   SrpServiceScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     DependsOn: 'AutoscalingRole'
