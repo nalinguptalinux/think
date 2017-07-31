@@ -26,7 +26,6 @@ Parameters:
   HpECRRepo:
     Description: Homepage ECR Repo
     Type: String
-
   HostedZoneName:
     Description: Hosted Zone for Route53 record
     Type: String
