@@ -1,152 +1,128 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-
-Description: >
+Description: >-
     Install the frontend stack for all environments
-
 Parameters:
   BusinessUnit:
     Type: String
     Description: Two letters country code for billing purpose
     AllowedValues:
-    - HK
-    - MY
-    - ID
-    - SG
-
+      - HK
+      - MY
+      - ID
+      - SG
   DesiredCapacity:
     Type: Number
     Default: '2'
     Description: Number of Desired Size AS instance
-
   ECRRegistry:
     Description: Main ECR Registry
     Type: String
-
   HpECRRepo:
     Description: Homepage ECR Repo
     Type: String
   HostedZoneName:
     Description: Hosted Zone for Route53 record
     Type: String
-
   Instancestype:
     Description: EC2 instance type.
     Type: String
     AllowedValues:
-    - t2.medium
-    - m3.medium
-    - m3.large
-    - m4.large
-    - m4.xlarge
-    - m4.2xlarge
-    - c4.large
-    - c4.xlarge
-    - c4.2xlarge
+      - t2.medium
+      - m3.medium
+      - m3.large
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
   KeyNamessh:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
-    Type: AWS::EC2::KeyPair::KeyName
+    Type: 'AWS::EC2::KeyPair::KeyName'
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
-
   MinSizeAS:
     Type: Number
     Default: '2'
     Description: Number of Min Size AS instance
-
   MaxSize:
     Type: Number
     Default: '4'
     Description: Maximum number of instances that can be launched in your ECS cluster.
-
   NewRelicLicenseKey:
     Description: New Relic License Key
     Type: String
-
   NewRelicRPM:
     Description: New Relic RPM
     Type: String
-
   NginxECRRepo:
     Description: NGIN ECR Repo
     Type: String
-
   PagerDutyArn:
     Description: Pager Duty ARN
     Type: String
-
   HPagerDutyArn:
     Description: Pager Duty ARN
     Type: String
-
   SrpPdpECRRepo:
     Description: SRP PDP ECR Repo
     Type: String
-
   RecordName:
     Description: The name of the DNS record to create.
     Type: String
-
   ResourceBucketName:
-    Description: Name of the S3 bucket to retrieve the downloaded scripts or installation files
+    Description: >-
+      Name of the S3 bucket to retrieve the downloaded scripts or installation files
     Type: String
-
   SSLCertificateARN:
     Description: The SSL certificate ARN as specified in Route 53
     Type: String
-
   SubnetID:
     Description: Public subnets
     Type: CommaDelimitedList
     Default: 'subnet-49c6b43f,subnet-9c9bd5f8'
-
   SumoLogicInstallerFileName:
     Description: The installation file for Sumo Logic Collector
     Type: String
-
   SumoLogicAccessId:
     Description: Sumo Logic access id
     Type: String
-
   SumoLogicAccessKey:
     Description: Sumo Logic access key
     Type: String
-
   VPC:
     Description: Choose which VPC we should be deploying the stack to
-    Type: AWS::EC2::VPC::Id
-
+    Type: 'AWS::EC2::VPC::Id'
   VpcCidr:
     Description: Enter VPC Cidr
     Type: String
-
   VpcDns:
     Description: Enter VPC DNS must be end with X.X.0.2
     Type: String
-
   WebserviceCount:
-    Description: Enter Webservice Container Count - Must be equal to no. of instance in AutoScaling
+    Description: >-
+      Enter Webservice Container Count - Must be equal to no. of instance in
+      AutoScaling
     Type: String
-
   HpserviceCount:
-    Description: Enter Hpservice Container Count - Must be equal to no. of instance in AutoScaling
+    Description: >-
+      Enter Hpservice Container Count - Must be equal to no. of instance in
+      AutoScaling
     Type: String
-
   SrpserviceCount:
-    Description: Enter Srpservice Container Count - Must be equal to no. of instance in AutoScaling
+    Description: >-
+      Enter Srpservice Container Count - Must be equal to no. of instance in
+      AutoScaling
     Type: String
-
   Env:
     Description: Environment name
     Type: String
-
   Version:
     Description: Version string to display in header
     Type: String
-
   InstProfile:
     Description: Instance Profile Detail
     Type: String
-
   Project:
     Description: Project Detail
     Type: String
@@ -169,7 +145,8 @@ Parameters:
     Description: Nx Container Cpu
     Type: Number
   BasicAuth:
-    Description: Basic Auth Status
+    Description: Basic Auth is required or not condition
+    Default: true
     Type: String
 
 Mappings:
@@ -177,14 +154,13 @@ Mappings:
     ap-southeast-1:
       HVM64: ami-19f7787a
     ap-northeast-1:
-      HVM64: ami-c393d6a4
+      HVM64: ami-e4657283
     ap-southeast-2:
-      HVM64: ami-f63f6f91
+      HVM64: ami-42e9f921
 
 Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
-######
   ECSScaleUpPolicy:
     Type: 'AWS::AutoScaling::ScalingPolicy'
     Properties:
@@ -235,7 +211,6 @@ Resources:
       Threshold: 20
       AlarmActions:
       - !Ref ECSScaleDownPolicy
-######
 
   ECSAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -472,6 +447,7 @@ Resources:
         - Ref: 'NewRelicLicenseKey'
         - Ref: 'Env'
         - Ref: 'Project'
+        - Ref: BasicAuth
         Image: !Join ['', [!Ref 'ECRRegistry', '/', !Ref 'NginxECRRepo']]
 
   ILBWebSecurityGroup:
@@ -954,13 +930,10 @@ Outputs:
   HpElasticLoadBalancer:
     Value: !GetAtt EcsHpELB.DNSName
     Description: HP ELB
-
   SrpPdpElasticLoadBalancer:
     Value: !GetAtt ECSSrpPdpELB.DNSName
     Description: SRP ELB
-
   EcsClusterName:
     Value: !Ref 'ECSCluster'
-
   RecordName:
     Value: !Ref 'RecordName'

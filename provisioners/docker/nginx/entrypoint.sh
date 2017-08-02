@@ -15,5 +15,12 @@ then
         /usr/sbin/service nginx-nr-agent start                                                  #######  Service start #
         /bin/echo $? >> /root/last-status.txt                                                   #######  Last Status #
 fi
+# Basic Auth Config
+#if [ "true" = "$8" ] ; then
+#    echo "Basic Auth is enabled"
+#else
+#        /bin/sed -i "s|auth_basic|#auth_basic|g" /etc/nginx/nginx.conf                          #######  Basic Auth remove #
+#        /bin/echo "Basic Auth is disabled"
+#fi
 
 /usr/sbin/nginx -g 'daemon off;'
